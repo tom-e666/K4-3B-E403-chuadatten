@@ -162,6 +162,13 @@
 
   .attempt-tag{display:inline-block;font-size:11px;color:var(--text-mute);background:#eee;padding:2px 8px;border-radius:99px;margin-bottom:6px;}
 
+  .quick-test-bar{display:flex;gap:8px;padding:0 14px 8px;}
+  .quick-test-bar button{flex:1;font-size:11px;font-weight:600;padding:7px 8px;border-radius:8px;
+    border:1px solid var(--border);background:#fff;cursor:pointer;}
+  .quick-test-bar button.correct{color:var(--green);border-color:#bfe6cf;}
+  .quick-test-bar button.wrong{color:var(--orange);border-color:#f3ddb0;}
+  .quick-test-bar button:disabled{opacity:.4;cursor:not-allowed;}
+
   .chat-input-bar{border-top:1px solid var(--border);padding:10px 14px;display:flex;gap:8px;align-items:center;}
   .chat-input-bar input{flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;}
   .chat-input-bar input:disabled{background:#f2f4f8;color:#9aa0ab;}
@@ -279,6 +286,11 @@
 
     <div id="startCardWrap"></div>
 
+    <div class="quick-test-bar">
+      <button class="correct" id="btnQuickCorrect" onclick="quickFill('correct')" disabled>✅ Điền câu trả lời đúng (test)</button>
+      <button class="wrong" id="btnQuickWrong" onclick="quickFill('wrong')" disabled>❌ Điền câu trả lời sai (test)</button>
+    </div>
+
     <div class="chat-input-bar">
       <input id="chatInput" type="text" placeholder="Bấm 'Bắt đầu ôn lại bài học' để luyện tập..." disabled
              onkeydown="if(event.key==='Enter') submitAnswer();">
@@ -315,7 +327,9 @@ const CHECKPOINTS = [
       'Gợi ý: Query dùng để hỏi, Key dùng để so khớp, Value là phần nội dung được lấy ra. Ba thứ này phối hợp thế nào để ra một con số "liên quan"?',
       'Gợi ý thêm: điểm attention = độ tương đồng giữa Query của từ này với Key của từ khác, dùng điểm đó làm trọng số để cộng gộp các Value lại.'
     ],
-    correction:'Self-Attention giúp mỗi từ "nhìn" sang tất cả từ khác trong câu để tính mức độ liên quan qua Query–Key, rồi lấy tổng có trọng số của Value để hiểu ngữ cảnh — không phải chỉ chép lại câu.'
+    correction:'Self-Attention giúp mỗi từ "nhìn" sang tất cả từ khác trong câu để tính mức độ liên quan qua Query–Key, rồi lấy tổng có trọng số của Value để hiểu ngữ cảnh — không phải chỉ chép lại câu.',
+    sampleCorrect:'Self-attention dùng Query so khớp với Key để tính điểm liên quan, rồi lấy trọng số nhân với Value để hiểu ngữ cảnh của câu.',
+    sampleWrong:'Nó kiểu như model tự nhìn lại câu để hiểu thôi, không có gì đặc biệt đâu.'
   },
   {
     id:'cp2', title:'Multi-Head Attention', short:'CP2',
@@ -341,7 +355,9 @@ const CHECKPOINTS = [
       'Gợi ý: mỗi Head có thể học một "góc nhìn" khác nhau về quan hệ giữa các từ — thử nghĩ ví dụ quan hệ ngữ pháp khác quan hệ ngữ nghĩa.',
       'Gợi ý thêm: giống nhiều chuyên gia cùng soi một bức tranh, mỗi người chú ý một góc độ riêng (không gian con), rồi ghép (concat) lại mới đầy đủ.'
     ],
-    correction:'Multi-Head cho phép mô hình học nhiều loại quan hệ khác nhau song song — mỗi Head là một không gian con (subspace) riêng — sau đó ghép lại (concat) và chiếu tuyến tính. Một Head đơn không đủ đa dạng góc nhìn này.'
+    correction:'Multi-Head cho phép mô hình học nhiều loại quan hệ khác nhau song song — mỗi Head là một không gian con (subspace) riêng — sau đó ghép lại (concat) và chiếu tuyến tính. Một Head đơn không đủ đa dạng góc nhìn này.',
+    sampleCorrect:'Multi-head chia thành nhiều không gian con chạy song song, mỗi head học một góc nhìn khác để bắt đa dạng mối quan hệ, rồi ghép lại.',
+    sampleWrong:'Chia nhiều Head chỉ để cho model trông phức tạp hơn thôi, chứ không có tác dụng gì khác.'
   },
   {
     id:'cp3', title:'Positional Encoding', short:'CP3',
@@ -367,7 +383,9 @@ const CHECKPOINTS = [
       'Gợi ý: Transformer xử lý tất cả từ CÙNG LÚC (song song), không đọc tuần tự như RNN — vậy làm sao mô hình biết từ nào đứng trước, từ nào đứng sau?',
       'Gợi ý thêm: Positional Encoding là một vector được cộng thêm vào embedding của mỗi từ, để mã hoá vị trí của từ đó trong câu.'
     ],
-    correction:'Vì Transformer xử lý các từ song song nên tự nó không biết thứ tự. Positional Encoding cộng thêm thông tin vị trí vào embedding của từng từ, để mô hình biết từ nào đứng trước/sau.'
+    correction:'Vì Transformer xử lý các từ song song nên tự nó không biết thứ tự. Positional Encoding cộng thêm thông tin vị trí vào embedding của từng từ, để mô hình biết từ nào đứng trước/sau.',
+    sampleCorrect:'Vì Transformer xử lý song song nên không biết thứ tự, phải cộng thêm vào embedding một vector mã hoá vị trí để biết từ nào đứng trước.',
+    sampleWrong:'Nó giúp mô hình chạy nhanh hơn thôi, không liên quan gì đến thứ tự cả.'
   }
 ];
 const PASS_THRESHOLD = 80;
@@ -521,7 +539,15 @@ function appendMsg(role, name, avatar, html, extraClass){
 function setInputEnabled(on){
   document.getElementById('chatInput').disabled = !on;
   document.getElementById('sendBtn').disabled = !on;
+  document.getElementById('btnQuickCorrect').disabled = !on;
+  document.getElementById('btnQuickWrong').disabled = !on;
   if(on) document.getElementById('chatInput').focus();
+}
+function quickFill(type){
+  if(document.getElementById('chatInput').disabled) return;
+  const cp = CHECKPOINTS[state.cpIdx];
+  document.getElementById('chatInput').value = (type==='correct') ? cp.sampleCorrect : cp.sampleWrong;
+  submitAnswer();
 }
 
 /* ---------------- Review flow ---------------- */
@@ -548,6 +574,9 @@ function askCheckpoint(idx){
   state.cpIdx = idx;
   state.attempts = 0;
   const cp = CHECKPOINTS[idx];
+  if(idx > 0){
+    appendMsg('system','⚙️ Hệ thống VLearn','⚙️', `➡️ Chuyển sang checkpoint tiếp theo — <b>${cp.short} · ${cp.title}</b>`);
+  }
   appendMsg('peer','🧑‍🎓 Bot Ngu (Bạn học)','🧑‍🎓', `<b>[${cp.short} · ${cp.title}]</b><br>${cp.botQuestion}`);
   setInputEnabled(true);
 }
