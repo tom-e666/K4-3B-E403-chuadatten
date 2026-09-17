@@ -114,10 +114,22 @@
   .ai-header .icon{cursor:pointer;color:var(--text-mute);font-size:15px;}
 
   .checkpoint-bar{padding:8px 0 6px;border-bottom:1px solid var(--border);background:#fafbfd;}
-  .checkpoint-bar .cb-label{font-size:10px;font-weight:700;color:var(--text-mute);letter-spacing:.04em;margin-bottom:2px;padding:0 14px;}
-  .cb-line-wrap{padding:2px 16px 8px;}
-  .cb-line-wrap svg{width:100%;height:40px;display:block;overflow:visible;cursor:default;}
-  .cb-line-wrap circle{transition:.15s;}
+  .checkpoint-bar .cb-label{font-size:10px;font-weight:700;color:var(--text-mute);letter-spacing:.04em;margin-bottom:6px;padding:0 14px;}
+  .cb-track{display:flex;align-items:flex-start;padding:0 16px;}
+  .cb-node{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;cursor:default;}
+  .cb-dot-row{height:16px;display:flex;align-items:center;justify-content:center;}
+  .cb-dot{width:12px;height:12px;border-radius:50%;background:#b9c6f0;transition:.15s;}
+  .cb-caption{margin-top:4px;font-size:10px;font-weight:600;color:var(--text-mute);white-space:nowrap;}
+  .cb-node.viewing .cb-dot{background:var(--primary);box-shadow:0 0 0 4px #dde6ff;}
+  .cb-node.viewing .cb-caption{color:var(--primary-dark);font-weight:700;}
+  .cb-node.pass .cb-dot{background:var(--green);}
+  .cb-node.fail .cb-dot{background:var(--orange);}
+  .cb-connector{flex:1 1 20px;height:16px;display:flex;align-items:center;}
+  .cb-connector i{display:block;height:3px;width:100%;background:#1c1f26;border-radius:2px;}
+  .cb-connector.done i{background:var(--green);}
+  .cb-connector.final{flex:0 0 30px;}
+  .cb-arrow{width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;
+    border-left:8px solid #1c1f26;margin-left:-2px;flex:none;}
 
   .chat-area{flex:1;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;}
   .msg{display:flex;gap:10px;max-width:100%;}
@@ -266,7 +278,7 @@
 
     <div class="checkpoint-bar">
       <div class="cb-label">LESSON CHECKPOINTS</div>
-      <div class="cb-line-wrap" id="cbLine"></div>
+      <div class="cb-track" id="cbTrack"></div>
     </div>
 
     <div class="chat-area" id="chatArea"></div>
@@ -493,38 +505,28 @@ function currentViewingIdx(){
 }
 function renderCheckpointBar(){
   const viewingIdx = currentViewingIdx();
-  const n = CHECKPOINTS.length;
-  const W = 400, H = 40, lineY = 20, padL = 26, padR = 40;
-  const usableW = W - padL - padR;
-
-  let dots = '';
+  const track = document.getElementById('cbTrack');
+  let html = '';
   CHECKPOINTS.forEach((cp,i)=>{
     const r = state.results[i];
-    const x = n > 1 ? padL + (usableW * i / (n-1)) : W/2;
-    let fill = '#b9c6f0';
-    if(i===viewingIdx) fill = '#3461eb';
-    if(r && r.status==='pass') fill = '#1f9d55';
-    if(r && r.status==='fail') fill = '#e08b1f';
-    let ring = '';
-    if(i===viewingIdx){
-      ring = `<circle cx="${x}" cy="${lineY}" r="13" fill="${fill}" opacity="0.2"></circle>`;
+    let cls = '';
+    if(i===viewingIdx) cls += ' viewing';
+    if(r && r.status==='pass') cls += ' pass';
+    if(r && r.status==='fail') cls += ' fail';
+    html += `
+      <div class="cb-node${cls}" title="${cp.short} · ${cp.title}: ${cp.desc}">
+        <div class="cb-dot-row"><div class="cb-dot"></div></div>
+        <div class="cb-caption">${cp.short}</div>
+      </div>`;
+    const isLast = i === CHECKPOINTS.length-1;
+    const doneCls = (r && r.status==='pass') ? ' done' : '';
+    if(!isLast){
+      html += `<div class="cb-connector${doneCls}"><i></i></div>`;
+    } else {
+      html += `<div class="cb-connector final${doneCls}"><i></i><span class="cb-arrow"></span></div>`;
     }
-    dots += `${ring}<circle cx="${x}" cy="${lineY}" r="8" fill="${fill}" stroke="#fff" stroke-width="2">
-      <title>${cp.short} · ${cp.title}: ${cp.desc}</title>
-    </circle>`;
   });
-
-  document.getElementById('cbLine').innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-      <defs>
-        <marker id="cbArrow" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto">
-          <path d="M0,0 L10,5 L0,10 Z" fill="#1c1f26"></path>
-        </marker>
-      </defs>
-      <line x1="4" y1="${lineY}" x2="${W-16}" y2="${lineY}" stroke="#1c1f26" stroke-width="3" marker-end="url(#cbArrow)"></line>
-      ${dots}
-    </svg>`;
-
+  track.innerHTML = html;
   const doneCount = state.results.filter(r=>r).length;
   document.getElementById('courseProgress').style.width = Math.round(doneCount/3*100)+'%';
 }
