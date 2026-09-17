@@ -44,8 +44,8 @@
   .avatar-round{width:32px;height:32px;border-radius:50%;background:#dbe4ff;color:var(--primary-dark);
     display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;}
 
-  .app{display:grid;grid-template-columns:280px 1fr 360px;height:calc(100vh - 56px);}
-  @media (max-width:1100px){ .app{grid-template-columns:0 1fr 340px;} .sidebar{display:none;} }
+  .app{display:grid;grid-template-columns:250px 1fr 460px;height:calc(100vh - 56px);}
+  @media (max-width:1300px){ .app{grid-template-columns:0 1fr 420px;} .sidebar{display:none;} }
 
   /* ---------- Sidebar ---------- */
   .sidebar{background:#fff;border-right:1px solid var(--border);overflow-y:auto;padding:14px 10px;}
@@ -113,24 +113,13 @@
   .ai-header button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;}
   .ai-header .icon{cursor:pointer;color:var(--text-mute);font-size:15px;}
 
-  .checkpoint-bar{padding:12px 0 10px;border-bottom:1px solid var(--border);background:#fafbfd;}
-  .checkpoint-bar .cb-label{font-size:11px;font-weight:700;color:var(--text-mute);letter-spacing:.04em;margin-bottom:10px;padding:0 14px;}
-  .cb-track-scroll{overflow-x:auto;padding:4px 14px 6px;}
-  .cb-track{display:flex;align-items:flex-start;width:max-content;}
-  .cb-node{flex:0 0 132px;width:132px;text-align:center;}
-  .cb-dot{width:22px;height:22px;line-height:22px;border-radius:50%;background:#fff;border:2px solid var(--border);
-    margin:0 auto 8px;font-size:11px;font-weight:700;color:var(--text-mute);transition:.15s;}
-  .cb-connector{flex:0 0 26px;width:26px;height:22px;display:flex;align-items:center;}
-  .cb-connector i{display:block;height:2px;width:100%;background:var(--border);}
-  .cb-node.viewing .cb-dot{border-color:var(--primary);color:var(--primary-dark);box-shadow:0 0 0 3px #dde6ff;}
-  .cb-node.pass .cb-dot{border-color:var(--green);background:var(--green);color:#fff;}
-  .cb-node.fail .cb-dot{border-color:var(--orange);background:var(--orange);color:#fff;}
-  .cb-connector.done i{background:var(--green);}
-  .cb-caption-title{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:3px;}
-  .cb-node.viewing .cb-caption-title{color:var(--primary-dark);}
-  .cb-caption-desc{font-size:10.5px;color:var(--text-mute);line-height:1.4;white-space:normal;}
+  .checkpoint-bar{padding:8px 0 6px;border-bottom:1px solid var(--border);background:#fafbfd;}
+  .checkpoint-bar .cb-label{font-size:10px;font-weight:700;color:var(--text-mute);letter-spacing:.04em;margin-bottom:2px;padding:0 14px;}
+  .cb-line-wrap{padding:2px 16px 8px;}
+  .cb-line-wrap svg{width:100%;height:40px;display:block;overflow:visible;cursor:default;}
+  .cb-line-wrap circle{transition:.15s;}
 
-  .chat-area{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;}
+  .chat-area{flex:1;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;}
   .msg{display:flex;gap:10px;max-width:100%;}
   .msg .av{width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;}
   .msg.system .av{background:#eef1f6;}
@@ -276,10 +265,8 @@
     </div>
 
     <div class="checkpoint-bar">
-      <div class="cb-label">LESSON CHECKPOINTS · kéo ngang để xem hết →</div>
-      <div class="cb-track-scroll">
-        <div class="cb-track" id="cbTrack"></div>
-      </div>
+      <div class="cb-label">LESSON CHECKPOINTS</div>
+      <div class="cb-line-wrap" id="cbLine"></div>
     </div>
 
     <div class="chat-area" id="chatArea"></div>
@@ -293,8 +280,8 @@
 
     <div class="chat-input-bar">
       <input id="chatInput" type="text" placeholder="Bấm 'Bắt đầu ôn lại bài học' để luyện tập..." disabled
-             onkeydown="if(event.key==='Enter') submitAnswer();">
-      <button id="sendBtn" onclick="submitAnswer()" disabled>➤</button>
+             onkeydown="if(event.key==='Enter') handleSubmit();">
+      <button id="sendBtn" onclick="handleSubmit()" disabled>➤</button>
     </div>
     <div class="chat-hint">Bản mock CP2 — chấm điểm bằng khớp từ khoá, sẽ thay bằng AI thật ở CP3.</div>
   </div>
@@ -329,7 +316,8 @@ const CHECKPOINTS = [
     ],
     correction:'Self-Attention giúp mỗi từ "nhìn" sang tất cả từ khác trong câu để tính mức độ liên quan qua Query–Key, rồi lấy tổng có trọng số của Value để hiểu ngữ cảnh — không phải chỉ chép lại câu.',
     sampleCorrect:'Self-attention dùng Query so khớp với Key để tính điểm liên quan, rồi lấy trọng số nhân với Value để hiểu ngữ cảnh của câu.',
-    sampleWrong:'Nó kiểu như model tự nhìn lại câu để hiểu thôi, không có gì đặc biệt đâu.'
+    sampleWrong:'Nó kiểu như model tự nhìn lại câu để hiểu thôi, không có gì đặc biệt đâu.',
+    deepDive:'Cụ thể hơn: với câu "The cat sat", từ "sat" tạo Query rồi so với Key của "cat" và "The" để tính điểm tương đồng (tích vô hướng, chia căn bậc hai của d_k), sau đó Softmax các điểm đó thành trọng số để cộng gộp Value tương ứng — kết quả "sat" giờ mang thông tin ngữ cảnh từ cả câu, không chỉ bản thân nó.'
   },
   {
     id:'cp2', title:'Multi-Head Attention', short:'CP2',
@@ -357,7 +345,8 @@ const CHECKPOINTS = [
     ],
     correction:'Multi-Head cho phép mô hình học nhiều loại quan hệ khác nhau song song — mỗi Head là một không gian con (subspace) riêng — sau đó ghép lại (concat) và chiếu tuyến tính. Một Head đơn không đủ đa dạng góc nhìn này.',
     sampleCorrect:'Multi-head chia thành nhiều không gian con chạy song song, mỗi head học một góc nhìn khác để bắt đa dạng mối quan hệ, rồi ghép lại.',
-    sampleWrong:'Chia nhiều Head chỉ để cho model trông phức tạp hơn thôi, chứ không có tác dụng gì khác.'
+    sampleWrong:'Chia nhiều Head chỉ để cho model trông phức tạp hơn thôi, chứ không có tác dụng gì khác.',
+    deepDive:'Cụ thể hơn: nếu chỉ 1 Head, mô hình phải nén mọi loại quan hệ (ngữ pháp, đối tượng, đại từ...) vào cùng một phép chiếu Q/K/V — dễ bị "trung bình hoá" mất chi tiết. Multi-Head chia d_model thành h phần nhỏ d_k = d_model/h, mỗi phần học riêng một loại quan hệ, cuối cùng nối (concat) rồi chiếu tuyến tính để tổng hợp lại đầy đủ.'
   },
   {
     id:'cp3', title:'Positional Encoding', short:'CP3',
@@ -385,7 +374,8 @@ const CHECKPOINTS = [
     ],
     correction:'Vì Transformer xử lý các từ song song nên tự nó không biết thứ tự. Positional Encoding cộng thêm thông tin vị trí vào embedding của từng từ, để mô hình biết từ nào đứng trước/sau.',
     sampleCorrect:'Vì Transformer xử lý song song nên không biết thứ tự, phải cộng thêm vào embedding một vector mã hoá vị trí để biết từ nào đứng trước.',
-    sampleWrong:'Nó giúp mô hình chạy nhanh hơn thôi, không liên quan gì đến thứ tự cả.'
+    sampleWrong:'Nó giúp mô hình chạy nhanh hơn thôi, không liên quan gì đến thứ tự cả.',
+    deepDive:'Cụ thể hơn: Positional Encoding thường dùng hàm sin/cos ở các tần số khác nhau theo từng chiều của vector, để mỗi vị trí có một "dấu vân tay" riêng và mô hình suy ra được khoảng cách tương đối giữa hai vị trí chỉ từ phép cộng vector — nếu bỏ bước này, câu "A đánh B" và "B đánh A" sẽ giống hệt nhau với mô hình.'
   }
 ];
 const PASS_THRESHOLD = 80;
@@ -399,6 +389,7 @@ const state = {
   videoPlaying:false,
   videoTimer:null,
   reviewActive:false,
+  awaitingContinue:false,
   cpIdx:0,
   attempts:0,
   results:[null,null,null]
@@ -502,27 +493,38 @@ function currentViewingIdx(){
 }
 function renderCheckpointBar(){
   const viewingIdx = currentViewingIdx();
-  const track = document.getElementById('cbTrack');
-  let html = '';
+  const n = CHECKPOINTS.length;
+  const W = 400, H = 40, lineY = 20, padL = 26, padR = 40;
+  const usableW = W - padL - padR;
+
+  let dots = '';
   CHECKPOINTS.forEach((cp,i)=>{
     const r = state.results[i];
-    let cls = '';
-    if(i===viewingIdx) cls += ' viewing';
-    if(r && r.status==='pass') cls += ' pass';
-    if(r && r.status==='fail') cls += ' fail';
-    const dotContent = r ? (r.status==='pass' ? '✓' : '!') : (i+1);
-    html += `
-      <div class="cb-node${cls}">
-        <div class="cb-dot">${dotContent}</div>
-        <div class="cb-caption-title">${cp.short} · ${cp.title}</div>
-        <div class="cb-caption-desc">${cp.desc}</div>
-      </div>`;
-    if(i < CHECKPOINTS.length-1){
-      const doneCls = (r && r.status==='pass') ? ' done' : '';
-      html += `<div class="cb-connector${doneCls}"><i></i></div>`;
+    const x = n > 1 ? padL + (usableW * i / (n-1)) : W/2;
+    let fill = '#b9c6f0';
+    if(i===viewingIdx) fill = '#3461eb';
+    if(r && r.status==='pass') fill = '#1f9d55';
+    if(r && r.status==='fail') fill = '#e08b1f';
+    let ring = '';
+    if(i===viewingIdx){
+      ring = `<circle cx="${x}" cy="${lineY}" r="13" fill="${fill}" opacity="0.2"></circle>`;
     }
+    dots += `${ring}<circle cx="${x}" cy="${lineY}" r="8" fill="${fill}" stroke="#fff" stroke-width="2">
+      <title>${cp.short} · ${cp.title}: ${cp.desc}</title>
+    </circle>`;
   });
-  track.innerHTML = html;
+
+  document.getElementById('cbLine').innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <defs>
+        <marker id="cbArrow" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#1c1f26"></path>
+        </marker>
+      </defs>
+      <line x1="4" y1="${lineY}" x2="${W-16}" y2="${lineY}" stroke="#1c1f26" stroke-width="3" marker-end="url(#cbArrow)"></line>
+      ${dots}
+    </svg>`;
+
   const doneCount = state.results.filter(r=>r).length;
   document.getElementById('courseProgress').style.width = Math.round(doneCount/3*100)+'%';
 }
@@ -539,15 +541,20 @@ function appendMsg(role, name, avatar, html, extraClass){
 function setInputEnabled(on){
   document.getElementById('chatInput').disabled = !on;
   document.getElementById('sendBtn').disabled = !on;
-  document.getElementById('btnQuickCorrect').disabled = !on;
-  document.getElementById('btnQuickWrong').disabled = !on;
   if(on) document.getElementById('chatInput').focus();
 }
+function setQuickTestEnabled(on){
+  document.getElementById('btnQuickCorrect').disabled = !on;
+  document.getElementById('btnQuickWrong').disabled = !on;
+}
 function quickFill(type){
-  if(document.getElementById('chatInput').disabled) return;
+  if(document.getElementById('chatInput').disabled || state.awaitingContinue) return;
   const cp = CHECKPOINTS[state.cpIdx];
   document.getElementById('chatInput').value = (type==='correct') ? cp.sampleCorrect : cp.sampleWrong;
   submitAnswer();
+}
+function handleSubmit(){
+  if(state.awaitingContinue){ submitFollowup(); } else { submitAnswer(); }
 }
 
 /* ---------------- Review flow ---------------- */
@@ -561,10 +568,12 @@ function renderStartCard(){
 function startReview(){
   document.getElementById('chatArea').innerHTML='';
   state.reviewActive = true;
+  state.awaitingContinue = false;
   state.cpIdx = 0;
   state.attempts = 0;
   state.results = [null,null,null];
   document.getElementById('startCardWrap').innerHTML = '';
+  document.getElementById('chatInput').placeholder = "Gõ câu trả lời của bạn...";
   appendMsg('system','⚙️ Hệ thống VLearn','⚙️',
     'Chào mừng bạn đến với Thử thách dạy học! Bạn cùng lớp "Bot Ngu" đang gặp khúc mắc về bài giảng Transformer. Hãy giúp bạn ấy hiểu đúng nhé!');
   askCheckpoint(0);
@@ -579,6 +588,7 @@ function askCheckpoint(idx){
   }
   appendMsg('peer','🧑‍🎓 Bot Ngu (Bạn học)','🧑‍🎓', `<b>[${cp.short} · ${cp.title}]</b><br>${cp.botQuestion}`);
   setInputEnabled(true);
+  setQuickTestEnabled(true);
 }
 function submitAnswer(){
   const input = document.getElementById('chatInput');
@@ -602,7 +612,7 @@ function evaluate(text){
       attemptTag + `Xuất sắc! Lời giải thích của bạn khớp với nội dung bài giảng (${score}%). Bạn đã vượt qua ${cp.short} thành công! 🎉`);
     state.results[state.cpIdx] = {status:'pass', score};
     renderCheckpointBar();
-    advance();
+    offerContinue();
     return;
   }
 
@@ -616,15 +626,48 @@ function evaluate(text){
       attemptTag + `Bạn đã thử đủ ${MAX_TRIALS} lần, để tôi đính chính lại kiến thức chuẩn: ${cp.correction}`, 'hint');
     state.results[state.cpIdx] = {status:'fail', score};
     renderCheckpointBar();
-    advance();
+    offerContinue();
   }
+}
+function offerContinue(){
+  const cp = CHECKPOINTS[state.cpIdx];
+  state.awaitingContinue = true;
+  setQuickTestEnabled(false);
+  setInputEnabled(true);
+  document.getElementById('chatInput').placeholder = 'Chưa hiểu? Hỏi thêm ở đây, hoặc bấm "Đã hiểu" để tiếp tục...';
+  document.getElementById('startCardWrap').innerHTML = `
+    <div class="start-card">
+      <p>Bạn đã hiểu phần <b>${cp.short} · ${cp.title}</b> chưa?</p>
+      <button class="start-btn" onclick="confirmUnderstood()">✅ Đã hiểu, tiếp tục</button>
+    </div>`;
+}
+function submitFollowup(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  appendMsg('user','🎓 Bạn (Học viên)','🎓', text);
+  input.value='';
+  setInputEnabled(false);
+  const cp = CHECKPOINTS[state.cpIdx];
+  setTimeout(()=>{
+    appendMsg('coach','👩‍🏫 Giáo sư AI (Trợ giảng)','👩‍🏫',
+      cp.deepDive + '<br><br><i>(Bản mock: Giáo sư trả lời sâu hơn cho câu hỏi tiếp theo; ở CP3 sẽ nối AI thật để trả lời đúng câu bạn hỏi.)</i>');
+    setInputEnabled(true);
+  }, 700);
+}
+function confirmUnderstood(){
+  state.awaitingContinue = false;
+  document.getElementById('startCardWrap').innerHTML = '';
+  document.getElementById('chatInput').placeholder = "Gõ câu trả lời của bạn...";
+  setInputEnabled(false);
+  advance();
 }
 function advance(){
   if(state.cpIdx+1 < CHECKPOINTS.length){
-    setTimeout(()=>askCheckpoint(state.cpIdx+1), 900);
+    setTimeout(()=>askCheckpoint(state.cpIdx+1), 400);
   } else {
     setInputEnabled(false);
-    setTimeout(showMasteryReport, 900);
+    setTimeout(showMasteryReport, 400);
   }
 }
 function showMasteryReport(){
