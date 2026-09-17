@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feynman AI — Mock CP2</title>
+<style>
+  :root{
+    --primary:#3461eb;
+    --primary-dark:#2748b8;
+    --bg:#f5f6f8;
+    --panel-bg:#ffffff;
+    --border:#e3e5ea;
+    --text:#1c1f26;
+    --text-mute:#6b7280;
+    --green:#1f9d55;
+    --green-bg:#e8f7ee;
+    --orange:#e08b1f;
+    --orange-bg:#fdf2e2;
+    --red:#e5484d;
+    --red-bg:#fdecec;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  .topbar{
+    height:56px;display:flex;align-items:center;gap:16px;
+    padding:0 16px;background:#fff;border-bottom:1px solid var(--border);
+  }
+  .topbar .back{font-size:18px;color:var(--text-mute);cursor:pointer;}
+  .topbar .crumb{font-weight:600;font-size:15px;}
+  .topbar .spacer{flex:1;}
+  .topbar .progress-wrap{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mute);}
+  .topbar .progress-bar{width:120px;height:6px;background:#eceef2;border-radius:99px;overflow:hidden;}
+  .topbar .progress-bar > div{height:100%;background:var(--primary);width:0%;}
+  .pill-btn{
+    display:flex;align-items:center;gap:6px;background:linear-gradient(90deg,#eef3ff,#f5eeff);
+    color:var(--primary);border:1px solid #d7e0ff;border-radius:999px;padding:7px 14px;
+    font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .outline-btn{
+    border:1px solid var(--border);background:#fff;border-radius:8px;padding:7px 14px;
+    font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;
+  }
+  .avatar-round{width:32px;height:32px;border-radius:50%;background:#dbe4ff;color:var(--primary-dark);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;}
+
+  .app{display:grid;grid-template-columns:280px 1fr 360px;height:calc(100vh - 56px);}
+  @media (max-width:1100px){ .app{grid-template-columns:0 1fr 340px;} .sidebar{display:none;} }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{background:#fff;border-right:1px solid var(--border);overflow-y:auto;padding:14px 10px;}
+  .sidebar-header{display:flex;justify-content:space-between;align-items:center;
+    font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--text-mute);padding:4px 8px 10px;}
+  .sidebar-header span.x{cursor:pointer;color:var(--text-mute);font-size:14px;}
+  .sec-title{display:flex;align-items:center;justify-content:space-between;padding:8px 8px;
+    font-weight:600;font-size:13px;cursor:pointer;color:var(--text);}
+  .sec-title .chev{transition:transform .15s;color:var(--text-mute);}
+  .sec-title.collapsed .chev{transform:rotate(-90deg);}
+  .sec-list{padding-left:4px;}
+  .sec-list.collapsed{display:none;}
+  .nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;
+    font-size:13px;cursor:pointer;color:var(--text);}
+  .nav-item:hover{background:#f2f4f8;}
+  .nav-item.active{background:#eef3ff;color:var(--primary-dark);font-weight:600;}
+  .nav-item .tag{margin-left:auto;font-size:11px;color:var(--primary);background:#eef3ff;
+    padding:2px 7px;border-radius:99px;}
+  .nav-item.inert{opacity:.5;cursor:not-allowed;}
+
+  /* ---------- Main panel ---------- */
+  .main{padding:18px;overflow-y:auto;}
+  .card{background:var(--panel-bg);border:1px solid var(--border);border-radius:12px;}
+
+  .slide-toolbar{display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid var(--border);
+    color:var(--text-mute);font-size:16px;}
+  .slide-toolbar .g{display:flex;gap:10px;padding-right:14px;border-right:1px solid var(--border);}
+  .slide-toolbar .spacer{flex:1;}
+  .slide-toolbar .nav{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);}
+  .slide-scroll{height:480px;overflow-y:auto;scroll-behavior:smooth;scroll-snap-type:y proximity;}
+  .slide-page{padding:40px 50px;min-height:480px;box-sizing:border-box;scroll-snap-align:start;
+    border-top:1px solid var(--border);}
+  .slide-page:first-child{border-top:none;}
+  .slide-page .page-flag{font-size:11px;font-weight:700;color:#fff;background:var(--primary);
+    display:inline-block;padding:3px 10px;border-radius:99px;margin-bottom:14px;}
+  .slide-page h2{margin-top:0;color:var(--primary-dark);}
+  .slide-page .kicker{font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--text-mute);}
+  .slide-page ul{line-height:1.9;font-size:15px;}
+  .slide-footer{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);
+    font-size:12px;color:var(--text-mute);}
+  .reactions{display:flex;gap:10px;padding:12px 14px;}
+  .reactions button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 12px;
+    font-size:13px;cursor:pointer;display:flex;gap:6px;align-items:center;}
+  .bottom-nav{display:flex;justify-content:space-between;margin-top:14px;}
+  .bottom-nav button{border:1px solid var(--border);background:#fff;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;}
+  .bottom-nav button.primary{background:var(--primary);color:#fff;border-color:var(--primary);}
+
+  .video-screen{position:relative;background:linear-gradient(135deg,#20263a,#3a4568);border-radius:12px 12px 0 0;
+    aspect-ratio:16/8;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;}
+  .video-screen .badge{position:absolute;top:14px;left:14px;font-size:12px;background:rgba(0,0,0,.35);
+    padding:5px 10px;border-radius:8px;}
+  .video-screen .play-big{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.15);
+    border:1px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;
+    font-size:26px;cursor:pointer;}
+  .video-controls{padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+  .video-controls button{border:none;background:#f2f4f8;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:14px;}
+  .video-controls input[type=range]{flex:1;accent-color:var(--primary);}
+  .video-controls .time{font-size:12px;color:var(--text-mute);min-width:80px;text-align:right;}
+  .video-note{font-size:11px;color:var(--text-mute);padding:6px 14px 0;}
+
+  /* ---------- Right AI panel ---------- */
+  .ai-panel{background:#fff;border-left:1px solid var(--border);display:flex;flex-direction:column;height:100%;}
+  .ai-header{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border);}
+  .ai-header .title{font-weight:700;flex:1;font-size:14px;}
+  .ai-header button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;}
+  .ai-header .icon{cursor:pointer;color:var(--text-mute);font-size:15px;}
+
+  .checkpoint-bar{padding:12px 0 10px;border-bottom:1px solid var(--border);background:#fafbfd;}
+  .checkpoint-bar .cb-label{font-size:11px;font-weight:700;color:var(--text-mute);letter-spacing:.04em;margin-bottom:10px;padding:0 14px;}
+  .cb-track-scroll{overflow-x:auto;padding:4px 14px 6px;}
+  .cb-track{display:flex;align-items:flex-start;width:max-content;}
+  .cb-node{flex:0 0 132px;width:132px;text-align:center;}
+  .cb-dot{width:22px;height:22px;line-height:22px;border-radius:50%;background:#fff;border:2px solid var(--border);
+    margin:0 auto 8px;font-size:11px;font-weight:700;color:var(--text-mute);transition:.15s;}
+  .cb-connector{flex:0 0 26px;width:26px;height:22px;display:flex;align-items:center;}
+  .cb-connector i{display:block;height:2px;width:100%;background:var(--border);}
+  .cb-node.viewing .cb-dot{border-color:var(--primary);color:var(--primary-dark);box-shadow:0 0 0 3px #dde6ff;}
+  .cb-node.pass .cb-dot{border-color:var(--green);background:var(--green);color:#fff;}
+  .cb-node.fail .cb-dot{border-color:var(--orange);background:var(--orange);color:#fff;}
+  .cb-connector.done i{background:var(--green);}
+  .cb-caption-title{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:3px;}
+  .cb-node.viewing .cb-caption-title{color:var(--primary-dark);}
+  .cb-caption-desc{font-size:10.5px;color:var(--text-mute);line-height:1.4;white-space:normal;}
+
+  .chat-area{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;}
+  .msg{display:flex;gap:10px;max-width:100%;}
+  .msg .av{width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .msg.system .av{background:#eef1f6;}
+  .msg.peer .av{background:#fef4d8;}
+  .msg.user .av{background:#dbe4ff;}
+  .msg.evaluator .av{background:#eef1f6;}
+  .msg.coach .av{background:#e6f4ea;}
+  .msg .bubble{background:#f4f5f8;border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.55;}
+  .msg.user{flex-direction:row-reverse;}
+  .msg.user .bubble{background:var(--primary);color:#fff;}
+  .msg .name{font-size:11px;font-weight:700;color:var(--text-mute);margin-bottom:3px;}
+  .msg.user .name{text-align:right;color:#c9d6ff;}
+  .msg.evaluator .bubble{font-style:italic;color:var(--text-mute);background:#fff;border:1px dashed var(--border);}
+  .msg.coach .bubble{background:var(--green-bg);border:1px solid #cdeedb;}
+  .msg.coach.hint .bubble{background:var(--orange-bg);border:1px solid #f4dfb8;}
+
+  .start-card{margin:0 16px 12px;padding:14px;border:1px solid var(--border);border-radius:12px;background:#fafbfd;text-align:center;}
+  .start-card p{font-size:12.5px;color:var(--text-mute);margin:0 0 10px;}
+  .start-btn{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13.5px;
+    font-weight:700;cursor:pointer;width:100%;}
+  .start-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .mock-note{font-size:10.5px;color:var(--text-mute);text-align:center;padding:4px 16px 0;}
+
+  .report-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff;}
+  .report-card h4{margin:0 0 8px;font-size:13.5px;}
+  .report-card table{width:100%;border-collapse:collapse;font-size:12px;}
+  .report-card td,.report-card th{padding:6px 4px;border-bottom:1px solid var(--border);text-align:left;}
+  .report-score{font-size:26px;font-weight:800;color:var(--primary);text-align:center;margin:4px 0;}
+
+  .attempt-tag{display:inline-block;font-size:11px;color:var(--text-mute);background:#eee;padding:2px 8px;border-radius:99px;margin-bottom:6px;}
+
+  .chat-input-bar{border-top:1px solid var(--border);padding:10px 14px;display:flex;gap:8px;align-items:center;}
+  .chat-input-bar input{flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;}
+  .chat-input-bar input:disabled{background:#f2f4f8;color:#9aa0ab;}
+  .chat-input-bar button{border:none;background:var(--primary);color:#fff;width:36px;height:36px;border-radius:10px;
+    cursor:pointer;font-size:15px;}
+  .chat-input-bar button:disabled{background:#c7d1f0;cursor:not-allowed;}
+  .chat-hint{font-size:10.5px;color:var(--text-mute);padding:0 14px 8px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="back">←</div>
+  <div class="crumb">Bài 2 · DAY02 — Transformer Architecture</div>
+  <div class="spacer"></div>
+  <div class="progress-wrap">0/25 bài <div class="progress-bar"><div id="courseProgress"></div></div></div>
+  <div class="pill-btn" onclick="document.querySelector('.chat-input-bar input')?.focus()">✨ Đặt câu hỏi với AI</div>
+  <div class="outline-btn">📩 Gửi yêu cầu</div>
+  <div class="avatar-round">HV</div>
+</div>
+
+<div class="app">
+  <!-- ===================== SIDEBAR ===================== -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">NỘI DUNG BÀI HỌC <span class="x" onclick="toggleSidebar()">✕</span></div>
+
+    <div class="sec-title" onclick="toggleSection('slidesList')">Slides <span class="chev">▾</span></div>
+    <div class="sec-list" id="slidesList">
+      <div class="nav-item active" onclick="openSlideFile()">📄 4-day02-lecture-slides <span class="tag">Đang học</span></div>
+      <div class="nav-item inert" title="Chưa cần cho mock CP2">📄 b2</div>
+      <div class="nav-item inert" title="Chưa cần cho mock CP2">📄 Day 02_ AI Product Lab</div>
+    </div>
+
+    <div class="sec-title" onclick="toggleSection('videoList')">Videos <span class="chev">▾</span></div>
+    <div class="sec-list" id="videoList">
+      <div class="nav-item" onclick="selectVideo()">🎬 Transformer Architecture <span class="tag">3:00</span></div>
+    </div>
+
+    <div class="sec-title" onclick="toggleSection('labsList')">Day02-AI-Product-Labs <span class="chev">▾</span></div>
+    <div class="sec-list" id="labsList">
+      <div class="nav-item inert" title="Chưa cần cho mock CP2">1 · Xác định bài toán AI</div>
+      <div class="nav-item inert" title="Chưa cần cho mock CP2">2 · Deep-dive & Go/No-go</div>
+    </div>
+  </div>
+
+  <!-- ===================== MAIN PANEL ===================== -->
+  <div class="main">
+
+    <!-- SLIDE VIEW -->
+    <div id="slideView" class="card">
+      <div class="slide-toolbar">
+        <div class="g">▶ ✏️ ⬜ ◯</div>
+        <div class="g">🔍 100%</div>
+        <div class="spacer"></div>
+        <div class="nav">
+          <span onclick="prevSlide()" style="cursor:pointer">‹</span>
+          Slide <b id="slideNum">1</b>/3
+          <span onclick="nextSlide()" style="cursor:pointer">›</span>
+        </div>
+      </div>
+      <div class="slide-scroll" id="slideScroll"></div>
+      <div class="reactions">
+        <button>👍 Thích</button>
+        <button>👎 Không thích</button>
+      </div>
+      <div class="slide-footer">
+        <span>Giảng viên: [Tên giảng viên]</span>
+        <span>AI in Action · Day 02</span>
+      </div>
+    </div>
+
+    <!-- VIDEO VIEW -->
+    <div id="videoView" class="card" style="display:none;">
+      <div class="video-screen">
+        <div class="badge">Transformer Architecture · Day 02</div>
+        <div class="play-big" id="playBtnBig" onclick="toggleVideoPlay()">▶</div>
+      </div>
+      <div class="video-controls">
+        <button onclick="toggleVideoPlay()" id="playBtnSmall">▶</button>
+        <input type="range" id="videoScrubber" min="0" max="180" value="0" oninput="onScrub(this.value)">
+        <div class="time"><span id="timeNow">0:00</span> / 3:00</div>
+      </div>
+      <div class="video-note">⏱️ Bản mock: video chạy nhanh hơn thực tế (~12x) để tiện thao tác demo.</div>
+      <div class="reactions">
+        <button>👍 Thích · 0</button>
+        <button>👎 Không thích · 0</button>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button>‹ Bài trước</button>
+      <button class="primary">Đi tới bài tiếp theo ›</button>
+    </div>
+  </div>
+
+  <!-- ===================== AI PANEL ===================== -->
+  <div class="ai-panel">
+    <div class="ai-header">
+      <span>✨</span>
+      <div class="title">Trợ giảng AI — Feynman Review</div>
+      <button onclick="location.reload()">＋ Chat mới</button>
+      <span class="icon">🕘</span>
+      <span class="icon">⧉</span>
+      <span class="icon">✕</span>
+    </div>
+
+    <div class="checkpoint-bar">
+      <div class="cb-label">LESSON CHECKPOINTS · kéo ngang để xem hết →</div>
+      <div class="cb-track-scroll">
+        <div class="cb-track" id="cbTrack"></div>
+      </div>
+    </div>
+
+    <div class="chat-area" id="chatArea"></div>
+
+    <div id="startCardWrap"></div>
+
+    <div class="chat-input-bar">
+      <input id="chatInput" type="text" placeholder="Bấm 'Bắt đầu ôn lại bài học' để luyện tập..." disabled
+             onkeydown="if(event.key==='Enter') submitAnswer();">
+      <button id="sendBtn" onclick="submitAnswer()" disabled>➤</button>
+    </div>
+    <div class="chat-hint">Bản mock CP2 — chấm điểm bằng khớp từ khoá, sẽ thay bằng AI thật ở CP3.</div>
+  </div>
+</div>
+
+<script>
+/* ---------------- Data ---------------- */
+const CHECKPOINTS = [
+  {
+    id:'cp1', title:'Self-Attention', short:'CP1',
+    desc:'Mỗi từ tính điểm liên quan với các từ khác qua Query, Key, Value.',
+    slide:1,
+    videoRange:[0,60],
+    slideTitle:'Self-Attention',
+    slideKicker:'KHÁI NIỆM · QUERY, KEY, VALUE',
+    slideBullets:[
+      'Mỗi từ trong câu được biểu diễn bằng 3 vector: Query (Q), Key (K), Value (V).',
+      'Điểm attention = độ tương đồng giữa Query của từ này với Key của các từ khác.',
+      'Kết quả là tổng có trọng số của các Value — giúp mỗi từ "hiểu" ngữ cảnh xung quanh.'
+    ],
+    botQuestion:'Tớ nghĩ Self-Attention là mô hình tự nhìn lại chính nó để chép y nguyên câu đầu vào thôi, đúng không nhỉ?',
+    conceptGroups:[
+      ['query'],
+      ['key'],
+      ['value'],
+      ['trọng số','weight'],
+      ['liên quan','mức độ liên quan','ngữ cảnh','context']
+    ],
+    hints:[
+      'Gợi ý: Query dùng để hỏi, Key dùng để so khớp, Value là phần nội dung được lấy ra. Ba thứ này phối hợp thế nào để ra một con số "liên quan"?',
+      'Gợi ý thêm: điểm attention = độ tương đồng giữa Query của từ này với Key của từ khác, dùng điểm đó làm trọng số để cộng gộp các Value lại.'
+    ],
+    correction:'Self-Attention giúp mỗi từ "nhìn" sang tất cả từ khác trong câu để tính mức độ liên quan qua Query–Key, rồi lấy tổng có trọng số của Value để hiểu ngữ cảnh — không phải chỉ chép lại câu.'
+  },
+  {
+    id:'cp2', title:'Multi-Head Attention', short:'CP2',
+    desc:'Nhiều Head học nhiều góc nhìn quan hệ khác nhau, chạy song song rồi ghép lại.',
+    slide:2,
+    videoRange:[60,120],
+    slideTitle:'Multi-Head Attention',
+    slideKicker:'VÌ SAO CẦN NHIỀU HEAD',
+    slideBullets:[
+      'Mỗi Head học một "góc nhìn" khác nhau về quan hệ giữa các từ (ngữ pháp, ngữ nghĩa, đại từ...).',
+      'Các Head chạy song song trên các không gian con (subspace) khác nhau.',
+      'Kết quả các Head được ghép (concat) lại rồi chiếu tuyến tính để ra kết quả cuối.'
+    ],
+    botQuestion:'Nếu 1 Head đã tính được attention rồi thì cần gì phải chia thành 8 Head cho phức tạp, làm 1 Head thật kỹ không tốt hơn à?',
+    conceptGroups:[
+      ['nhiều góc nhìn','góc nhìn khác','nhiều khía cạnh','khía cạnh khác'],
+      ['không gian con','subspace'],
+      ['song song','parallel'],
+      ['ghép','concat','nối'],
+      ['đa dạng','nhiều loại quan hệ','nhiều mối quan hệ']
+    ],
+    hints:[
+      'Gợi ý: mỗi Head có thể học một "góc nhìn" khác nhau về quan hệ giữa các từ — thử nghĩ ví dụ quan hệ ngữ pháp khác quan hệ ngữ nghĩa.',
+      'Gợi ý thêm: giống nhiều chuyên gia cùng soi một bức tranh, mỗi người chú ý một góc độ riêng (không gian con), rồi ghép (concat) lại mới đầy đủ.'
+    ],
+    correction:'Multi-Head cho phép mô hình học nhiều loại quan hệ khác nhau song song — mỗi Head là một không gian con (subspace) riêng — sau đó ghép lại (concat) và chiếu tuyến tính. Một Head đơn không đủ đa dạng góc nhìn này.'
+  },
+  {
+    id:'cp3', title:'Positional Encoding', short:'CP3',
+    desc:'Cộng thêm vector vị trí vào embedding vì Transformer xử lý các từ song song.',
+    slide:3,
+    videoRange:[120,180],
+    slideTitle:'Positional Encoding',
+    slideKicker:'VAI TRÒ TRONG DỮ LIỆU CHUỖI',
+    slideBullets:[
+      'Transformer xử lý tất cả các từ song song — khác với RNN đọc tuần tự.',
+      'Vì vậy bản thân mô hình không biết thứ tự các từ trong câu.',
+      'Positional Encoding là vector cộng thêm vào embedding để mã hoá vị trí của từng từ.'
+    ],
+    botQuestion:'Transformer đọc câu song song hết một lượt, không tuần tự như RNN — vậy chắc không cần quan tâm gì đến vị trí từ đâu nhỉ?',
+    conceptGroups:[
+      ['thứ tự','vị trí'],
+      ['song song','không tuần tự'],
+      ['cộng vào embedding','cộng thêm vào','thêm vào vector','thêm vào embedding'],
+      ['mã hoá vị trí','position encoding','positional encoding'],
+      ['trước sau','đứng trước','trình tự']
+    ],
+    hints:[
+      'Gợi ý: Transformer xử lý tất cả từ CÙNG LÚC (song song), không đọc tuần tự như RNN — vậy làm sao mô hình biết từ nào đứng trước, từ nào đứng sau?',
+      'Gợi ý thêm: Positional Encoding là một vector được cộng thêm vào embedding của mỗi từ, để mã hoá vị trí của từ đó trong câu.'
+    ],
+    correction:'Vì Transformer xử lý các từ song song nên tự nó không biết thứ tự. Positional Encoding cộng thêm thông tin vị trí vào embedding của từng từ, để mô hình biết từ nào đứng trước/sau.'
+  }
+];
+const PASS_THRESHOLD = 80;
+const MAX_TRIALS = 3;
+
+/* ---------------- State ---------------- */
+const state = {
+  mode:'slide',
+  currentSlide:1,
+  videoTime:0,
+  videoPlaying:false,
+  videoTimer:null,
+  reviewActive:false,
+  cpIdx:0,
+  attempts:0,
+  results:[null,null,null]
+};
+
+/* ---------------- Sidebar ---------------- */
+function toggleSidebar(){
+  const sb = document.getElementById('sidebar');
+  sb.style.display = (sb.style.display==='none')?'block':'none';
+}
+function toggleSection(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('collapsed');
+  el.previousElementSibling.classList.toggle('collapsed');
+}
+function openSlideFile(){
+  state.mode='slide';
+  document.getElementById('slideView').style.display='block';
+  document.getElementById('videoView').style.display='none';
+  renderCheckpointBar();
+}
+function scrollToSlide(n){
+  n = Math.max(1, Math.min(3, n));
+  const el = document.querySelector(`.slide-page[data-slide="${n}"]`);
+  const container = document.getElementById('slideScroll');
+  if(el) container.scrollTo({top: el.offsetTop, behavior:'smooth'});
+}
+function prevSlide(){ scrollToSlide(state.currentSlide-1); }
+function nextSlide(){ scrollToSlide(state.currentSlide+1); }
+function selectVideo(){
+  state.mode='video';
+  document.getElementById('slideView').style.display='none';
+  document.getElementById('videoView').style.display='block';
+  renderCheckpointBar();
+}
+
+/* ---------------- Slide render (cuộn dọc trong 1 file) ---------------- */
+function renderAllSlides(){
+  const container = document.getElementById('slideScroll');
+  container.innerHTML = CHECKPOINTS.map(cp => `
+    <div class="slide-page" data-slide="${cp.slide}">
+      <div class="page-flag">Slide ${cp.slide}/3</div>
+      <div class="kicker">${cp.slideKicker}</div>
+      <h2>${cp.slideTitle}</h2>
+      <ul>${cp.slideBullets.map(b=>`<li>${b}</li>`).join('')}</ul>
+    </div>
+  `).join('');
+  container.addEventListener('scroll', onSlideScroll);
+}
+function onSlideScroll(){
+  const container = document.getElementById('slideScroll');
+  const pages = container.querySelectorAll('.slide-page');
+  let closest = 1, minDist = Infinity;
+  pages.forEach(p=>{
+    const dist = Math.abs(p.offsetTop - container.scrollTop);
+    if(dist < minDist){ minDist = dist; closest = parseInt(p.dataset.slide,10); }
+  });
+  if(closest !== state.currentSlide){
+    state.currentSlide = closest;
+    renderCheckpointBar();
+  }
+  document.getElementById('slideNum').textContent = state.currentSlide;
+}
+
+/* ---------------- Video playback (mock) ---------------- */
+function toggleVideoPlay(){
+  state.videoPlaying = !state.videoPlaying;
+  document.getElementById('playBtnBig').textContent = state.videoPlaying?'❚❚':'▶';
+  document.getElementById('playBtnSmall').textContent = state.videoPlaying?'❚❚':'▶';
+  if(state.videoPlaying){
+    state.videoTimer = setInterval(()=>{
+      state.videoTime = Math.min(180, state.videoTime + 5);
+      document.getElementById('videoScrubber').value = state.videoTime;
+      updateVideoTimeLabel();
+      renderCheckpointBar();
+      if(state.videoTime>=180){ clearInterval(state.videoTimer); state.videoPlaying=false;
+        document.getElementById('playBtnBig').textContent='▶'; document.getElementById('playBtnSmall').textContent='▶'; }
+    },250);
+  } else {
+    clearInterval(state.videoTimer);
+  }
+}
+function onScrub(v){
+  state.videoTime = parseInt(v,10);
+  updateVideoTimeLabel();
+  renderCheckpointBar();
+}
+function updateVideoTimeLabel(){
+  const m = Math.floor(state.videoTime/60), s = String(state.videoTime%60).padStart(2,'0');
+  document.getElementById('timeNow').textContent = `${m}:${s}`;
+}
+
+/* ---------------- Checkpoint bar ---------------- */
+function currentViewingIdx(){
+  if(state.mode==='slide') return state.currentSlide-1;
+  for(let i=0;i<CHECKPOINTS.length;i++){
+    const [a,b]=CHECKPOINTS[i].videoRange;
+    if(state.videoTime>=a && state.videoTime<b) return i;
+  }
+  return CHECKPOINTS.length-1;
+}
+function renderCheckpointBar(){
+  const viewingIdx = currentViewingIdx();
+  const track = document.getElementById('cbTrack');
+  let html = '';
+  CHECKPOINTS.forEach((cp,i)=>{
+    const r = state.results[i];
+    let cls = '';
+    if(i===viewingIdx) cls += ' viewing';
+    if(r && r.status==='pass') cls += ' pass';
+    if(r && r.status==='fail') cls += ' fail';
+    const dotContent = r ? (r.status==='pass' ? '✓' : '!') : (i+1);
+    html += `
+      <div class="cb-node${cls}">
+        <div class="cb-dot">${dotContent}</div>
+        <div class="cb-caption-title">${cp.short} · ${cp.title}</div>
+        <div class="cb-caption-desc">${cp.desc}</div>
+      </div>`;
+    if(i < CHECKPOINTS.length-1){
+      const doneCls = (r && r.status==='pass') ? ' done' : '';
+      html += `<div class="cb-connector${doneCls}"><i></i></div>`;
+    }
+  });
+  track.innerHTML = html;
+  const doneCount = state.results.filter(r=>r).length;
+  document.getElementById('courseProgress').style.width = Math.round(doneCount/3*100)+'%';
+}
+
+/* ---------------- Chat helpers ---------------- */
+function appendMsg(role, name, avatar, html, extraClass){
+  const area = document.getElementById('chatArea');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role + (extraClass? ' '+extraClass : '');
+  div.innerHTML = `<div class="av">${avatar}</div><div><div class="name">${name}</div><div class="bubble">${html}</div></div>`;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+function setInputEnabled(on){
+  document.getElementById('chatInput').disabled = !on;
+  document.getElementById('sendBtn').disabled = !on;
+  if(on) document.getElementById('chatInput').focus();
+}
+
+/* ---------------- Review flow ---------------- */
+function renderStartCard(){
+  document.getElementById('startCardWrap').innerHTML = `
+    <div class="start-card" id="startCard">
+      <p>Sẵn sàng kiểm tra mức độ hiểu bài Transformer chưa? Bạn sẽ đóng vai người dạy lại cho "Bot Ngu".</p>
+      <button class="start-btn" onclick="startReview()">🎯 Bắt đầu ôn lại bài học</button>
+    </div>`;
+}
+function startReview(){
+  document.getElementById('chatArea').innerHTML='';
+  state.reviewActive = true;
+  state.cpIdx = 0;
+  state.attempts = 0;
+  state.results = [null,null,null];
+  document.getElementById('startCardWrap').innerHTML = '';
+  appendMsg('system','⚙️ Hệ thống VLearn','⚙️',
+    'Chào mừng bạn đến với Thử thách dạy học! Bạn cùng lớp "Bot Ngu" đang gặp khúc mắc về bài giảng Transformer. Hãy giúp bạn ấy hiểu đúng nhé!');
+  askCheckpoint(0);
+  renderCheckpointBar();
+}
+function askCheckpoint(idx){
+  state.cpIdx = idx;
+  state.attempts = 0;
+  const cp = CHECKPOINTS[idx];
+  appendMsg('peer','🧑‍🎓 Bot Ngu (Bạn học)','🧑‍🎓', `<b>[${cp.short} · ${cp.title}]</b><br>${cp.botQuestion}`);
+  setInputEnabled(true);
+}
+function submitAnswer(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  appendMsg('user','🎓 Bạn (Học viên)','🎓', text);
+  input.value='';
+  setInputEnabled(false);
+  appendMsg('evaluator','🔍 System Evaluator (Chạy ngầm)','🔍', 'Đang phân tích câu trả lời với nội dung bài giảng...');
+  setTimeout(()=>evaluate(text), 700);
+}
+function evaluate(text){
+  const cp = CHECKPOINTS[state.cpIdx];
+  const lower = text.toLowerCase();
+  const matched = cp.conceptGroups.filter(group => group.some(alt => lower.includes(alt)));
+  const score = Math.round(matched.length / cp.conceptGroups.length * 100);
+  const attemptTag = `<span class="attempt-tag">Lần ${state.attempts+1}/${MAX_TRIALS} · Khớp ${matched.length}/${cp.conceptGroups.length} ý · ${score}%</span><br>`;
+
+  if(score >= PASS_THRESHOLD){
+    appendMsg('coach','👩‍🏫 Giáo sư AI (Trợ giảng)','👩‍🏫',
+      attemptTag + `Xuất sắc! Lời giải thích của bạn khớp với nội dung bài giảng (${score}%). Bạn đã vượt qua ${cp.short} thành công! 🎉`);
+    state.results[state.cpIdx] = {status:'pass', score};
+    renderCheckpointBar();
+    advance();
+    return;
+  }
+
+  state.attempts++;
+  if(state.attempts < MAX_TRIALS){
+    appendMsg('coach','👩‍🏫 Giáo sư AI (Trợ giảng)','👩‍🏫',
+      attemptTag + cp.hints[Math.min(state.attempts-1, cp.hints.length-1)], 'hint');
+    setInputEnabled(true);
+  } else {
+    appendMsg('coach','👩‍🏫 Giáo sư AI (Trợ giảng)','👩‍🏫',
+      attemptTag + `Bạn đã thử đủ ${MAX_TRIALS} lần, để tôi đính chính lại kiến thức chuẩn: ${cp.correction}`, 'hint');
+    state.results[state.cpIdx] = {status:'fail', score};
+    renderCheckpointBar();
+    advance();
+  }
+}
+function advance(){
+  if(state.cpIdx+1 < CHECKPOINTS.length){
+    setTimeout(()=>askCheckpoint(state.cpIdx+1), 900);
+  } else {
+    setInputEnabled(false);
+    setTimeout(showMasteryReport, 900);
+  }
+}
+function showMasteryReport(){
+  const scores = state.results.map(r=>r.score);
+  const overall = Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+  const rows = CHECKPOINTS.map((cp,i)=>{
+    const r = state.results[i];
+    const label = r.status==='pass' ? '✅ Đạt' : '⚠️ Cần học lại';
+    return `<tr><td>${cp.short} · ${cp.title}</td><td>${r.score}%</td><td>${label}</td></tr>`;
+  }).join('');
+  appendMsg('coach','👩‍🏫 Giáo sư AI (Trợ giảng)','👩‍🏫', `
+    <div class="report-card">
+      <h4>📊 Báo cáo Mastery — Transformer Architecture</h4>
+      <div class="report-score">${overall}%</div>
+      <table>
+        <tr><th>Checkpoint</th><th>Điểm</th><th>Kết quả</th></tr>
+        ${rows}
+      </table>
+    </div>`);
+  document.getElementById('startCardWrap').innerHTML = `
+    <div class="start-card">
+      <p>Muốn luyện lại từ đầu để cải thiện các phần "Cần học lại"?</p>
+      <button class="start-btn" onclick="startReview()">🔁 Ôn lại từ đầu</button>
+    </div>`;
+}
+
+/* ---------------- Init ---------------- */
+renderAllSlides();
+renderCheckpointBar();
+renderStartCard();
+</script>
+</body>
+</html>
