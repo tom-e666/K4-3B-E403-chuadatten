@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "track": "Track D1 - Lớp học mô phỏng đa tác tử",
+    "topic": "Xác định bài toán kinh doanh cho AI (Day 2 - transcript-01)",
+    "concept": "Lỗi 'Nhảy thẳng vào giải pháp' (Jumping to Solution)",
+    "source_file": "transcript-01-clean.md",
+    "source_citations": ["[T01-002]", "[T01-003]", "[T01-004]"]
+  },
+  "slice_statement": "Một học viên · ôn khái niệm 'Xác định bài toán AI' từ transcript-01 · Agent bạn học phát biểu lỗi nhảy thẳng vào giải pháp, học viên sửa lại kiến thức đúng · học viên giải thích đúng và hoàn thành thử thách.",
+  "mockup_flow_data": {
+    "happy_path": [
+      {
+        "step": 1,
+        "speaker_role": "system",
+        "sender_name": "⚙️ Hệ thống VLearn",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=vlearn",
+        "content": "Chào mừng bạn đến với Thử thách dạy học! Bạn cùng lớp 'Minh AI' đang gặp khúc mắc về bài giảng Day 02 (Xác định bài toán kinh doanh cho AI). Hãy giúp Minh hiểu đúng nhé!",
+        "type": "system_event"
+      },
+      {
+        "step": 2,
+        "speaker_role": "peer_student",
+        "sender_name": "🧑‍🎓 Minh AI (Bạn học)",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Minh",
+        "content": "Hôm nay sếp tớ bảo: 'Công ty mình phải tuyển ngay 2 bạn AI Engineer về làm AI Support Agent cho ngầu!'. Tớ thấy chỉ cần mua công nghệ AI mới nhất về là giải quyết xong mọi việc trong doanh nghiệp rồi đúng không?",
+        "misconception_detail": "Lỗi nhảy thẳng vào công nghệ/giải pháp mà chưa có Đề bài & Bài toán kinh doanh cụ thể [T01-002, T01-004].",
+        "type": "peer_prompt"
+      },
+      {
+        "step": 3,
+        "speaker_role": "user",
+        "sender_name": "🎓 Bạn (Học viên)",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Student",
+        "content": "Không phải đâu Minh! Làm vậy là bị mắc lỗi 'nhảy thẳng vào giải pháp' rồi. AI Engineer chỉ giải được bài khi đã có người đặt ra đề bài cụ thể. Đầu tiên phải biết công ty cần giải quyết vấn đề gì, cho ai, chứ không phải thấy AI là mua về ngay [T01-002, T01-004].",
+        "type": "user_input"
+      },
+      {
+        "step": 4,
+        "speaker_role": "evaluator",
+        "sender_name": "🔍 System Evaluator (Chạy ngầm)",
+        "content": "Đang phân tích câu trả lời với transcript-01 [T01-002, T01-004]...",
+        "evaluation_result": {
+          "status": "PASS",
+          "matched_keywords": ["nhảy thẳng vào giải pháp", "đề bài cụ thể", "xác định vấn đề"],
+          "confidence": 0.95
+        },
+        "type": "internal_eval"
+      },
+      {
+        "step": 5,
+        "speaker_role": "peer_student",
+        "sender_name": "🧑‍🎓 Minh AI (Bạn học)",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Minh",
+        "content": "À ra thế! Thảo nào thầy bảo 70% thành công của AI là đến từ con người và vận hành xác định bài toán [T01-003]. Cảm ơn bạn nhiều nhé, tớ hiểu ra rồi!",
+        "type": "peer_response_happy"
+      },
+      {
+        "step": 6,
+        "speaker_role": "coach_ta",
+        "sender_name": "👩‍🏫 Coach AI (Trợ giảng)",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Coach",
+        "content": "Xuất sắc! Lời giải thích của bạn rất chuẩn xác theo nội dung bài giảng [T01-004]. Bạn đã vượt qua thử thách thành công! 🎉",
+        "type": "coach_feedback"
+      }
+    ],
+    "failure_branch": [
+      {
+        "step": 3,
+        "speaker_role": "user",
+        "sender_name": "🎓 Bạn (Học viên)",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Student",
+        "content": "Đúng rồi đó Minh, tuyển AI Engineer về là họ tự làm hết được mà!",
+        "type": "user_input_incorrect"
+      },
+      {
+        "step": 4,
+        "speaker_role": "evaluator",
+        "sender_name": "🔍 System Evaluator (Chạy ngầm)",
+        "content": "Phát hiện học viên chưa nhận ra lỗi sai của Bạn học [T01-002]. Kích hoạt Trợ giảng AI.",
+        "type": "internal_eval"
+      },
+      {
+        "step": 5,
+        "speaker_role": "coach_ta",
+        "sender_name": "👩‍🏫 Coach AI (Trợ giảng)",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Coach",
+        "content": "Khoan đã hai bạn! 💡 Hãy nhớ lại bài giảng ở trang [T01-002]: Nếu tuyển AI Engineer về mà chưa có người đặt ra đề bài bài toán kinh doanh cụ thể thì AI Engineer có tự giải quyết được không?",
+        "type": "coach_socratic_prompt"
+      }
+    ]
+  }
+}
