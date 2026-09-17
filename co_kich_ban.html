@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VLearn Adaptive - Lớp Học Mô Phỏng Đa Tác Tử (Track D1)</title>
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --panel-bg: rgba(30, 41, 59, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.1);
+      --accent-purple: #8b5cf6;
+      --accent-blue: #3b82f6;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Header */
+    header {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--panel-border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: white;
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .badge-track {
+      background: rgba(139, 92, 246, 0.15);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.5rem;
+    }
+
+    /* Left Sidebar: Lesson & Progress Checkpoints */
+    .sidebar {
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      height: fit-content;
+    }
+
+    .lesson-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .lesson-tag {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-blue);
+      font-weight: 600;
+    }
+
+    .lesson-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    /* Progress & Mastery Tracker Panel */
+    .mastery-tracker {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .tracker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tracker-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tracker-percent {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--accent-emerald);
+    }
+
+    /* Progress Bar */
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-emerald));
+      border-radius: 9999px;
+      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Checkpoint List */
+    .checkpoint-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-top: 0.2rem;
+    }
+
+    .cp-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 0.65rem 0.8rem;
+      border-radius: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      transition: all 0.3s ease;
+    }
+
+    .cp-item.active {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .cp-item.done {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .cp-icon {
+      font-size: 1rem;
+      line-height: 1.2;
+      flex-shrink: 0;
+    }
+
+    .cp-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .cp-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .cp-cite {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .cp-item.done .cp-name {
+      color: #6ee7b7;
+      text-decoration: line-through;
+    }
+
+    .agent-status-panel {
+      border-top: 1px solid var(--panel-border);
+      padding-top: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .agent-status-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .agent-card {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.5rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .agent-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    .agent-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .agent-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .agent-role {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* Right Section: Simulation Interactive Stage */
+    .stage {
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      min-height: 620px;
+    }
+
+    .stage-header {
+      background: rgba(15, 23, 42, 0.7);
+      border-bottom: 1px solid var(--panel-border);
+      padding: 0.9rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .state-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .dot-live {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    /* Quick Test Controls */
+    .quick-test-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-test {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-test:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .btn-test.happy { border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .btn-test.fail { border-color: rgba(244, 63, 94, 0.4); color: #fca5a5; }
+
+    /* Chat Messages Stream */
+    .chat-stream {
+      flex: 1;
+      padding: 1.25rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .chat-bubble {
+      display: flex;
+      gap: 0.8rem;
+      max-width: 88%;
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-bubble.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .bubble-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .bubble-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .bubble-sender {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .user .bubble-sender {
+      text-align: right;
+    }
+
+    .bubble-text {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.85rem 1rem;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .user .bubble-text {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+      color: white;
+      border: none;
+    }
+
+    .peer .bubble-text {
+      border-left: 3px solid var(--accent-amber);
+    }
+
+    .coach .bubble-text {
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-left: 4px solid var(--accent-purple);
+    }
+
+    .system-event {
+      align-self: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.35rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin: 0.3rem 0;
+    }
+
+    /* Evaluator Loading Bar */
+    .eval-loading {
+      align-self: center;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      padding: 0.45rem 0.9rem;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      color: #93c5fd;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #93c5fd;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Input Controls Bar */
+    .stage-input-area {
+      background: rgba(15, 23, 42, 0.8);
+      border-top: 1px solid var(--panel-border);
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .suggestion-chips {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.2rem;
+    }
+
+    .chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      padding: 0.3rem 0.7rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chip:hover {
+      background: rgba(139, 92, 246, 0.2);
+      border-color: rgba(139, 92, 246, 0.4);
+      color: var(--text-main);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .input-box {
+      flex: 1;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      color: var(--text-main);
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .input-box:focus {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    }
+
+    .btn-send {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0 1.4rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-send:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    /* Modal Achievement Summary */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: rgba(30, 41, 59, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 2.2rem;
+      max-width: 480px;
+      width: 90%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.1rem;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+      transform: scale(0.9);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .badge-trophy {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.4);
+    }
+
+    .modal-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      width: 100%;
+      margin: 0.3rem 0;
+    }
+
+    .stat-box {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.8rem;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .stat-val {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--accent-emerald);
+    }
+
+    .stat-lbl {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .btn-modal-close {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 0.85rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-top: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Bar -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">V</div>
+      <div class="brand-title">VLearn Interactive Studio</div>
+      <span class="badge-track">Track D1 · Lớp học Đa tác tử</span>
+    </div>
+    <div style="font-size: 0.85rem; color: var(--text-muted);">
+      Chủ đề: Transformer & Attention Mechanism (transcript-06)
+    </div>
+  </header>
+
+  <!-- Main Grid Layout -->
+  <main>
+    <!-- Left Sidebar: Lesson Meta & Knowledge Checkpoint Tracker -->
+    <aside class="sidebar">
+      <div class="lesson-meta">
+        <span class="lesson-tag">Bài học thích ứng (Adaptation)</span>
+        <h2 class="lesson-title">Foundation · Transformer & Self-Attention</h2>
+      </div>
+
+      <!-- KNOWLEDGE CHECKPOINT PROGRESS TRACKER (YÊU CẦU MỚI) -->
+      <div class="mastery-tracker">
+        <div class="tracker-header">
+          <span class="tracker-title">🎯 Tiến độ Nắm vững Kiến thức</span>
+          <span class="tracker-percent" id="mastery-percent">0%</span>
+        </div>
+
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+
+        <!-- Checkpoint Items List -->
+        <div class="checkpoint-list">
+          <!-- Checkpoint 1 -->
+          <div class="cp-item active" id="cp-1">
+            <span class="cp-icon" id="cp-icon-1">🟡</span>
+            <div class="cp-info">
+              <span class="cp-name">1. Self-Attention vs Tần suất từ</span>
+              <span class="cp-cite">[T06-059] Trọng số liên kết ngữ cảnh</span>
+            </div>
+          </div>
+
+          <!-- Checkpoint 2 -->
+          <div class="cp-item" id="cp-2">
+            <span class="cp-icon" id="cp-icon-2">⚪</span>
+            <div class="cp-info">
+              <span class="cp-name">2. Machine Learning vs Deep Learning</span>
+              <span class="cp-cite">[T06-037, T06-042] Neural Net & Lớp ẩn</span>
+            </div>
+          </div>
+
+          <!-- Checkpoint 3 -->
+          <div class="cp-item" id="cp-3">
+            <span class="cp-icon" id="cp-icon-3">⚪</span>
+            <div class="cp-info">
+              <span class="cp-name">3. Ý nghĩa chữ T trong GPT</span>
+              <span class="cp-cite">[T06-021] Kiến trúc Transformer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agent Status Panel -->
+      <div class="agent-status-panel">
+        <span class="agent-status-title">Các Tác tử trong Phiên học:</span>
+        
+        <div class="agent-card">
+          <div class="agent-avatar" style="background: rgba(245, 158, 11, 0.2);">🧑‍🎓</div>
+          <div class="agent-info">
+            <span class="agent-name">Minh AI</span>
+            <span class="agent-role">Bạn học (Peer Agent - Ngây thơ)</span>
+          </div>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-avatar" style="background: rgba(139, 92, 246, 0.2);">👩‍🏫</div>
+          <div class="agent-info">
+            <span class="agent-name">Coach AI</span>
+            <span class="agent-role">Trợ giảng (Socratic - Can thiệp khi sai)</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Main Stage: Simulated Chat Stream -->
+    <section class="stage">
+      <div class="stage-header">
+        <div class="state-indicator">
+          <div class="dot-live"></div>
+          <span id="state-text">CHECKPOINT 1/3: Bạn học phát biểu lỗi về Self-Attention</span>
+        </div>
+
+        <!-- Quick Test Controls -->
+        <div class="quick-test-bar">
+          <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 0.2rem;">Thử nhanh:</span>
+          <button class="btn-test happy" onclick="runPreset('happy')">✔ Giảng Đúng</button>
+          <button class="btn-test fail" onclick="runPreset('fail')">✖ Giảng Sai</button>
+          <button class="btn-test" onclick="resetChat()">🔄 Reset</button>
+        </div>
+      </div>
+
+      <!-- Messages Stream -->
+      <div class="chat-stream" id="chat-stream">
+        <div class="system-event">
+          ⚙️ Hệ thống nạp bài giảng transcript-06 · Bắt đầu Checkpoint 1/3
+        </div>
+
+        <div class="chat-bubble peer">
+          <div class="bubble-avatar" style="background: rgba(245, 158, 11, 0.2);">🧑‍🎓</div>
+          <div class="bubble-content">
+            <span class="bubble-sender">Minh AI (Bạn học)</span>
+            <div class="bubble-text" id="peer-prompt-text">
+              Hôm nay tớ đọc slide đến phần Transformer & Attention. Tớ nghĩ cơ chế Self-Attention đơn giản chỉ là đếm xem từ nào xuất hiện lặp lại nhiều lần nhất trong đoạn văn thì AI sẽ chú ý nhiều hơn, đúng không bạn?
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="stage-input-area">
+        <div class="suggestion-chips" id="chips-container">
+          <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;">Gợi ý câu trả lời:</span>
+          <!-- Dynamic Chips Filled By JS -->
+        </div>
+
+        <div class="input-row">
+          <input type="text" id="user-input" class="input-box" placeholder="Nhập lời giải thích để sửa lỗi cho bạn Minh AI..." onkeydown="if(event.key==='Enter') sendAnswer()">
+          <button class="btn-send" onclick="sendAnswer()">
+            <span>Gửi giải thích</span>
+            <span>➔</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Achievement Summary -->
+  <div class="modal-overlay" id="summary-modal">
+    <div class="modal-card">
+      <div class="badge-trophy">🏆</div>
+      <h3 class="modal-title">Chúc Mừng! Đã Hoàn Thành Bài Học!</h3>
+      <p style="font-size: 0.88rem; color: var(--text-muted);">
+        Bạn đã giải thích hoàn hảo cả <strong>3/3 Checkpoint kiến thức Transformer [transcript-06]</strong> cho Minh AI!
+      </p>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-val">100%</span>
+          <span class="stat-lbl">Tiến độ Bài học</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-val">3/3 CP</span>
+          <span class="stat-lbl">Kiến thức đã Dạy</span>
+        </div>
+      </div>
+
+      <button class="btn-modal-close" onclick="resetChat()">Ôn lại từ đầu & Luyện tiếp</button>
+    </div>
+  </div>
+
+  <script>
+    // State Variables
+    let currentCP = 1; // 1, 2, 3
+    let completedCPs = 0;
+
+    const stream = document.getElementById('chat-stream');
+    const input = document.getElementById('user-input');
+    const stateText = document.getElementById('state-text');
+    const modal = document.getElementById('summary-modal');
+    const chipsContainer = document.getElementById('chips-container');
+    const progressFill = document.getElementById('progress-fill');
+    const masteryPercent = document.getElementById('mastery-percent');
+
+    // Questions Data for 3 Checkpoints
+    const checkpointsData = {
+      1: {
+        title: "CHECKPOINT 1/3: Bạn học phát biểu lỗi về Self-Attention",
+        prompt: "Hôm nay tớ đọc slide đến phần Transformer & Attention. Tớ nghĩ cơ chế Self-Attention đơn giản chỉ là đếm xem từ nào xuất hiện lặp lại nhiều lần nhất trong đoạn văn thì AI sẽ chú ý nhiều hơn, đúng không bạn?",
+        keywords: ['trọng số', 'mối quan hệ', 'ngữ cảnh', 'không phải đếm'],
+        correctReply: "À ra thế! Tớ hiểu rồi. Self-Attention là tính toán trọng số mối quan hệ ngữ cảnh giữa các từ trong cùng một câu [T06-059] chứ không phải đếm tần suất lặp lại! Cảm ơn bạn nhé!",
+        coachHint: "Khoan đã hai bạn! 💡 Hãy nhớ lại bài giảng [T06-059]: Nếu một câu có từ 'và' xuất hiện 10 lần, liệu Transformer có cho rằng từ 'và' là từ quan trọng nhất không? Self-Attention tính mối quan hệ ngữ cảnh hay đếm tần suất?",
+        chipCorrect: "Không phải đâu Minh! Attention không phải là đếm số lần từ xuất hiện. Nó là cơ chế tính toán trọng số mối quan hệ ngữ cảnh giữa các từ với nhau trong cùng một câu [T06-059].",
+        chipFail: "Đúng rồi đó Minh, từ nào xuất hiện lặp lại càng nhiều lần thì Transformer càng cho trọng số Attention cao!"
+      },
+      2: {
+        title: "CHECKPOINT 2/3: Bạn học thắc mắc về Machine Learning vs Deep Learning",
+        prompt: "Minh AI tiếp tục hỏi: 'Tớ thấy Machine Learning với Deep Learning có khác gì đâu nhỉ? Đều là đưa dữ liệu vào máy tính để nó tự học mà đúng không?'",
+        keywords: ['neural', 'lớp ẩn', 'đặc trưng', 'nhiều tầng', 'mạng nơ-ron'],
+        correctReply: "Ồ hóa ra vậy! Deep Learning sử dụng mạng nơ-ron (Neural Network) nhiều lớp ẩn để tự trích xuất đặc trưng sâu [T06-042], còn Machine Learning truyền thống đòi hỏi con người xử lý đặc trưng thủ công hơn!",
+        coachHint: "Nhớ lại trang [T06-038, T06-042] nhé! 💡 Machine Learning truyền thống khác Deep Learning ở chỗ mô hình Deep Learning có cấu trúc nhiều lớp ẩn (hidden layers) để làm gì với dữ liệu?",
+        chipCorrect: "Không hẳn đâu Minh! Deep Learning là nhánh của ML nhưng sử dụng mạng nơ-ron (Neural Network) với nhiều lớp ẩn để tự trích xuất các đặc trưng phức tạp từ dữ liệu khổng lồ [T06-042].",
+        chipFail: "Đúng rồi Minh, 2 cái đó hoàn toàn giống nhau không có gì khác biệt cả!"
+      },
+      3: {
+        title: "CHECKPOINT 3/3: Bạn học thắc mắc về ý nghĩa chữ T trong GPT",
+        prompt: "Minh AI gãi đầu hỏi câu cuối: 'Thầy có hỏi chữ T trong chữ GPT viết tắt của gì. Tớ đoán chắc là Text hay Token đúng không bạn?'",
+        keywords: ['transformer', 'kiến trúc'],
+        correctReply: "Tuyệt vời! Chữ T chính là Transformer [T06-021] — kiến trúc mô hình ra đời năm 2017 tạo nên cuộc cách mạng cho các mô hình ngôn ngữ lớn như GPT!",
+        coachHint: "Hãy kiểm tra lại bài giảng trang [T06-021]! 💡 Kiến trúc mô hình cốt lõi ra đời năm 2017 do Google phát minh có tên gọi bắt đầu bằng chữ T là gì?",
+        chipCorrect: "Không phải Text hay Token đâu Minh! Chữ T viết tắt của Transformer [T06-021] — kiến trúc cốt lõi giúp các mô hình LLM xử lý ngôn ngữ vượt trội.",
+        chipFail: "Đúng rồi Minh, T là viết tắt của Text/Token đấy!"
+      }
+    };
+
+    // Load Chips for Current Checkpoint
+    function loadChips() {
+      const data = checkpointsData[currentCP];
+      chipsContainer.innerHTML = `
+        <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;">Gợi ý câu trả lời:</span>
+        <div class="chip" onclick="fillInput('${escapeHtml(data.chipCorrect)}')">💡 Giảng đúng (Pass CP ${currentCP})</div>
+        <div class="chip" onclick="fillInput('${escapeHtml(data.chipFail)}')">❌ Giảng sai</div>
+        <div class="chip" onclick="fillInput('Sai rồi')">⚠️ Trả lời mơ hồ</div>
+      `;
+    }
+
+    function fillInput(text) {
+      input.value = text;
+      input.focus();
+    }
+
+    function appendUserBubble(text) {
+      const div = document.createElement('div');
+      div.className = 'chat-bubble user';
+      div.innerHTML = `
+        <div class="bubble-avatar" style="background: rgba(139, 92, 246, 0.3);">🎓</div>
+        <div class="bubble-content">
+          <span class="bubble-sender">Bạn (Học viên)</span>
+          <div class="bubble-text">${escapeHtml(text)}</div>
+        </div>
+      `;
+      stream.appendChild(div);
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function appendEvalLoading() {
+      const div = document.createElement('div');
+      div.className = 'eval-loading';
+      div.id = 'eval-spinner';
+      div.innerHTML = `
+        <div class="spinner"></div>
+        <span>System Evaluator đang đánh giá câu trả lời cho Checkpoint ${currentCP}/3...</span>
+      `;
+      stream.appendChild(div);
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function removeEvalLoading() {
+      const spinner = document.getElementById('eval-spinner');
+      if (spinner) spinner.remove();
+    }
+
+    function appendPeerResponse(text) {
+      const div = document.createElement('div');
+      div.className = 'chat-bubble peer';
+      div.innerHTML = `
+        <div class="bubble-avatar" style="background: rgba(245, 158, 11, 0.2);">🧑‍🎓</div>
+        <div class="bubble-content">
+          <span class="bubble-sender">Minh AI (Bạn học)</span>
+          <div class="bubble-text">${text}</div>
+        </div>
+      `;
+      stream.appendChild(div);
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function appendCoachIntervention(text) {
+      const div = document.createElement('div');
+      div.className = 'chat-bubble coach';
+      div.innerHTML = `
+        <div class="bubble-avatar" style="background: rgba(139, 92, 246, 0.2);">👩‍🏫</div>
+        <div class="bubble-content">
+          <span class="bubble-sender">Coach AI (Trợ giảng Socratic)</span>
+          <div class="bubble-text">${text}</div>
+        </div>
+      `;
+      stream.appendChild(div);
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function sendAnswer() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendUserBubble(text);
+      input.value = '';
+
+      stateText.innerText = `Evaluator đang đánh giá Checkpoint ${currentCP}/3...`;
+      appendEvalLoading();
+
+      setTimeout(() => {
+        removeEvalLoading();
+        evaluateAnswer(text);
+      }, 1000);
+    }
+
+    function evaluateAnswer(text) {
+      const lower = text.toLowerCase();
+      const cpData = checkpointsData[currentCP];
+
+      const isPass = cpData.keywords.some(kw => lower.includes(kw));
+
+      if (isPass) {
+        // PASS CURRENT CHECKPOINT
+        appendPeerResponse(cpData.correctReply);
+        markCPDone(currentCP);
+
+        if (currentCP < 3) {
+          currentCP++;
+          setTimeout(() => {
+            appendSystemEvent(`✅ Đã vượt qua Checkpoint ${currentCP-1}! Chuyển sang Checkpoint ${currentCP}/3`);
+            updateCPActive(currentCP);
+            stateText.innerText = cpDataTitle();
+            loadChips();
+
+            setTimeout(() => {
+              appendPeerResponse(checkpointsData[currentCP].prompt);
+            }, 800);
+          }, 1200);
+        } else {
+          // ALL 3 CHECKPOINTS PASSED!
+          setTimeout(() => {
+            appendCoachIntervention("🎉 Tuyệt vời! Bạn đã hoàn thành 100% cả 3 Checkpoint kiến thức của bài học Transformer & Self-Attention!");
+            setTimeout(() => {
+              modal.classList.add('active');
+            }, 1200);
+          }, 1000);
+        }
+      } else if (text.length < 15) {
+        // Low confidence
+        stateText.innerText = `Low Confidence ở Checkpoint ${currentCP}/3`;
+        appendPeerResponse("Sao lại thế bạn? Giải thích chi tiết hơn một chút giúp tớ với?");
+      } else {
+        // Failure branch -> Coach intervenes
+        stateText.innerText = `Trợ giảng can thiệp Socratic ở Checkpoint ${currentCP}/3`;
+        setTimeout(() => {
+          appendCoachIntervention(cpData.coachHint);
+        }, 500);
+      }
+    }
+
+    function markCPDone(cpNum) {
+      completedCPs = Math.max(completedCPs, cpNum);
+      const cpItem = document.getElementById(`cp-${cpNum}`);
+      const cpIcon = document.getElementById(`cp-icon-${cpNum}`);
+      if (cpItem && cpIcon) {
+        cpItem.className = 'cp-item done';
+        cpIcon.innerText = '🟢';
+      }
+
+      // Update Progress Bar
+      const percent = Math.round((completedCPs / 3) * 100);
+      progressFill.style.width = `${percent}%`;
+      masteryPercent.innerText = `${percent}%`;
+    }
+
+    function updateCPActive(cpNum) {
+      const cpItem = document.getElementById(`cp-${cpNum}`);
+      const cpIcon = document.getElementById(`cp-icon-${cpNum}`);
+      if (cpItem && cpIcon && !cpItem.classList.contains('done')) {
+        cpItem.className = 'cp-item active';
+        cpIcon.innerText = '🟡';
+      }
+    }
+
+    function cpDataTitle() {
+      return checkpointsData[currentCP].title;
+    }
+
+    function appendSystemEvent(text) {
+      const div = document.createElement('div');
+      div.className = 'system-event';
+      div.innerText = text;
+      stream.appendChild(div);
+      stream.scrollTop = stream.scrollHeight;
+    }
+
+    function runPreset(type) {
+      const cpData = checkpointsData[currentCP];
+      if (type === 'happy') {
+        fillInput(cpData.chipCorrect);
+      } else if (type === 'fail') {
+        fillInput(cpData.chipFail);
+      }
+      sendAnswer();
+    }
+
+    function resetChat() {
+      modal.classList.remove('active');
+      currentCP = 1;
+      completedCPs = 0;
+
+      // Reset Sidebar Progress
+      progressFill.style.width = '0%';
+      masteryPercent.innerText = '0%';
+
+      for (let i = 1; i <= 3; i++) {
+        const item = document.getElementById(`cp-${i}`);
+        const icon = document.getElementById(`cp-icon-${i}`);
+        if (i === 1) {
+          item.className = 'cp-item active';
+          icon.innerText = '🟡';
+        } else {
+          item.className = 'cp-item';
+          icon.innerText = '⚪';
+        }
+      }
+
+      stateText.innerText = checkpointsData[1].title;
+      loadChips();
+
+      stream.innerHTML = `
+        <div class="system-event">
+          ⚙️ Hệ thống nạp bài giảng transcript-06 · Bắt đầu Checkpoint 1/3
+        </div>
+        <div class="chat-bubble peer">
+          <div class="bubble-avatar" style="background: rgba(245, 158, 11, 0.2);">🧑‍🎓</div>
+          <div class="bubble-content">
+            <span class="bubble-sender">Minh AI (Bạn học)</span>
+            <div class="bubble-text">
+              ${checkpointsData[1].prompt}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Init
+    loadChips();
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>
