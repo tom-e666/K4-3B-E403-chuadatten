@@ -25,19 +25,32 @@ def load_slides_from_pdf(pdf_filename: str) -> list[dict[str, Any]]:
 
     slides = []
     try:
-        import pypdf
-        reader = pypdf.PdfReader(pdf_path)
-        for idx, page in enumerate(reader.pages, start=1):
-            text = page.extract_text() or ""
-            slides.append({
-                "slide": idx,
-                "title": f"Trang slide {idx} ({pdf_filename})",
-                "pdf_url": f"/slides/{pdf_filename}",
-                "content": text.strip(),
-                "bullets": [line.strip() for line in text.split("\n") if line.strip()][:5]
-            })
+        try:
+            import pypdf
+            reader = pypdf.PdfReader(pdf_path)
+            for idx, page in enumerate(reader.pages, start=1):
+                text = page.extract_text() or ""
+                slides.append({
+                    "slide": idx,
+                    "title": f"Trang slide {idx} ({pdf_filename})",
+                    "pdf_url": f"/slides/{pdf_filename}",
+                    "content": text.strip(),
+                    "bullets": [line.strip() for line in text.split("\n") if line.strip()][:5]
+                })
+        except ImportError:
+            import fitz
+            doc = fitz.open(pdf_path)
+            for idx, page in enumerate(doc, start=1):
+                text = page.get_text() or ""
+                slides.append({
+                    "slide": idx,
+                    "title": f"Trang slide {idx} ({pdf_filename})",
+                    "pdf_url": f"/slides/{pdf_filename}",
+                    "content": text.strip(),
+                    "bullets": [line.strip() for line in text.split("\n") if line.strip()][:5]
+                })
     except Exception as err:
-        print(f"⚠️ Lỗi đọc file PDF slide {pdf_filename}: {err}")
+        print(f"Error reading PDF slide {pdf_filename}: {str(err).encode('ascii', 'ignore').decode('ascii')}")
 
     _PDF_SLIDES_CACHE[pdf_filename] = slides
     return slides

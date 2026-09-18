@@ -24,7 +24,7 @@ MỤC TIÊU & PHƯƠNG PHÁP (Feynman Reverse Tutoring):
 @dataclass
 class SessionState:
     session_id: str
-    lesson_id: str = "lesson_02"
+    lesson_id: str = "lesson_01"
     current_checkpoint_index: int = 0
     checkpoint_trials: dict[str, int] = field(default_factory=dict)
     checkpoint_results: dict[str, dict[str, Any]] = field(default_factory=dict)
@@ -51,7 +51,7 @@ class FeynmanAgent:
         lesson = get_lesson_by_id(lesson_id) or load_lessons_data(lesson_id)
         return lesson.get("checkpoints", [])
 
-    def start_session(self, session_id: str = "default_session", lesson_id: str = "lesson_02") -> tuple[SessionState, str]:
+    def start_session(self, session_id: str = "default_session", lesson_id: str = "lesson_01") -> tuple[SessionState, str]:
         """Khởi tạo một phiên học mới theo lesson_id, trả về state và câu mở đầu của Bot Ngu."""
         checkpoints = self.get_lesson_checkpoints(lesson_id)
         first_cp = checkpoints[0] if checkpoints else None
@@ -122,7 +122,7 @@ class FeynmanAgent:
             except Exception as exc:
                 print(f"⚠️ Provider API bị lỗi ({exc}), tự động chuyển sang chế độ đánh giá rubric trực tiếp.")
                 from .tools.evaluator import grade_explanation
-                latest_evaluation = grade_explanation(cp_id, user_input)
+                latest_evaluation = grade_explanation(cp_id, user_input, lesson_id=state.lesson_id)
                 state.checkpoint_results[cp_id] = {
                     **latest_evaluation,
                     "trials": state.checkpoint_trials[cp_id]
@@ -168,6 +168,15 @@ class FeynmanAgent:
         else:
             assistant_text = "Tớ đã nghe cậu giải thích rồi, cảm ơn cậu nhiều nhé!"
             state.messages.append({"role": "assistant", "content": assistant_text})
+
+        # Đảm bảo LUÔN LUÔN thực thi đánh giá nếu LLM quên gọi tool grade_explanation
+        if latest_evaluation is None:
+            from .tools.evaluator import grade_explanation
+            latest_evaluation = grade_explanation(cp_id, user_input, lesson_id=state.lesson_id)
+            state.checkpoint_results[cp_id] = {
+                **latest_evaluation,
+                "trials": state.checkpoint_trials[cp_id]
+            }
 
         # Xử lý chuyển Checkpoint nếu đạt hoặc hết lượt
         advance_checkpoint = False

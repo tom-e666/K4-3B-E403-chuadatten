@@ -101,7 +101,7 @@ class ProfessorEvaluatorAgent:
 
         pdf_filename = "d2-slide-hackathon.pdf" if lesson_id in ["lesson_02", "lesson_03"] else "d1-slide-hackathon.pdf"
         slides = load_slides_from_pdf(pdf_filename)
-        slides_text = "\n\n".join([f"Trang {s['slide']}: {s['content']}" for s in slides[:12]])
+        slides_text = "\n\n".join([f"Trang {s['slide']}: {s['content']}" for s in slides])
 
         user_prompt = f"""TÀI LIỆU SLIDE BÀI GIẢNG (Nguồn tri thức):
 {slides_text}

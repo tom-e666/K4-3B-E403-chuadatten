@@ -111,7 +111,7 @@ CONCEPT_KEYWORDS: dict[str, list[list[str]]] = {
 }
 
 
-def grade_explanation(checkpoint_id: str, user_explanation: str) -> dict[str, Any]:
+def grade_explanation(checkpoint_id: str, user_explanation: str, lesson_id: str | None = None) -> dict[str, Any]:
     """
     Sử dụng AI Giáo sư (ProfessorEvaluatorAgent) đọc Slide PDF bài giảng
     để đánh giá câu trả lời học viên, chấm điểm % Mastery và sinh nhận xét sư phạm.
@@ -119,8 +119,8 @@ def grade_explanation(checkpoint_id: str, user_explanation: str) -> dict[str, An
     try:
         from backend.professor_agent import ProfessorEvaluatorAgent
         prof = ProfessorEvaluatorAgent()
-        # Tự động xác định lesson_id từ checkpoint_id nếu có
-        lesson_id = "lesson_02" if "d2" in checkpoint_id or "problem" in checkpoint_id or "anti" in checkpoint_id or "reward" in checkpoint_id else "lesson_01"
+        if not lesson_id:
+            lesson_id = "lesson_02" if any(k in checkpoint_id for k in ["d2", "problem", "anti", "reward"]) else "lesson_01"
         result = prof.evaluate_explanation(checkpoint_id=checkpoint_id, user_explanation=user_explanation, lesson_id=lesson_id)
         if result and "mastery_score" in result:
             return result

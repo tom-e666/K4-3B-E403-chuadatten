@@ -75,11 +75,12 @@ def get_or_create_agent() -> FeynmanAgent:
 # ----------------- Request / Response Models -----------------
 class StartSessionRequest(BaseModel):
     session_id: str | None = "default_session"
-    lesson_id: str | None = "lesson_02"
+    lesson_id: str | None = "lesson_01"
 
 
 class ChatMessageRequest(BaseModel):
     session_id: str | None = "default_session"
+    lesson_id: str | None = None
     message: str
 
 
@@ -105,8 +106,8 @@ def get_lesson(lesson_id: str):
 
 @app.get("/api/checkpoints")
 def get_checkpoints(lesson_id: str | None = None):
-    """Lấy danh sách các Checkpoints bài học (mặc định lesson_02)."""
-    data = load_lessons_data(lesson_id)
+    """Lấy danh sách các Checkpoints bài học (mặc định lesson_01)."""
+    data = load_lessons_data(lesson_id or "lesson_01")
     return JSONResponse({
         "lesson_id": data.get("id"),
         "topic": data.get("topic"),
@@ -141,7 +142,7 @@ def start_session(req: StartSessionRequest):
     """Khởi tạo phiên luyện tập Feynman mới cho bài học được chọn."""
     agent = get_or_create_agent()
     session_id = req.session_id or "default_session"
-    lesson_id = req.lesson_id or "lesson_02"
+    lesson_id = req.lesson_id or "lesson_01"
     state, starter_msg = agent.start_session(session_id=session_id, lesson_id=lesson_id)
     sessions[session_id] = state
 
@@ -168,15 +169,26 @@ def chat(req: ChatMessageRequest):
 
     agent = get_or_create_agent()
     session_id = req.session_id or "default_session"
+    lesson_id = req.lesson_id
+
+    if not lesson_id:
+        if "lesson_02" in session_id or "d2" in session_id:
+            lesson_id = "lesson_02"
+        elif "lesson_03" in session_id or "d3" in session_id:
+            lesson_id = "lesson_03"
+        else:
+            lesson_id = "lesson_01"
+
     state = sessions.get(session_id)
 
-    if not state:
-        state, _ = agent.start_session(session_id)
+    if not state or state.lesson_id != lesson_id:
+        state, _ = agent.start_session(session_id=session_id, lesson_id=lesson_id)
         sessions[session_id] = state
 
     result = agent.chat_step(state, req.message.strip())
     return {
         "session_id": session_id,
+        "lesson_id": state.lesson_id,
         "assistant_text": result["assistant_text"],
         "latest_evaluation": result["latest_evaluation"],
         "advance_checkpoint": result["advance_checkpoint"],
