@@ -116,6 +116,10 @@ class ChatMessageRequest(BaseModel):
     lesson_id: str | None = None
 
 
+class GenerateCheckpointsRequest(BaseModel):
+    pdf_filename: str = "d1-slide-hackathon.pdf"
+
+
 # ----------------- API Endpoints -----------------
 @app.get("/api/lessons")
 def get_lessons(full: int = 0):

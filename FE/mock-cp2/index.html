@@ -1663,8 +1663,8 @@ const MOCK_LESSONS = [
   },
   {
     id: "lesson_01",
-    short_title: "Bài 1: Foundation & LLM Context",
-    topic: "Day 1 — Foundation: Cách LLM hoạt động & Quản lý Context",
+    short_title: "Bài 1: Day 1 — AI & LLM Foundation",
+    topic: "Day 1 — AI & LLM Foundation: Bản chất LLM & Context Window",
     course: "AI20k Khóa 4 - Module Foundation",
     duration: "45 phút",
     lecture_file: "4-day01-lecture-slides",
@@ -1714,7 +1714,7 @@ const MOCK_LESSONS = [
     ],
     checkpoints: [
       {
-        id: "cp1_next_token_hallucination",
+        id: "cp1_ai_foundation",
         short: "CP1",
         label: "Next-Token & Ảo giác",
         title: "Next-Token Prediction & Ảo giác",
@@ -1727,7 +1727,7 @@ const MOCK_LESSONS = [
         sampleWrong: "Do ChatGPT bị lỗi bộ nhớ RAM tạm thời nên nó cố tình nói dối trêu người dùng."
       },
       {
-        id: "cp2_context_window_rot",
+        id: "cp2_transformer_mechanism",
         short: "CP2",
         label: "Context Window",
         title: "Context Window & Context Rot",
@@ -1740,7 +1740,7 @@ const MOCK_LESSONS = [
         sampleWrong: "Đúng rồi, cứ nhồi càng nhiều triệu token thì AI càng học thuộc lòng và trả lời chuẩn xác 100%."
       },
       {
-        id: "cp3_attention_vs_rnn",
+        id: "cp3_llm_training_process",
         short: "CP3",
         label: "Attention vs RNN",
         title: "Attention song song vs Bottleneck RNN",
@@ -1755,60 +1755,30 @@ const MOCK_LESSONS = [
     ]
   },
   {
-    id: "lesson_03",
-    short_title: "Bài 3: Bài toán kinh doanh AI",
-    topic: "Day 2 (Sáng) — Xác định bài toán kinh doanh cho AI (Problem Definition)",
+    id: "lesson_02",
+    short_title: "Bài 2: Day 2 — AI Product & Business Problem",
+    topic: "Day 2 — Xác định bài toán kinh doanh cho AI (Problem Definition)",
     course: "AI20k Khóa 4 - Module AI Product & Business",
     duration: "40 phút",
     lecture_file: "4-day03-ai-product",
     pdf_file: "d2-slide-hackathon.pdf",
     video_title: "AI Product & Business Problem",
-    slides: [
-      {
-        slide: 1,
-        eyebrow: "Bài 3",
-        title: "Xác Định Bài Toán AI",
-        subtitle: "Tránh bẫy Jumping to Solution trong doanh nghiệp",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "Day 2 Sáng · AI Product Lab",
-        diagramType: "five_whys",
-        bullets: [
-          "Bẫy phổ biến: Nhảy thẳng vào làm AI Chatbot trước khi hiểu rõ nỗi đau thực tế.",
-          "70% thành bại của dự án AI đến từ con người và quy trình vận hành.",
-          "Kỹ thuật 5 Whys: Đào sâu tìm nguyên nhân gốc rễ trước khi chọn công nghệ."
-        ]
-      },
-      {
-        slide: 2,
-        eyebrow: "Bài 3 · Checkpoint 2",
-        title: "Product vs Project Mindset",
-        subtitle: "Tư duy sản phẩm lấy người dùng làm trung tâm (User-centered)",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "Day 2 Sáng · AI Product Lab",
-        diagramType: "pm_matrix",
-        bullets: [
-          "Project Manager: Hoàn thành đúng hạn và ngân sách theo spec có sẵn.",
-          "Product Manager: Tự tìm bài toán đáng làm, thấu hiểu khách hàng.",
-          "Đặc thù AI: Tính xác suất, kỳ vọng đổi nhanh, đòi hỏi đo lường liên tục."
-        ]
-      },
-      {
-        slide: 3,
-        eyebrow: "Bài 3 · Checkpoint 3",
-        title: "Chiến Lược Dogfooding",
-        subtitle: "Tự dùng chính sản phẩm để cảm nhận nỗi đau thực tế",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "Day 2 Sáng · AI Product Lab",
-        diagramType: "dogfooding",
-        bullets: [
-          "Dogfooding: Team phát triển tự là user đầu tiên sử dụng sản phẩm hàng ngày.",
-          "Rút ngắn feedback loop: Cảm nhận nỗi đau trực tiếp, phát hiện lỗi nhanh chóng."
-        ]
-      }
-    ],
+    slides: Array.from({length: 29}, (_, i) => ({
+      slide: i + 1,
+      eyebrow: `Trang ${i + 1}`,
+      title: `Day 2 Slide Page ${i + 1}`,
+      subtitle: "Nội dung bài giảng AI Product & Business Problem",
+      metaBrand: "VLearn AI20k",
+      metaPhase: "Day 2 · AI Product Lab",
+      bullets: [
+        "Xác định bài toán AI thực tế trong doanh nghiệp",
+        "Tránh bẫy Jumping to Solution và quy trình 5 Whys",
+        "Chiến lược Dogfooding và tư duy Product Manager"
+      ]
+    })),
     checkpoints: [
       {
-        id: "cp1_jumping_to_solution",
+        id: "cp1_problem_statement",
         short: "CP1",
         label: "Jumping to Solution",
         title: "Tránh bẫy Jumping to Solution",
@@ -1821,7 +1791,7 @@ const MOCK_LESSONS = [
         sampleWrong: "Chuẩn rồi, sếp bảo làm chatbot thì cứ dựng vector database code ngay cho kịp tiến độ."
       },
       {
-        id: "cp2_product_vs_project_mindset",
+        id: "cp2_anti_patterns",
         short: "CP2",
         label: "Product vs Project",
         title: "Product vs Project Mindset",
@@ -1834,7 +1804,7 @@ const MOCK_LESSONS = [
         sampleWrong: "Hai vị trí này hoàn toàn là một, chỉ khác tên gọi tiếng Anh thôi."
       },
       {
-        id: "cp3_dogfooding_strategy",
+        id: "cp3_reward_function",
         short: "CP3",
         label: "Dogfooding",
         title: "Chiến lược Dogfooding",

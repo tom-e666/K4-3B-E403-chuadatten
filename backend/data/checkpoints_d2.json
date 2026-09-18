@@ -1,0 +1,98 @@
+[
+  {
+    "id": "cp1_problem_statement",
+    "order": 1,
+    "title": "Problem Statement",
+    "student_starter_message": "Tớ không hiểu tại sao phải có Problem Statement rõ ràng trước khi làm AI. Nó có quan trọng không?",
+    "misconceptions": [
+      "Nhiều người nghĩ rằng chỉ cần có ý tưởng là đủ, không cần phải định hình rõ ràng.",
+      "Có thể bỏ qua việc xác định đối tượng ảnh hưởng và quy trình hiện tại."
+    ],
+    "rubric_points": [
+      {
+        "id": "tieu_chi_1",
+        "concept": "Khái niệm Problem Statement",
+        "criteria": "Giải thích rõ ràng về tầm quan trọng của Problem Statement trong quy trình phát triển AI.",
+        "weight": 40
+      },
+      {
+        "id": "tieu_chi_2",
+        "concept": "Các yếu tố cấu thành Problem Statement",
+        "criteria": "Liệt kê và mô tả các yếu tố như Actor, Workflow, Bottleneck, Impact, Success Metric, Boundary.",
+        "weight": 30
+      },
+      {
+        "id": "tieu_chi_3",
+        "concept": "Quy trình xác định Problem Statement",
+        "criteria": "Mô tả quy trình từ việc xác định vấn đề đến việc ra quyết định Go/Not Yet/No-Go.",
+        "weight": 30
+      }
+    ],
+    "source_citation": "Slide [Tr.9-10]",
+    "summary_for_passed": "Tuyệt vời! Bạn đã giải thích rất rõ ràng về tầm quan trọng của Problem Statement và các yếu tố liên quan."
+  },
+  {
+    "id": "cp2_anti_patterns",
+    "order": 2,
+    "title": "Anti-patterns trong AI",
+    "student_starter_message": "Tại sao lại có những sai lầm thường gặp khi làm AI? Tớ không hiểu rõ về Anti-patterns.",
+    "misconceptions": [
+      "Nhiều người nghĩ rằng chỉ cần có công nghệ tốt là sẽ không mắc sai lầm.",
+      "Có thể bỏ qua việc đánh giá và kiểm thử trước khi triển khai."
+    ],
+    "rubric_points": [
+      {
+        "id": "tieu_chi_1",
+        "concept": "Khái niệm Anti-patterns",
+        "criteria": "Giải thích rõ ràng về khái niệm Anti-patterns và tại sao chúng quan trọng.",
+        "weight": 40
+      },
+      {
+        "id": "tieu_chi_2",
+        "concept": "Các loại Anti-patterns",
+        "criteria": "Liệt kê và mô tả các loại sai lầm thường gặp như Solution-first, No baseline, No evaluation.",
+        "weight": 30
+      },
+      {
+        "id": "tieu_chi_3",
+        "concept": "Cách tránh Anti-patterns",
+        "criteria": "Đưa ra các biện pháp cụ thể để tránh mắc phải các Anti-patterns trong quy trình phát triển AI.",
+        "weight": 30
+      }
+    ],
+    "source_citation": "Slide [Tr.23-24]",
+    "summary_for_passed": "Xuất sắc! Bạn đã chỉ ra rõ ràng các Anti-patterns và cách để tránh chúng trong phát triển AI."
+  },
+  {
+    "id": "cp3_reward_function",
+    "order": 3,
+    "title": "Reward Function",
+    "student_starter_message": "Tớ không hiểu Reward Function là gì và tại sao nó lại quan trọng trong AI.",
+    "misconceptions": [
+      "Nhiều người nghĩ rằng Reward Function chỉ cần đơn giản là đúng hoặc sai.",
+      "Có thể bỏ qua việc thiết kế Reward Function liên chức năng."
+    ],
+    "rubric_points": [
+      {
+        "id": "tieu_chi_1",
+        "concept": "Khái niệm Reward Function",
+        "criteria": "Giải thích rõ ràng về Reward Function và vai trò của nó trong hệ thống AI.",
+        "weight": 40
+      },
+      {
+        "id": "tieu_chi_2",
+        "concept": "Cách thiết kế Reward Function",
+        "criteria": "Mô tả quy trình thiết kế Reward Function liên chức năng và các yếu tố cần cân nhắc.",
+        "weight": 30
+      },
+      {
+        "id": "tieu_chi_3",
+        "concept": "Đánh đổi giữa Precision và Recall",
+        "criteria": "Giải thích mối quan hệ giữa Precision và Recall trong thiết kế Reward Function.",
+        "weight": 30
+      }
+    ],
+    "source_citation": "Slide [Tr.57-58]",
+    "summary_for_passed": "Tuyệt vời! Bạn đã giải thích rất rõ ràng về Reward Function và tầm quan trọng của nó trong AI."
+  }
+]
