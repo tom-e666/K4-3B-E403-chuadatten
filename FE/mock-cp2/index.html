@@ -1203,20 +1203,19 @@
       <button class="sidebar-close-btn" onclick="toggleSidebar()" title="Đóng">✕</button>
     </div>
 
-    <!-- Quick Switcher to support all 3 mock lessons from vlearn-pack -->
+    <!-- Quick Switcher to support 2 official lessons from vlearn-pack slides -->
     <div class="sidebar-module-selector">
       <div class="selector-label">
         <span>Chọn bài giảng</span>
-        <span style="color:var(--vlearn-blue)">3 bài</span>
+        <span style="color:var(--vlearn-blue)">2 bài</span>
       </div>
       <select class="lesson-select-dropdown" id="lessonDropdown" onchange="switchLesson(this.value)">
-        <option value="lesson_02">Bài 2: Transformer Architecture</option>
-        <option value="lesson_01">Bài 1: Foundation & LLM Context</option>
-        <option value="lesson_03">Bài 3: Bài toán kinh doanh AI</option>
+        <option value="lesson_01">Bài 1: Day 1 — AI & LLM Foundation</option>
+        <option value="lesson_02">Bài 2: Day 2 — AI Product & Business Problem</option>
       </select>
     </div>
 
-    <!-- Section 1: Slides Bài Giảng -->
+    <!-- Section 1: Slides Bài Giảng (1 bộ slide PDF duy nhất mỗi bài) -->
     <div class="sidebar-group">
       <div class="group-header" onclick="toggleSection('slidesSection', this)">
         <span>Slides Bài Giảng</span>
@@ -1226,21 +1225,9 @@
         <div class="nav-item active" onclick="scrollToSlide(1)">
           <div class="left-part">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span id="activeSlideFileName">4-day02-lecture-slides</span>
+            <span id="activeSlideFileName">d1-slide-hackathon.pdf</span>
           </div>
-          <span class="nav-tag-badge">Đang học</span>
-        </div>
-        <div class="nav-item muted" onclick="scrollToSlide(2)">
-          <div class="left-part">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span>b2</span>
-          </div>
-        </div>
-        <div class="nav-item muted" onclick="scrollToSlide(3)">
-          <div class="left-part">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span>Day 02_ AI Product Lab</span>
-          </div>
+          <span class="nav-tag-badge">PDF (29 trang)</span>
         </div>
       </div>
     </div>
@@ -1433,155 +1420,27 @@
 <script>
 const MOCK_LESSONS = [
   {
-    id: "lesson_02",
-    short_title: "Bài 2: Transformer Architecture",
-    topic: "Day 1 (Chiều) — Transformer Architecture & Attention Mechanism",
-    course: "AI20k Khóa 4 - Module Deep Learning",
-    duration: "55 phút",
-    lecture_file: "4-day02-lecture-slides",
-    video_title: "Transformer Architecture",
-    slides: [
-      {
-        slide: 1,
-        eyebrow: "Bài 2",
-        title: "Transformer Architecture",
-        subtitle: "From Self-Attention to Large Language Models",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "L3-L4 - Khóa 4 Phase 1 · AI in Action · Module Deep Learning",
-        diagramType: "transformer_block",
-        bullets: [
-          "Cơ chế Self-Attention: Cho phép mỗi từ chú ý đến toàn bộ các từ khác trong câu cùng lúc.",
-          "Bộ ba Query, Key, Value: Q (từ đang tìm kiếm gì), K (nhãn so khớp độ liên quan), V (nội dung thông tin lấy về).",
-          "Tích vô hướng tỉ lệ: Chia cho căn bậc hai d_k để tránh triệt tiêu gradient khi số chiều lớn."
-        ]
-      },
-      {
-        slide: 2,
-        eyebrow: "Bài 2 · Checkpoint 2",
-        title: "Multi-Head Attention",
-        subtitle: "Chiếu đa không gian biểu diễn (Subspace Projections)",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "L3-L4 - Khóa 4 Phase 1 · AI in Action · Module Deep Learning",
-        diagramType: "multi_head",
-        bullets: [
-          "Tránh hiện tượng trung bình hóa: 1 Head duy nhất sẽ làm lu mờ các mối quan hệ cú pháp và đại từ.",
-          "8 Heads song song: Mỗi head tập trung vào một khía cạnh (ngữ pháp, đại từ chỉ định, liên hệ từ xa).",
-          "Ghép nối Concat + W_O: Ghép các head lại và nhân ma trận tuyến tính để giữ nguyên số chiều d_model."
-        ]
-      },
-      {
-        slide: 3,
-        eyebrow: "Bài 2 · Checkpoint 3",
-        title: "Positional Encoding",
-        subtitle: "Bổ sung thông tin vị trí cho dữ liệu chuỗi trong xử lý song song",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "L3-L4 - Khóa 4 Phase 1 · AI in Action · Module Deep Learning",
-        diagramType: "positional_encoding",
-        bullets: [
-          "Bất biến hoán vị: Self-Attention xử lý tất cả token cùng lúc, không tự biết từ nào đứng trước hay sau.",
-          "Cộng trực tiếp vào Embedding: Vector vị trí được cộng trực tiếp vào word embedding vector.",
-          "Sóng hình sin/cosin: Tần số bước sóng khác nhau giúp mô hình học khoảng cách tương đối giữa các từ."
-        ]
-      }
-    ],
-    checkpoints: [
-      {
-        id: "cp1_self_attention",
-        short: "CP1",
-        label: "Self-Attention",
-        title: "Self-Attention & Bộ ba Q, K, V",
-        slide: 1,
-        botQuestion: "Chào bạn! Chúng ta đang ở checkpoint **CP1 - Self-Attention**.\n\nTheo bạn, Self-Attention là gì? Hãy giải thích bằng cách hiểu của bạn nhé!",
-        hints: [
-          "Gợi ý: Query nhân với Key chỉ mới tạo ra 'Attention Score'. Vậy điểm số này được chuẩn hoá qua hàm gì và nhân với vector nào để lấy nội dung?",
-          "Gợi ý thêm: Cần nhắc đến: (1) Query tìm kiếm, Key khớp độ liên quan, (2) Softmax tạo trọng số, (3) Nhân với Value."
-        ],
-        correction: "Query nhân Key cho ra Attention Score (độ liên quan), sau đó qua Softmax thành trọng số xác suất, rồi mới nhân với Value để lấy ra tổng hợp thông tin ngữ cảnh.",
-        sampleCorrect: "Tôi nghĩ Self-Attention là cơ chế giúp mô hình tự tập trung vào các từ quan trọng trong câu, bằng cách tính độ tương quan giữa các từ với nhau qua Query và Key, rồi qua Softmax nhân với Value để lấy thông tin.",
-        sampleWrong: "Nó chỉ là hàm tìm kiếm từ khóa trên Google thôi chứ không có phép tính toán ma trận gì phức tạp cả."
-      },
-      {
-        id: "cp2_multi_head_attention",
-        short: "CP2",
-        label: "Multi-Head Attention",
-        title: "Multi-Head Attention",
-        slide: 2,
-        botQuestion: "Ý tưởng của bạn khá tốt! 👍\n\nVậy theo bạn, làm thế nào mô hình biết từ nào quan trọng hơn các từ khác? Và tại sao cần chia nhỏ thành nhiều Head (Multi-Head) thay vì 1 Head to?",
-        hints: [
-          "Gợi ý: Nếu một từ vừa có quan hệ ngữ pháp vừa có quan hệ đại từ ('nó' trỏ về ai), 1 Head có thể bị trung bình hóa.",
-          "Gợi ý thêm: Nhiều Head cho phép chiếu vector vào các không gian con (subspaces) khác nhau."
-        ],
-        correction: "1 Head sẽ làm các mối quan hệ ngữ nghĩa bị trung bình hóa. Multi-Head chia thành nhiều không gian con (subspaces) để học song song nhiều khía cạnh (ngữ pháp, đại từ, ngữ cảnh xa).",
-        sampleCorrect: "Vì nếu dùng 1 head thì các mối quan hệ khác nhau sẽ bị tính trung bình và triệt tiêu nhau. Multi-Head cho phép chiếu vào nhiều subspaces khác nhau để cùng lúc nhìn được nhiều góc độ như ngữ pháp, đại từ, rồi ghép lại bằng concat.",
-        sampleWrong: "Chia nhiều head chỉ để chạy nhanh hơn trên nhiều máy tính thôi chứ ý nghĩa toán học hoàn toàn giống hệt 1 head."
-      },
-      {
-        id: "cp3_positional_encoding",
-        short: "CP3",
-        label: "Positional Encoding",
-        title: "Positional Encoding",
-        slide: 3,
-        botQuestion: "Chính xác! Câu hỏi cuối cùng: Tại sao Transformer lại cần Positional Encoding cộng vào embedding, trong khi RNN ngày xưa không cần?",
-        hints: [
-          "Gợi ý: Transformer xử lý tất cả từ CÙNG LÚC (song song), không đọc tuần tự như RNN.",
-          "Gợi ý thêm: Positional Encoding cộng thêm vector sin/cos vào embedding để mã hóa tọa độ vị trí."
-        ],
-        correction: "Vì Transformer xử lý các từ song song nên tự nó không biết thứ tự (bất biến hoán vị). Positional Encoding cộng thêm thông tin vị trí vào embedding của từng từ để mô hình phân biệt thứ tự ngữ pháp.",
-        sampleCorrect: "Vì Transformer xử lý song song tất cả các từ cùng lúc nên bất biến hoán vị, không tự biết thứ tự trước sau như RNN. Do đó cần cộng thêm vector Positional Encoding vào word embedding để mã hóa vị trí và khoảng cách bằng hàm sin cos.",
-        sampleWrong: "Transformer đọc từ trái sang phải như người nên nó đã biết vị trí rồi, cộng thêm chỉ để cho đẹp công thức."
-      }
-    ]
-  },
-  {
     id: "lesson_01",
-    short_title: "Bài 1: Foundation & LLM Context",
-    topic: "Day 1 — Foundation: Cách LLM hoạt động & Quản lý Context",
+    short_title: "Bài 1: Day 1 — AI & LLM Foundation",
+    topic: "Day 1 — AI & LLM Foundation: Bản chất LLM & Context Window",
     course: "AI20k Khóa 4 - Module Foundation",
     duration: "45 phút",
-    lecture_file: "4-day01-lecture-slides",
-    video_title: "Foundation & LLM Context",
-    slides: [
-      {
-        slide: 1,
-        eyebrow: "Bài 1",
-        title: "AI & Large Language Models",
-        subtitle: "Bức tranh tổng quan AI, Machine Learning & GenAI",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "L1-L2 - Khóa 4 Phase 1 · Foundation Module",
-        diagramType: "ai_hierarchy",
-        bullets: [
-          "AI (1956) là tập cha lớn nhất mô phỏng trí thông minh con người.",
-          "Machine Learning: Học quy luật từ dữ liệu thay vì viết luật bằng tay.",
-          "Deep Learning & LLM: Mạng nơ-ron sâu sinh văn bản theo xác suất token."
-        ]
-      },
-      {
-        slide: 2,
-        eyebrow: "Bài 1 · Checkpoint 2",
-        title: "Next-Token Prediction",
-        subtitle: "Bản chất cỗ máy xác suất & Hiện tượng ảo giác (Hallucination)",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "L1-L2 - Khóa 4 Phase 1 · Foundation Module",
-        diagramType: "next_token",
-        bullets: [
-          "Vòng lặp tự hồi quy (Autoregressive): Dự đoán token tiếp theo có xác suất cao nhất.",
-          "Nguồn gốc Ảo giác: Mô hình ưu tiên ghép từ thuận tai, không có ý thức kiểm chứng sự thật."
-        ]
-      },
-      {
-        slide: 3,
-        eyebrow: "Bài 1 · Checkpoint 3",
-        title: "Context Window & Context Rot",
-        subtitle: "Quản lý cửa sổ ngữ cảnh và hiện tượng phân tán attention",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "L1-L2 - Khóa 4 Phase 1 · Foundation Module",
-        diagramType: "context_rot",
-        bullets: [
-          "Context Window là 'bàn làm việc': Càng nhồi nhét quá tải thì càng dễ gặp Context Rot.",
-          "Nguyên tắc Less is More: Chọn lọc dữ liệu tinh gọn, ghi log/plan từng bước."
-        ]
-      }
-    ],
+    lecture_file: "d1-slide-hackathon.pdf",
+    pdf_url: "/slides/d1-slide-hackathon.pdf",
+    video_title: "AI & LLM Foundation",
+    slides: Array.from({length: 29}, (_, i) => ({
+      slide: i + 1,
+      eyebrow: `Trang ${i + 1}`,
+      title: `Day 1 Slide Page ${i + 1}`,
+      subtitle: "Nội dung bài giảng AI & LLM Foundation",
+      metaBrand: "VLearn AI20k",
+      metaPhase: "Day 1 · AI & LLM Foundation",
+      bullets: [
+        "Kiến thức tổng quan AI, Machine Learning & Deep Learning",
+        "Cơ chế Next-Token Prediction và nguồn gốc Hallucination",
+        "Quản lý Context Window và hiện tượng Context Rot"
+      ]
+    })),
     checkpoints: [
       {
         id: "cp1_next_token_hallucination",
@@ -1612,7 +1471,7 @@ const MOCK_LESSONS = [
         short: "CP3",
         label: "Attention vs RNN",
         title: "Attention song song vs Bottleneck RNN",
-        slide: 3,
+        slide: 4,
         botQuestion: "Tại sao cơ chế Attention trong Transformer lại vượt trội hoàn toàn so với mạng RNN tuần tự ngày xưa?",
         hints: ["Gợi ý: RNN đọc tuần tự từng chữ bị nghẽn câu dài. Transformer nhìn toàn câu và chạy song song trên GPU."],
         correction: "RNN đọc tuần tự từng chữ nên bị nghẽn cổ chai và quên ngữ cảnh câu dài. Transformer dùng Attention nhìn toàn bộ câu cùng lúc và xử lý song song trên GPU.",
@@ -1622,56 +1481,27 @@ const MOCK_LESSONS = [
     ]
   },
   {
-    id: "lesson_03",
-    short_title: "Bài 3: Bài toán kinh doanh AI",
-    topic: "Day 2 (Sáng) — Xác định bài toán kinh doanh cho AI (Problem Definition)",
+    id: "lesson_02",
+    short_title: "Bài 2: Day 2 — AI Product & Business Problem",
+    topic: "Day 2 — Xác định bài toán kinh doanh cho AI (Problem Definition)",
     course: "AI20k Khóa 4 - Module AI Product & Business",
     duration: "40 phút",
-    lecture_file: "4-day03-ai-product",
+    lecture_file: "d2-slide-hackathon.pdf",
+    pdf_url: "/slides/d2-slide-hackathon.pdf",
     video_title: "AI Product & Business Problem",
-    slides: [
-      {
-        slide: 1,
-        eyebrow: "Bài 3",
-        title: "Xác Định Bài Toán AI",
-        subtitle: "Tránh bẫy Jumping to Solution trong doanh nghiệp",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "Day 2 Sáng · AI Product Lab",
-        diagramType: "five_whys",
-        bullets: [
-          "Bẫy phổ biến: Nhảy thẳng vào làm AI Chatbot trước khi hiểu rõ nỗi đau thực tế.",
-          "70% thành bại của dự án AI đến từ con người và quy trình vận hành.",
-          "Kỹ thuật 5 Whys: Đào sâu tìm nguyên nhân gốc rễ trước khi chọn công nghệ."
-        ]
-      },
-      {
-        slide: 2,
-        eyebrow: "Bài 3 · Checkpoint 2",
-        title: "Product vs Project Mindset",
-        subtitle: "Tư duy sản phẩm lấy người dùng làm trung tâm (User-centered)",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "Day 2 Sáng · AI Product Lab",
-        diagramType: "pm_matrix",
-        bullets: [
-          "Project Manager: Hoàn thành đúng hạn và ngân sách theo spec có sẵn.",
-          "Product Manager: Tự tìm bài toán đáng làm, thấu hiểu khách hàng.",
-          "Đặc thù AI: Tính xác suất, kỳ vọng đổi nhanh, đòi hỏi đo lường liên tục."
-        ]
-      },
-      {
-        slide: 3,
-        eyebrow: "Bài 3 · Checkpoint 3",
-        title: "Chiến Lược Dogfooding",
-        subtitle: "Tự dùng chính sản phẩm để cảm nhận nỗi đau thực tế",
-        metaBrand: "VLearn AI20k",
-        metaPhase: "Day 2 Sáng · AI Product Lab",
-        diagramType: "dogfooding",
-        bullets: [
-          "Dogfooding: Team phát triển tự là user đầu tiên sử dụng sản phẩm hàng ngày.",
-          "Rút ngắn feedback loop: Cảm nhận nỗi đau trực tiếp, phát hiện lỗi nhanh chóng."
-        ]
-      }
-    ],
+    slides: Array.from({length: 29}, (_, i) => ({
+      slide: i + 1,
+      eyebrow: `Trang ${i + 1}`,
+      title: `Day 2 Slide Page ${i + 1}`,
+      subtitle: "Nội dung bài giảng AI Product & Business Problem",
+      metaBrand: "VLearn AI20k",
+      metaPhase: "Day 2 · AI Product Lab",
+      bullets: [
+        "Xác định bài toán AI thực tế trong doanh nghiệp",
+        "Tránh bẫy Jumping to Solution và quy trình 5 Whys",
+        "Chiến lược Dogfooding và tư duy Product Manager"
+      ]
+    })),
     checkpoints: [
       {
         id: "cp1_jumping_to_solution",
@@ -1715,15 +1545,14 @@ const MOCK_LESSONS = [
 
 /* ---------------- Global State ---------------- */
 const state = {
-  currentLessonId: "lesson_02",
+  currentLessonId: "lesson_01",
   currentSlide: 1,
   cpIdx: 0,
   attempts: 0,
   awaitingContinue: false,
   resultsMap: {
     lesson_01: [{status: 'pass', score: 100}, {status: 'pass', score: 100}, {status: 'pass', score: 100}],
-    lesson_02: [{status: 'pass', score: 100}, {status: 'pass', score: 100}, {status: 'pass', score: 100}],
-    lesson_03: [{status: 'pass', score: 100}, {status: 'pass', score: 100}, {status: 'pass', score: 100}]
+    lesson_02: [{status: 'pass', score: 100}, {status: 'pass', score: 100}, {status: 'pass', score: 100}]
   }
 };
 
@@ -1810,6 +1639,30 @@ function renderCurrentSlide() {
   document.getElementById('slideCurrentNum').textContent = state.currentSlide;
   document.getElementById('slideTotalNum').textContent = lsn.slides.length;
 
+  const pdfUrl = lsn.pdf_url || "/slides/d1-slide-hackathon.pdf";
+
+  // Hiển thị trực tiếp Slide PDF thực tế từ vlearn-pack/slides
+  if (state.viewMode !== 'diagram') {
+    stage.style.padding = "0";
+    stage.innerHTML = `
+      <div style="width:100%; height:100%; display:flex; flex-direction:column; background:#1e293b; overflow:hidden;">
+        <div style="padding: 8px 16px; background:#0f172a; color:#f8fafc; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; font-size:12.5px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="background:#ef4444; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;">PDF SLIDE</span>
+            <strong style="color:#e2e8f0;">${lsn.short_title}</strong> — Trang ${state.currentSlide} / ${lsn.slides.length}
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button onclick="state.viewMode='diagram'; renderCurrentSlide();" style="background:#334155; color:#cbd5e1; border:1px solid #475569; padding:4px 10px; border-radius:4px; font-size:11.5px; cursor:pointer;">📊 Xem Sơ Đồ Tóm Tắt</button>
+            <a href="${pdfUrl}#page=${state.currentSlide}" target="_blank" style="color:#60a5fa; text-decoration:none; font-size:11.5px; font-weight:600;">Mở PDF Cửa Sổ Mới ↗</a>
+          </div>
+        </div>
+        <iframe src="${pdfUrl}#page=${state.currentSlide}" style="width:100%; flex:1; min-height:480px; border:none; background:#ffffff;"></iframe>
+      </div>
+    `;
+    return;
+  }
+
+  stage.style.padding = "36px 44px";
   let diagramHtml = '';
   if (slide.diagramType === 'transformer_block') {
     diagramHtml = `
@@ -1921,23 +1774,27 @@ function renderCurrentSlide() {
   }
 
   stage.innerHTML = `
+    <div style="margin-bottom:12px; display:flex; justify-content:flex-end;">
+      <button onclick="state.viewMode='pdf'; renderCurrentSlide();" style="background:#2563eb; color:#ffffff; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">📄 Chuyển Sang Xem PDF Thật</button>
+    </div>
     <div class="slide-grid-container">
       <div class="slide-left-content">
-        <div class="slide-eyebrow">${slide.eyebrow}</div>
-        <h1 class="slide-main-title">${slide.title}</h1>
-        <div class="slide-subtitle">${slide.subtitle}</div>
+        <div class="slide-eyebrow">${slide.eyebrow || ''}</div>
+        <h1 class="slide-main-title">${slide.title || ''}</h1>
+        <div class="slide-subtitle">${slide.subtitle || ''}</div>
         <ul class="slide-sub-points">
-          ${slide.bullets.map(b => `<li>${b}</li>`).join('')}
+          ${(slide.bullets || []).map(b => `<li>${b}</li>`).join('')}
         </ul>
         <div class="slide-meta-badge">
-          <div class="meta-brand">${slide.metaBrand.split(' ')[0]} <span>${slide.metaBrand.split(' ')[1] || ''}</span></div>
-          <div class="meta-phase">${slide.metaPhase}</div>
+          <div class="meta-brand">VLearn <span>AI20k</span></div>
+          <div class="meta-phase">Slide PDF: ${pdfUrl}</div>
         </div>
       </div>
       ${diagramHtml}
     </div>
   `;
 }
+
 
 function scrollToSlide(n) {
   const lsn = getCurrentLesson();
