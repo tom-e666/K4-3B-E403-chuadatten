@@ -40,7 +40,7 @@
     .roadmap { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:auto 0 60px; }.priority { border:1px solid var(--line); border-radius:18px; padding:26px; background:rgba(255,255,255,.04); }.priority .n { color:var(--amber); font:500 13px 'DM Mono',monospace; }.priority h3 { font-size:25px; letter-spacing:-.05em; margin:20px 0 12px; }.priority p { color:#bdc6d5; line-height:1.55; font-size:15px; margin:0; }.closing { max-width:900px; color:#d7dfeb; font-size:clamp(18px,2vw,28px); line-height:1.42; letter-spacing:-.025em; }
     .controls { position:fixed; right:28px; bottom:23px; z-index:10; display:flex; gap:8px; }.controls button { cursor:pointer; border:1px solid var(--line); color:var(--paper); background:rgba(11,16,32,.7); width:38px; height:38px; border-radius:50%; transition:.2s; }.controls button:hover { background:var(--amber); color:var(--ink); border-color:var(--amber); }.progress { position:fixed; bottom:0; left:0; height:4px; background:var(--amber); transition:width .35s ease; z-index:20; }
     @media(max-width:720px) { .slide { padding:28px 24px 55px; overflow:auto; }.stats,.choice,.feedback,.roadmap { grid-template-columns:1fr; margin-top:30px; }.stat { min-height:110px; }.process { grid-template-columns:1fr; margin-top:25px; }.step:first-child,.step:last-child { border-radius:14px; }.step:not(:last-child):after { right:45%; top:auto; bottom:-17px; transform:rotate(90deg); }.slide:nth-of-type(3) { padding-right:24px; }.slide:nth-of-type(3) h1 { width:auto; margin-top:20px; }.demo-product { position:relative; top:auto; right:auto; width:auto; height:auto; margin-top:24px; }.chat-shot { padding:8px; border:1px solid rgba(247,184,75,.6); border-radius:16px; }.chat-shot img { height:auto; aspect-ratio:1.965; border-radius:10px; object-fit:contain; }.demo-product .process { display:grid; grid-template-columns:1fr; }.demo-product .step p { display:block; }.slide:nth-of-type(3) .footer { width:auto; }.eval { grid-template-columns:1fr; margin-top:30px; gap:20px; }.reason{border-left:0;padding-left:0}.demo-row{grid-template-columns:1fr}.footer{left:24px;right:24px}.choice-card{min-height:140px} }
-    @media print { @page { size:16in 9in; margin:0; } html,body,.deck { width:16in; height:auto; overflow:visible; } .grain,.controls,.progress { display:none !important; } .slide { display:flex !important; width:16in; height:9in; min-height:9in; page-break-after:always; break-after:page; animation:none !important; opacity:1 !important; transform:none !important; } .slide:last-of-type { page-break-after:auto; break-after:auto; } }
+    @media print { @page { size:16in 9in; margin:0; } html,body,.deck { width:16in; height:9in; overflow:hidden; } .grain,.controls,.progress { display:none !important; } .slide { display:none !important; width:16in; height:9in; min-height:9in; animation:none !important; opacity:1 !important; transform:none !important; } .slide.active { display:flex !important; } }
   </style>
 </head>
 <body>
@@ -98,11 +98,19 @@
   <nav class="controls" aria-label="Điều hướng slide"><button type="button" id="prev" aria-label="Slide trước">←</button><button type="button" id="next" aria-label="Slide sau">→</button></nav>
   <div class="progress" id="progress"></div>
   <script>
-    const slides=[...document.querySelectorAll('.slide')]; let current=0;
+    const slides=[...document.querySelectorAll('.slide')]; const requestedSlide=Number(new URLSearchParams(location.search).get('slide')); let current=Number.isInteger(requestedSlide)&&requestedSlide>=1&&requestedSlide<=slides.length?requestedSlide-1:0;
     function render(next){ current=(next+slides.length)%slides.length; slides.forEach((s,i)=>s.classList.toggle('active',i===current)); document.getElementById('progress').style.width=((current+1)/slides.length*100)+'%'; }
     document.getElementById('next').onclick=()=>render(current+1); document.getElementById('prev').onclick=()=>render(current-1);
     document.addEventListener('keydown',e=>{if(['ArrowRight',' ','PageDown'].includes(e.key)){e.preventDefault();render(current+1)} if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();render(current-1)} if(e.key==='Home')render(0); if(e.key==='End')render(slides.length-1)});
-    let startX; document.addEventListener('touchstart',e=>startX=e.changedTouches[0].screenX,{passive:true}); document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-startX;if(Math.abs(dx)>45)render(current+(dx<0?1:-1))},{passive:true}); render(0);
+    let wheelLocked=false;
+    document.addEventListener('wheel',e=>{
+      if(Math.abs(e.deltaY)<=Math.abs(e.deltaX)||wheelLocked) return;
+      e.preventDefault();
+      wheelLocked=true;
+      render(current+(e.deltaY>0?1:-1));
+      setTimeout(()=>wheelLocked=false,450);
+    },{passive:false});
+    let startX; document.addEventListener('touchstart',e=>startX=e.changedTouches[0].screenX,{passive:true}); document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-startX;if(Math.abs(dx)>45)render(current+(dx<0?1:-1))},{passive:true}); render(current);
   </script>
 </body>
 </html>
