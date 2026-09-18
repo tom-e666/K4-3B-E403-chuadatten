@@ -1,0 +1,26 @@
+{
+  "version": "v1",
+  "milestone": "First Functional Prototype (Working Prototype)",
+  "target_commit": "c90b4da",
+  "automated_golden_set": "NOT_REPRODUCED",
+  "total_cases": null,
+  "passed_cases": null,
+  "failed_cases": null,
+  "pass_rate_percentage": null,
+  "status": "HISTORICAL_RESULT_UNAVAILABLE",
+  "evaluation_type": "Ad-hoc Manual Prompt Testing",
+  "summary": "Phiên bản v1 tích hợp thành công backend FastAPI và gọi LLM thật (Gemini/OpenAI) cho bài học Transformer. Tuy nhiên, thư mục eval/ và runner tự động chưa được commit vào lịch sử git tại thời điểm này, do đó kết quả benchmark lịch sử được đánh dấu trung thực là UNAVAILABLE thay vì tạo số liệu giả định.",
+  "capabilities": {
+    "automated_evaluator": false,
+    "llm_integration": true,
+    "multi_lesson": false,
+    "resilience_fallback": false
+  },
+  "observed_issues": [
+    "Toàn bộ trang web bị cuộn dọc khi đoạn hội thoại dài (page scroll), làm mất video/slide bài giảng",
+    "Giao diện thô sơ, chưa tích hợp nhận diện thương hiệu chuẩn VLearn",
+    "Chưa có cơ chế dự phòng tự động khi API LLM chạm hạn mức 429",
+    "Chỉ hỗ trợ 1 bài học duy nhất (Transformer)"
+  ]
+}
+

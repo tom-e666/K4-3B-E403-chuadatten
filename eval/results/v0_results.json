@@ -1,0 +1,22 @@
+{
+  "version": "v0",
+  "milestone": "Proof of Concept (PoC) / Kịch bản sơ khởi",
+  "target_commit": "839edde",
+  "source_artifact": "co_kich_ban.html",
+  "automated_golden_set": "N/A",
+  "total_cases": 0,
+  "passed_cases": 0,
+  "failed_cases": 0,
+  "pass_rate_percentage": null,
+  "status": "MANUAL_VERIFICATION_ONLY",
+  "evaluation_type": "Static Scripted Walkthrough",
+  "summary": "Phiên bản v0 là giao diện tĩnh (Proof of Concept) mô phỏng kịch bản hội thoại bằng HTML/JS thuần. Không có backend server, không có kết nối LLM và chưa có runner kiểm thử tự động tại mốc này.",
+  "capabilities": {
+    "automated_evaluator": false,
+    "llm_integration": false,
+    "multi_lesson": false,
+    "resilience_fallback": false
+  },
+  "notes": "Tuân thủ nguyên tắc đo lường trung thực: Không bịa đặt số liệu tự động cho phiên bản kịch bản tĩnh."
+}
+
