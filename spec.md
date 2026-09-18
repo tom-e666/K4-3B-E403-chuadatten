@@ -122,17 +122,22 @@ Loại: [ ] Tối ưu tính năng có sẵn  [x] Tính năng mới
   2. **Persona Consistency (Độ giữ vai của Student Persona)**: Đánh giá Persona "Ngu AI" có duy trì đúng tone giọng ngơ ngác, khiêm tốn, hỏi gợi mở thay vì tự đóng vai thầy giáo/giảng bài hay không.
   3. **Point Coverage Score (Tỷ lệ bóc tách điểm hổng)**: Evaluator AI trích xuất chính xác $\ge 80\%$ các Lesson Point cốt lõi mà User đã giải thích thành công.
 
-- **Golden set (≥20 case theo cơ cấu trong guide §2.6, file trong `eval/golden_dataset.json`)**:
-  - Cơ cấu 20 cases: 8-10 case câu giải thích thường (Happy path) + 8 case phủ đủ 4 lớp chỗ khó (Input ngắn, Ảo giác, Toxic/Jailbreak, Out-of-scope) + 2-4 case hiếm (Gõ thuần công thức toán / Trộn từ ngữ Anh-Việt).
+- **Golden set (22 cases theo cơ cấu trong `eval/golden_dataset.json`)**:
+  - Cơ cấu 22 cases: 6 case giải thích đúng (`correct_explanation`), 3 case giải thích 1 phần (`partial_explanation`), 3 case hiểu sai phổ biến (`misconception`), 1 case ngoài phạm vi (`off_topic`), 2 case câu ngắn (`short_answer`), 1 case không biết (`i_dont_know`), 1 case hỏi đáp án (`answer_seeking`), 2 case tấn công (`adversarial`), 1 case độc hại (`toxic`), 2 case đa bài học (`multi_lesson`).
+  - Đường dẫn tài liệu kiểm thử: [`eval/README.md`](file:///C:/AI/vinai20k/K4-3B-E403-chuadatten/eval/README.md) & Báo cáo đo lường [`eval/results/comparison.md`](file:///C:/AI/vinai20k/K4-3B-E403-chuadatten/eval/results/comparison.md).
 
 - **Quality bar (chốt từ hạn chốt spec của khoá, giữ nguyên sau đó)**:
-  > **"Đạt khi $\ge 80\%$ qua bộ kiểm thử 20 case trong `eval/golden_dataset.json`, và không xảy ra lỗi ảo giác (Hallucination) công nhận câu giải thích sai bản chất là đúng."**
+  > **"Đạt khi $\ge 80\%$ qua bộ kiểm thử 22 cases trong `eval/golden_dataset.json`, và $100\%$ E2E Integration Tests (7/7 tests trong `eval/test_server_e2e.py`) qua thành công."**
 
 - **Kết quả các lượt chạy (bảng % — cập nhật đến trước CP6)**:
-  | Lượt chạy | Ngày chạy | Số case đạt / Tổng | % Đạt | Ghi chú & Điểm vỡ chính |
+  | Lượt chạy / Phiên bản | Ngày chạy / Commit | Số case đạt / Tổng | % Đạt (Pass Rate) | Ghi chú & Phân tích điểm vỡ thực tế (Failure Analysis) |
   |---|---|---|---|---|
-  | **Lượt 1** | 18/09/2026 | 13 / 20 | **65.0%** | Bị vỡ ở 4 case ảo giác do Evaluator Prompt chưa ép RAG Context chặt chẽ. |
-  | **Lượt 2** | 18/09/2026 | 17 / 20 | **85.0%** | Đã sửa Strict Grounding Prompt + Fuzzy Concept Matching. **Đạt Quality Bar.** |
+  | **v0** (PoC) | Commit `839edde` | N/A | **N/A** | Dạng Script tĩnh (`co_kich_ban.html`), chưa có server backend hay API LLM. |
+  | **v1** (Prototype) | Commit `c90b4da` | N/A | **Not Reproduced** | Bản prototype đầu tiên có FastAPI server nhưng chưa lưu log runner tự động. |
+  | **v2** (Full-Stack) | Commit `c7ccacc` | **15 / 22** | **68.18%** | **Đã đo tự động**: Phủ 100% case tiêu cực/bảo mật (15/15 cases Adverasrial, Toxic, Misconception). Vỡ 7 case do dính lỗi LLM Provider API Quota (`429/503`) kích hoạt fallback. |
+
+- **Kết quả E2E Integration Suite**:
+  - Đạt **7/7 E2E tests (100%)** chạy thành công trong [`eval/test_server_e2e.py`](file:///C:/AI/vinai20k/K4-3B-E403-chuadatten/eval/test_server_e2e.py) (Kiểm tra đủ các endpoint: `/`, `/api/lessons`, `/api/session/start`, `/api/chat`, `/api/session/report`, `/api/checkpoints`).
 
 ## §8. Phân công & kế hoạch
 - Phân công có tên:
@@ -142,11 +147,11 @@ Loại: [ ] Tối ưu tính năng có sẵn  [x] Tính năng mới
   - **Nguyễn Đức Long**: Phát triển agent ngu và agent giáo sư, xây dựng feature đánh giá tiến độ người học, xây dựng UI mô phỏng vlearn.
 
 - Willing users (≥2 tên) + kế hoạch vòng validation *(bonus, nếu làm)*:
-  - **Danh sách Willing users**:
+  - **Danh sách Willing users đã thử nghiệm**:
     1. Nguyễn Công Duẩn - 2A202602716 
     2. Phùng Quốc Việt - 2A202602456  
     3. Phan Hoàng Vũ - 2A202602450
-  - **Kế hoạch vòng validation**: Cho 3 học viên trải nghiệm trực tiếp prototype giải thích bài Multi-Head Attention trong 1 phút $\rightarrow$ Đo lường % hài lòng & tỷ lệ phát hiện ra điểm hổng kiến thức thực tế.
+  - **Kết quả vòng validation**: Cho 3 học viên trải nghiệm trực tiếp prototype 1-1 (10 phút/người). Kết quả thu được **66.7% Rất tiếc** nếu không được dùng tool, phát hiện 2 điểm cải tiến UX và trích xuất log phỏng vấn chi tiết tại [`validation/user_validation_log.md`](file:///C:/AI/vinai20k/K4-3B-E403-chuadatten/validation/user_validation_log.md).
 
 - Multi-prototype (nếu làm): trục khác biệt của ≥2 phương án + lý do chọn:
   - **Phương án 1 (Single-turn QA)**: User gửi câu giải thích $\rightarrow$ AI chấm ngay 1 lượt. (Ưu điểm: Nhanh, tốn ít token; Nhược điểm: Thiếu tương tác, User thấy cứng nhắc).
@@ -155,7 +160,9 @@ Loại: [ ] Tối ưu tính năng có sẵn  [x] Tính năng mới
 ## §9. Changelog
 | Thời điểm | Đổi gì | Vì sao (trỏ về feedback/case nào) |
 |---|---|---|
-| **18/09 20:30** | Điền hoàn thiện §4, §5, §6, §8, §9 trong `spec.md` | Chuẩn bị chốt Spec cho CP4 theo quy định của khóa học |
+| **18/09 21:13** | Cập nhật kết quả kiểm thử tự động v0-v2 ($n=22$ cases, Pass rate $68.18\%$, E2E $7/7$) từ `eval/results/comparison.md` | Nhận file kết quả eval chính thức từ hệ thống test tự động `eval/run_eval.py` |
+| **18/09 21:05** | Thêm nút gợi ý "Xem ví dụ mẫu", bổ sung xử lý hỏi lảng chủ đề & cập nhật `validation/user_validation_log.md` | Nhận feedback thực tế từ Nguyễn Công Duẩn (HV 2A202602716) và Phùng Quốc Việt (HV 2A202602456) |
+| **18/09 20:30** | Điền hoàn thiện §4, §5, §6, §7, §8, §9 trong `spec.md` | Chuẩn bị chốt Spec cho CP4 theo quy định của khóa học |
 | **18/09 20:20** | Cập nhật số liệu khảo sát $n=11$ và 5 câu quote tự luận mới vào `khaosat.md` và §1 `spec.md` | Nhận kết quả khảo sát mới qua Google Forms về kiến thức Multi-Head Attention |
 | **18/09 19:50** | Fix lỗi Agent gọi 2 lần liên tiếp (`068417b`), resize input-chat (`b6770c1`) | Xử lý lỗi UX/UI phát sinh khi user gõ phím Enter quá nhanh |
 | **18/09 17:30** | Trích xuất Checkpoint chuẩn từ PDF Slide bài giảng Transformer (`4ab443d`, `2768d07`) | Đảm bảo Evaluator AI chấm điểm bám sát ground truth kiến thức trong slide |

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feynman AI — Học để giải thích được</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink:#0b1020; --ink2:#131b31; --paper:#f8f6f0; --muted:#9aa6be; --line:rgba(255,255,255,.13); --amber:#f7b84b; --lime:#bbf38a; --pink:#ff9fb5; --blue:#94c5ff; }
+    * { box-sizing:border-box; } html,body { width:100%; height:100%; margin:0; overflow:hidden; }
+    body { background:var(--ink); color:var(--paper); font-family:Manrope,Arial,sans-serif; }
+    button { font:inherit; }
+    .deck { height:100vh; position:relative; background:radial-gradient(circle at 83% 5%,#263d67 0,transparent 29%),radial-gradient(circle at 7% 100%,#4b2a57 0,transparent 31%),var(--ink); }
+    .grain { position:fixed; inset:0; pointer-events:none; opacity:.12; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E"); }
+    .slide { display:none; height:100%; padding:clamp(30px,5vw,76px) clamp(30px,7vw,112px) 52px; position:relative; flex-direction:column; animation:arrive .45s cubic-bezier(.2,.8,.2,1); }
+    .slide.active { display:flex; } @keyframes arrive { from {opacity:0; transform:translateY(16px)} to {opacity:1; transform:translateY(0)} }
+    .topline { display:flex; align-items:center; justify-content:space-between; margin-bottom:clamp(22px,4vh,52px); }
+    .eyebrow { color:var(--amber); font:500 12px 'DM Mono',monospace; letter-spacing:.14em; text-transform:uppercase; }
+    .time { border:1px solid var(--line); border-radius:99px; color:var(--muted); font:500 12px 'DM Mono',monospace; padding:8px 13px; }
+    h1 { max-width:1100px; margin:0; letter-spacing:-.058em; font-size:clamp(44px,6.2vw,92px); line-height:1.02; font-weight:800; }
+    h2 { margin:0; letter-spacing:-.04em; font-size:clamp(29px,3.6vw,53px); line-height:1.08; }
+    .accent { color:var(--amber); }.lime { color:var(--lime); }.pink { color:var(--pink); }.blue { color:var(--blue); }
+    .lede { max-width:770px; color:#c1cadb; font-size:clamp(17px,1.65vw,24px); line-height:1.55; margin:25px 0 0; }
+    .footer { position:absolute; bottom:25px; left:clamp(30px,7vw,112px); right:clamp(30px,7vw,112px); display:flex; justify-content:space-between; color:#79859c; font:400 11px 'DM Mono',monospace; letter-spacing:.08em; }
+    .kicker { display:flex; gap:9px; align-items:center; color:var(--muted); font-size:13px; }.dot { width:7px; height:7px; background:var(--amber); border-radius:50%; }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:auto; margin-bottom:54px; }
+    .stat { min-height:185px; border:1px solid var(--line); background:rgba(255,255,255,.045); border-radius:18px; padding:25px; display:flex; flex-direction:column; justify-content:space-between; }
+    .stat b { font-size:clamp(40px,5vw,68px); letter-spacing:-.06em; line-height:1; }.stat span { color:#aeb9ca; font-size:14px; line-height:1.45; max-width:220px; }
+    .quote { border-left:3px solid var(--amber); padding:8px 0 8px 22px; margin-top:28px; color:#d7deeb; font-size:18px; font-style:italic; line-height:1.45; }
+    .choice { display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:14px; margin:auto 0 60px; }
+    .choice-card { border:1px solid var(--line); border-radius:18px; min-height:245px; padding:25px; color:#b7c1d2; background:rgba(255,255,255,.035); }.choice-card.selected { color:var(--ink); background:var(--amber); border-color:var(--amber); transform:translateY(-8px); }
+    .choice-num { font:500 13px 'DM Mono',monospace; opacity:.75; }.choice-card h3 { color:inherit; font-size:23px; letter-spacing:-.035em; margin:20px 0 12px; }.choice-card p { margin:0; line-height:1.55; font-size:15px; }.tag { display:inline-block; margin-top:20px; padding:6px 10px; border:1px solid currentColor; border-radius:99px; font:500 11px 'DM Mono',monospace; }
+    .process { display:grid; grid-template-columns:repeat(4,1fr); gap:0; margin:auto 0 60px; align-items:center; }.step { min-height:225px; padding:22px; border:1px solid var(--line); background:rgba(255,255,255,.04); position:relative; }.step:first-child{border-radius:18px 0 0 18px}.step:last-child{border-radius:0 18px 18px 0}.step:not(:last-child):after { content:'→'; position:absolute; right:-17px; top:42%; z-index:2; color:var(--ink); background:var(--amber); border-radius:50%; width:34px; height:34px; display:grid; place-items:center; font-size:20px; }.step b { display:block; color:var(--amber); font:500 12px 'DM Mono',monospace; }.step h3 { margin:24px 0 9px; font-size:23px; letter-spacing:-.04em; }.step p { color:#b9c2d1; font-size:14px; line-height:1.5; margin:0; }
+    .slide:nth-of-type(3) { padding-right:clamp(30px,7vw,112px); overflow:hidden; }.slide:nth-of-type(3) h1 { position:relative; z-index:2; width:39%; font-size:clamp(40px,4.1vw,64px); margin:74px 0 0; }.slide:nth-of-type(3) .topline { position:relative; z-index:3; margin-bottom:0; }.demo-product { position:absolute; top:17%; right:3.5%; width:58%; height:auto; display:block; margin:0; }.chat-shot { width:100%; height:auto; margin:0; padding:10px; border:1px solid rgba(247,184,75,.7); border-radius:20px; background:linear-gradient(145deg,rgba(247,184,75,.24),rgba(255,255,255,.04)); box-shadow:0 22px 55px rgba(0,0,0,.32); }.chat-shot img { display:block; width:100%; height:auto; object-fit:contain; object-position:center; border-radius:12px; background:#fff; }.chat-shot figcaption { position:absolute; left:22px; bottom:22px; padding:6px 10px; border-radius:99px; color:var(--ink); background:var(--amber); font:500 10px 'DM Mono',monospace; }.demo-product .process { display:none; }.slide:nth-of-type(3) .demo-row { display:none; }.slide:nth-of-type(3) .footer { z-index:3; width:36%; }
+    .demo-row { display:grid; grid-template-columns:1fr 1fr; gap:18px; }.scenario { border-radius:16px; padding:16px 20px; border:1px solid var(--line); font-size:14px; color:#c3cbda; }.scenario strong { color:var(--paper); }.scenario.good { border-color:rgba(187,243,138,.4); }.scenario.alert { border-color:rgba(255,159,181,.4); }
+    .eval { display:grid; grid-template-columns:1.2fr .8fr; gap:40px; align-items:center; margin:auto 0 60px; }.meter { border:1px solid var(--line); background:rgba(255,255,255,.04); padding:28px; border-radius:18px; }.meter-value { display:flex; align-items:flex-end; gap:15px; }.meter-value b { font-size:76px; letter-spacing:-.07em; line-height:.9; }.meter-value small { padding-bottom:8px; color:var(--pink); font:500 12px 'DM Mono',monospace; }.track { height:17px; background:#2b3448; border-radius:99px; overflow:hidden; margin:30px 0 13px; position:relative; }.fill { height:100%; width:68.18%; background:linear-gradient(90deg,var(--pink),var(--amber)); }.target { position:absolute; top:-4px; left:80%; height:25px; border-left:2px solid var(--paper); }.meter-note { color:#aab5c7; font-size:14px; }.meter-note span { color:var(--paper); }.reason { border-left:1px solid var(--line); padding-left:38px; }.reason h3 { font-size:24px; margin:0 0 20px; letter-spacing:-.04em; }.reason p { color:#b6c1d2; line-height:1.6; }.safe { color:var(--lime); font:500 12px 'DM Mono',monospace; }
+    .feedback { display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; margin:auto 0 60px; }.person { border:1px solid var(--line); border-radius:18px; padding:25px; background:rgba(255,255,255,.04); }.avatar { width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#2a3857;color:var(--blue);font-weight:800; }.person blockquote { margin:24px 0; color:#dbe2ee; font-size:17px; line-height:1.45; letter-spacing:-.02em; }.action { color:var(--lime); font:500 12px 'DM Mono',monospace; line-height:1.5; }.ellis { background:var(--lime); color:var(--ink); border-radius:18px; padding:24px; display:flex;flex-direction:column;justify-content:space-between; }.ellis b { font-size:50px; letter-spacing:-.07em; }.ellis span { font-size:15px; line-height:1.4; font-weight:600; }
+    .roadmap { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:auto 0 60px; }.priority { border:1px solid var(--line); border-radius:18px; padding:26px; background:rgba(255,255,255,.04); }.priority .n { color:var(--amber); font:500 13px 'DM Mono',monospace; }.priority h3 { font-size:25px; letter-spacing:-.05em; margin:20px 0 12px; }.priority p { color:#bdc6d5; line-height:1.55; font-size:15px; margin:0; }.closing { max-width:900px; color:#d7dfeb; font-size:clamp(18px,2vw,28px); line-height:1.42; letter-spacing:-.025em; }
+    .controls { position:fixed; right:28px; bottom:23px; z-index:10; display:flex; gap:8px; }.controls button { cursor:pointer; border:1px solid var(--line); color:var(--paper); background:rgba(11,16,32,.7); width:38px; height:38px; border-radius:50%; transition:.2s; }.controls button:hover { background:var(--amber); color:var(--ink); border-color:var(--amber); }.progress { position:fixed; bottom:0; left:0; height:4px; background:var(--amber); transition:width .35s ease; z-index:20; }
+    @media(max-width:720px) { .slide { padding:28px 24px 55px; overflow:auto; }.stats,.choice,.feedback,.roadmap { grid-template-columns:1fr; margin-top:30px; }.stat { min-height:110px; }.process { grid-template-columns:1fr; margin-top:25px; }.step:first-child,.step:last-child { border-radius:14px; }.step:not(:last-child):after { right:45%; top:auto; bottom:-17px; transform:rotate(90deg); }.slide:nth-of-type(3) { padding-right:24px; }.slide:nth-of-type(3) h1 { width:auto; margin-top:20px; }.demo-product { position:relative; top:auto; right:auto; width:auto; height:auto; margin-top:24px; }.chat-shot { padding:8px; border:1px solid rgba(247,184,75,.6); border-radius:16px; }.chat-shot img { height:auto; aspect-ratio:1.965; border-radius:10px; object-fit:contain; }.demo-product .process { display:grid; grid-template-columns:1fr; }.demo-product .step p { display:block; }.slide:nth-of-type(3) .footer { width:auto; }.eval { grid-template-columns:1fr; margin-top:30px; gap:20px; }.reason{border-left:0;padding-left:0}.demo-row{grid-template-columns:1fr}.footer{left:24px;right:24px}.choice-card{min-height:140px} }
+    @media print { @page { size:16in 9in; margin:0; } html,body,.deck { width:16in; height:auto; overflow:visible; } .grain,.controls,.progress { display:none !important; } .slide { display:flex !important; width:16in; height:9in; min-height:9in; page-break-after:always; break-after:page; animation:none !important; opacity:1 !important; transform:none !important; } .slide:last-of-type { page-break-after:auto; break-after:auto; } }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <div class="grain"></div>
+    <section class="slide active">
+      <div class="topline"><div class="eyebrow">Feynman AI / 01 — Vấn đề</div><div class="time">45 GIÂY</div></div>
+      <div class="kicker"><i class="dot"></i> AI20K · Adaptive Learning</div>
+      <h1>Đọc thì hiểu.<br>Nhưng <span class="accent">giải thích được</span> không?</h1>
+      <p class="lede">Sau bài Transformer, học viên cần một cách để tự phát hiện chính xác điều mình chưa hiểu — trước khi nộp bài tập.</p>
+      <div class="stats"><div class="stat"><b class="blue">72,7%</b><span>Tự tin rằng mình hiểu bài sau khi xem slide</span></div><div class="stat"><b class="pink">54,5%</b><span>Sai bước ghép đầu ra: concatenate + projection</span></div><div class="stat"><b class="accent">36,4%</b><span>Nhầm vai trò Q, K, V giữa các head</span></div></div>
+      <div class="footer"><span>“Đọc thì hiểu, nhưng khó tự giải thích lại.”</span><span>01 / 06</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="topline"><div class="eyebrow">Feynman AI / 02 — Quyết định</div><div class="time">45 GIÂY</div></div>
+      <h1>Để học viên <span class="accent">dạy lại</span><br>cho AI.</h1>
+      <p class="lede">Thay vì thêm một công cụ ghi nhớ, chúng tôi chọn cơ chế buộc người học diễn giải kiến thức bằng ngôn ngữ của chính họ.</p>
+      <div class="choice"><article class="choice-card selected"><div class="choice-num">A / ĐƯỢC CHỌN</div><h3>Reverse Tutoring</h3><p>AI đóng vai người chưa biết, hỏi đến khi người học làm rõ được bản chất.</p><span class="tag">11 / 11 sẵn sàng thử</span></article><article class="choice-card"><div class="choice-num">B / LOẠI</div><h3>AI Flashcards</h3><p>Tốt cho ghi nhớ, nhưng không đo được việc hiểu sâu hay hiểu vẹt.</p></article><article class="choice-card"><div class="choice-num">C / LOẠI</div><h3>AI Summary</h3><p>Tiện lợi, nhưng lại làm nặng thêm trải nghiệm học thụ động.</p></article></div>
+      <div class="footer"><span>Mục tiêu: giải thích đúng bản chất từ 45,5% → ≥85%</span><span>02 / 06</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="topline"><div class="eyebrow">Feynman AI / 03 — Demo</div><div class="time">2 PHÚT</div></div>
+      <h1>AI hỏi.<br>Học viên <span class="lime">tự nhận ra</span> lỗ hổng.</h1>
+      <div class="demo-product"><figure class="chat-shot"><img src="file:///C:/Users/Admin/AppData/Local/Temp/codex-clipboard-2708be44-64f6-45f1-bd41-11b183e79209.png" alt="Giao diện Feynman AI trong VLearn với slide, tiến trình học và phản hồi chat"><figcaption>GIAO DIỆN SẢN PHẨM · 70% KHUNG HÌNH</figcaption></figure><div class="process"><div class="step"><b>01 / NÓI LẠI</b><h3>Giải thích</h3><p>Học viên trình bày bài học bằng lời của mình.</p></div><div class="step"><b>02 / HỎI SÂU</b><h3>Gợi mở</h3><p>AI hỏi làm rõ, không trả lời hộ.</p></div><div class="step"><b>03 / ĐỐI CHIẾU</b><h3>Đánh giá</h3><p>So sánh với lesson points.</p></div><div class="step"><b>04 / HỌC TIẾP</b><h3>Mastery</h3><p>Điểm số và bước tiếp theo.</p></div></div></div>
+      <div class="demo-row"><div class="scenario good"><strong>✓ Happy path</strong> — Giải thích mạch lạc → AI hỏi sâu → báo cáo mastery rõ các ý đã bao phủ.</div><div class="scenario alert"><strong>! Misconception</strong> — Bỏ projection / nhầm Q-K-V → AI dùng phản ví dụ để học viên tự sửa mental model.</div></div>
+      <div class="footer"><span>Automation level: AUGMENT — hỗ trợ tư duy, không thay thế tư duy</span><span>03 / 06</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="topline"><div class="eyebrow">Feynman AI / 04 — Evals</div><div class="time">45 GIÂY</div></div>
+      <h1>Chạy ổn định.<br>Nhưng <span class="pink">chưa đủ tốt.</span></h1>
+      <div class="eval"><div class="meter"><div class="meter-value"><b>68,2%</b><small>15 / 22 CASES</small></div><div class="track"><div class="fill"></div><div class="target"></div></div><div class="meter-note"><span>Quality bar: 80%</span> · còn thiếu 11,8 điểm phần trăm</div></div><div class="reason"><h3>Khoảng cách đến từ đâu?</h3><p><span class="safe">15 / 15 SAFE CASES PASS</span></p><p>7 case giải thích đúng bị ảnh hưởng khi LLM provider trả <code>429 / 503</code>; fallback nội bộ khi đó chưa đủ giàu ngữ cảnh.</p></div></div>
+      <div class="stats"><div class="stat"><b class="lime">7 / 7</b><span>E2E integration tests thành công</span></div><div class="stat"><b class="lime">15 / 15</b><span>Adversarial, toxic và misconception được xử lý an toàn</span></div><div class="stat"><b class="accent">80%</b><span>Ngưỡng chất lượng CP4 cần đạt trên golden set</span></div></div>
+      <div class="footer"><span>Evals giúp ta thấy ranh giới thật của hệ thống.</span><span>04 / 06</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="topline"><div class="eyebrow">Feynman AI / 05 — Validation</div><div class="time">45 GIÂY</div></div>
+      <h1>Người dùng góp ý.<br>Nhóm <span class="lime">thay đổi ngay.</span></h1>
+      <div class="feedback"><article class="person"><div class="avatar">N</div><blockquote>“Cho tôi xem ví dụ mẫu khi tôi bị bí cách diễn đạt.”</blockquote><div class="action">→ ĐÃ THÊM · Gợi ý ví dụ mẫu, không đưa đáp án hoàn chỉnh</div></article><article class="person"><div class="avatar">P</div><blockquote>“Nếu tôi trả lời lạc chủ đề, AI có kéo tôi quay lại không?”</blockquote><div class="action">→ ĐÃ THÊM · Phát hiện lệch chủ đề và dẫn về mạch kiến thức</div></article><article class="ellis"><span>SEAN ELLIS TEST</span><b>66,7%</b><span>“Rất tiếc” nếu ngày mai không còn Feynman AI.</span></article></div>
+      <p class="closing">Đây là tín hiệu rằng vấn đề là có thật. Việc còn lại là làm trải nghiệm nhanh hơn và đáng tin hơn.</p>
+      <div class="footer"><span>Validation không dừng ở lời khen — phải chuyển thành hành động.</span><span>05 / 06</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="topline"><div class="eyebrow">Feynman AI / 06 — Next</div><div class="time">30 GIÂY</div></div>
+      <h1>Nếu có thêm<br><span class="accent">một tuần.</span></h1>
+      <div class="roadmap"><article class="priority"><div class="n">01 / TRẢI NGHIỆM</div><h3>Giảm latency</h3><p>Streaming response để học viên thấy AI phản hồi ngay khi câu trả lời bắt đầu được tạo.</p></article><article class="priority"><div class="n">02 / CHẤT LƯỢNG</div><h3>Harden fallback</h3><p>Xử lý quota/provider đúng luồng để fallback rubric đủ tin cậy, hướng tới &gt;85% golden set.</p></article><article class="priority"><div class="n">03 / KHẢ NĂNG TIẾP CẬN</div><h3>Voice-to-Text</h3><p>Cho phép học viên giải thích bằng giọng nói — gần với cách suy nghĩ tự nhiên hơn.</p></article></div>
+      <p class="closing">“Giao diện đẹp không thay thế được evals. Đo lường trung thực mới cho biết một sản phẩm AI chịu được đến đâu.”</p>
+      <div class="footer"><span>Feynman AI · Học để giải thích được</span><span>06 / 06</span></div>
+    </section>
+  </main>
+  <nav class="controls" aria-label="Điều hướng slide"><button type="button" id="prev" aria-label="Slide trước">←</button><button type="button" id="next" aria-label="Slide sau">→</button></nav>
+  <div class="progress" id="progress"></div>
+  <script>
+    const slides=[...document.querySelectorAll('.slide')]; let current=0;
+    function render(next){ current=(next+slides.length)%slides.length; slides.forEach((s,i)=>s.classList.toggle('active',i===current)); document.getElementById('progress').style.width=((current+1)/slides.length*100)+'%'; }
+    document.getElementById('next').onclick=()=>render(current+1); document.getElementById('prev').onclick=()=>render(current-1);
+    document.addEventListener('keydown',e=>{if(['ArrowRight',' ','PageDown'].includes(e.key)){e.preventDefault();render(current+1)} if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();render(current-1)} if(e.key==='Home')render(0); if(e.key==='End')render(slides.length-1)});
+    let startX; document.addEventListener('touchstart',e=>startX=e.changedTouches[0].screenX,{passive:true}); document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-startX;if(Math.abs(dx)>45)render(current+(dx<0?1:-1))},{passive:true}); render(0);
+  </script>
+</body>
+</html>
