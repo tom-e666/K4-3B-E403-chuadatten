@@ -282,3 +282,46 @@ Cẩn trọng khi đưa data vào công cụ ngoài — chỉ đưa phần tối
 Không cố suy ngược danh tính từ dữ liệu đã ẩn danh (S####, T#####, D####, [HV], [học viên]). Riêng discord-pack/: người trong đó là bạn cùng khoá — tuyệt đối không đoán/hỏi "tin này của ai"; trích dẫn tối đa 2 câu mỗi ví dụ (xem data/discord-pack/README.md).
 Sau sự kiện, xoá các bản sao data pack khỏi máy cá nhân và các công cụ đã upload nếu ban tổ chức yêu cầu.
 Vi phạm được xử lý theo quy định của khoá và có thể ảnh hưởng trực tiếp đến điểm của nhóm.
+
+---
+
+## Luồng "Tải slide PDF lên → AI sinh file JSON checkpoint → UI nạp từ file đó"
+
+**Mỗi file slide PDF = một bài giảng = một file JSON checkpoint riêng.**
+
+1. Chạy `run_server.bat`, mở **http://localhost:8000** (mở thẳng `index.html` sẽ không gọi được API).
+2. Sidebar trái, mục **Nguồn slide PDF** → bấm **⬆ Tải slide PDF lên** hoặc kéo thả file PDF vào ô đó.
+   File được gửi lên `POST /api/slides/upload` (base64 trong JSON, không cần `python-multipart`), lưu vào
+   `backend/data/vlearn-pack/slides/`; trùng tên thì tự thêm hậu tố `-2`, `-3`… chứ không đè.
+3. Server lập tức cho Agent 1 (`backend/lesson_ingest.py`) đọc file PDF đó bằng LLM ở luồng nền và **ghi ra
+   `backend/data/lessons/<tên-slide>.json`** — chứa toàn bộ checkpoint: `rubric_points` để chấm, câu hỏi mở đầu
+   của bạn học, `correction`, và `pdf_page` (trang slide giảng kỹ nhất khái niệm đó). Mất khoảng 30–90 giây.
+4. Giao diện hiện tiến trình ("🤖 AI đang đọc slide...") và tự hỏi lại server mỗi 4 giây. Xong là **checkpoint
+   được nạp lên từ chính file JSON vừa sinh**: khung chat liệt kê các checkpoint kèm số trang, bạn học AI hỏi
+   câu đầu tiên, khung slide tự cuộn tới đúng trang và loé sáng.
+5. Nút **↻** cạnh mỗi bài chỉ dùng khi muốn AI **đọc lại** slide (ghi đè đúng file JSON đó).
+
+Dữ liệu nằm ở đâu:
+
+```
+backend/data/
+├── vlearn-pack/slides/<file>.pdf     ← slide gốc (upload vào đây)
+├── lessons/<file>.json               ← checkpoint do LLM sinh, UI nạp từ đây
+└── lessons.json                      ← kho cũ, chỉ còn các bài viết tay không gắn slide
+```
+
+Server cũng tự quét thư mục slides lúc khởi động: file PDF nào chưa có JSON checkpoint thì phân tích luôn,
+nên copy tay file PDF vào thư mục đó cũng có tác dụng tương tự upload.
+
+### API liên quan
+
+| Endpoint | Việc |
+|---|---|
+| `POST /api/slides/upload` | `{filename, data_base64}` — nhận file PDF, lưu vào thư mục slides và xếp hàng cho AI đọc. Trả về ngay, không chờ LLM |
+| `GET /api/slides` | Liệt kê slide + trạng thái `pending` / `running` / `ready` / `error`, tên file JSON checkpoint, và cờ `analyzing` |
+| `POST /api/lessons/generate` | `{pdf_file, force: true}` — bắt AI đọc lại một slide đã có checkpoint |
+| `GET /api/lessons?full=1` | Toàn bộ bài học (gộp các file JSON trong `data/lessons/` và kho cũ) |
+| `POST /api/session/start` | `{session_id, lesson_id}` — FE gọi mỗi khi đổi bài để chấm đúng bộ checkpoint |
+
+`pdf_page` do LLM trả về luôn được kiểm lại theo số trang thật của file PDF (dùng `pypdf`): thiếu → về trang 1,
+vượt quá → ép về trang cuối, và báo rõ trong `warnings` để không bao giờ nhảy tới trang không tồn tại.
