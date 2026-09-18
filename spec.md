@@ -146,6 +146,12 @@ Loại: [ ] Tối ưu tính năng có sẵn  [x] Tính năng mới
   - **Nguyễn Thành Luân**: Đề xuất và xây dựng hệ thông metric point, xây dựng UI mô phỏng vlearn, xây dựng agent tương tác người học.
   - **Nguyễn Đức Long**: Phát triển agent ngu và agent giáo sư, xây dựng feature đánh giá tiến độ người học, xây dựng UI mô phỏng vlearn.
 
+- Thư mục Reflection cá nhân: Đã hoàn thiện 4 file phản tư cá nhân trước CP5 tại thư mục [`reflection/`](file:///C:/AI/vinai20k/K4-3B-E403-chuadatten/reflection/):
+  - [`reflection/thai_phuc_tien.md`](file:///C:/AI/vinai20k/K4-3B-E403-chuadatten/reflection/thai_phuc_tien.md)
+  - [`reflection/tran_dinh_duy.md`](file:///C:/AI/vinai20k/K4-3B-E403-chuadatten/reflection/tran_dinh_duy.md)
+  - [`reflection/nguyen_thanh_luan.md`](file:///C:/AI/vinai20k/K4-3B-E403-chuadatten/reflection/nguyen_thanh_luan.md)
+  - [`reflection/nguyen_duc_long.md`](file:///C:/AI/vinai20k/K4-3B-E403-chuadatten/reflection/nguyen_duc_long.md)
+
 - Willing users (≥2 tên) + kế hoạch vòng validation *(bonus, nếu làm)*:
   - **Danh sách Willing users đã thử nghiệm**:
     1. Nguyễn Công Duẩn - 2A202602716 
