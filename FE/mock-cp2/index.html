@@ -1020,17 +1020,31 @@
   .composer-textarea {
     width: 100%;
     min-height: 40px;
-    max-height: 100px;
+    max-height: 180px;
+    height: 40px;
     border: none;
     outline: none;
     font-family: inherit;
     font-size: 13.5px;
-    line-height: 1.5;
+    line-height: 1.55;
     color: var(--text-primary);
     resize: none;
     background: transparent;
+    overflow-y: hidden;
+    box-sizing: border-box;
+    transition: height 0.08s ease-out;
   }
   .composer-textarea::placeholder { color: var(--text-subtle); }
+  .composer-textarea::-webkit-scrollbar {
+    width: 6px;
+  }
+  .composer-textarea::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  .composer-textarea::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
 
   .composer-card-bottom {
     display: flex;
@@ -1371,7 +1385,7 @@
     <!-- Chat Composer (Fixed at Bottom: flex-shrink: 0) -->
     <div class="chat-composer-box">
       <div class="composer-input-card">
-        <textarea class="composer-textarea" id="chatInput" placeholder="Giải thích theo cách hiểu của bạn..." rows="1" onkeydown="handleInputKeydown(event)"></textarea>
+        <textarea class="composer-textarea" id="chatInput" placeholder="Giải thích theo cách hiểu của bạn..." rows="1" onkeydown="handleInputKeydown(event)" oninput="autoResizeTextarea(this)"></textarea>
         <div class="composer-card-bottom">
           <div class="composer-attachments">
             <button class="attach-btn" title="Đính kèm tệp">
@@ -2066,6 +2080,16 @@ function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function autoResizeTextarea(textarea) {
+  if (!textarea) textarea = document.getElementById('chatInput');
+  if (!textarea) return;
+  textarea.style.height = 'auto';
+  const maxHeight = 180;
+  const newHeight = Math.max(40, Math.min(textarea.scrollHeight, maxHeight));
+  textarea.style.height = newHeight + 'px';
+  textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+}
+
 function handleInputKeydown(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
@@ -2074,18 +2098,24 @@ function handleInputKeydown(e) {
 }
 
 function setInputEnabled(on) {
-  document.getElementById('chatInput').disabled = !on;
+  const chatInput = document.getElementById('chatInput');
+  chatInput.disabled = !on;
   document.getElementById('sendBtn').disabled = !on;
   document.getElementById('btnQuickCorrect').disabled = !on;
   document.getElementById('btnQuickWrong').disabled = !on;
-  if (on) document.getElementById('chatInput').focus();
+  if (on) {
+    chatInput.focus();
+    autoResizeTextarea(chatInput);
+  }
 }
 
 function quickFill(type) {
   const cps = getCurrentCheckpoints();
   const cp = cps[state.cpIdx];
   if (!cp) return;
-  document.getElementById('chatInput').value = (type === 'correct') ? cp.sampleCorrect : cp.sampleWrong;
+  const input = document.getElementById('chatInput');
+  input.value = (type === 'correct') ? cp.sampleCorrect : cp.sampleWrong;
+  autoResizeTextarea(input);
   handleSubmit();
 }
 
@@ -2096,6 +2126,7 @@ function handleSubmit() {
 
   appendMessage('user', text);
   input.value = '';
+  autoResizeTextarea(input);
   setInputEnabled(false);
 
   appendMessage('status', 'Đang phân tích câu trả lời của bạn... •••');
