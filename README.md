@@ -313,6 +313,63 @@ backend/data/
 Server cũng tự quét thư mục slides lúc khởi động: file PDF nào chưa có JSON checkpoint thì phân tích luôn,
 nên copy tay file PDF vào thư mục đó cũng có tác dụng tương tự upload.
 
+### Ngân hàng câu hỏi & cách hỏi dẫn dắt
+
+Sau khi đọc slide sinh checkpoint, mỗi checkpoint được gọi LLM **thêm một lượt** (chỉ text, không gửi lại PDF)
+để sinh **10–15 câu hỏi** chia 3 mức độ, lưu trong cùng file JSON ở trường `question_bank`:
+
+| Mức | Hỏi gì |
+|---|---|
+| `nhan_biet` | Khái niệm, định nghĩa, thành phần — chỉ cần nhớ và nói ra |
+| `thong_hieu` | Vì sao, cơ chế, so sánh, bỏ đi thì sao |
+| `van_dung` | Đặt tình huống cụ thể, bắt áp dụng khái niệm để giải thích |
+
+Mỗi câu gắn `targets` = các `rubric_points` mà nó nhắm tới. Nhờ vậy vòng hội thoại chạy như sau:
+
+1. Mở checkpoint bằng câu **dễ nhất** trong ngân hàng.
+2. Mỗi câu trả lời được chấm trên **toàn bộ rubric**, ý nào đạt thì **cộng dồn** vào phiên
+   (trả lời đúng nhưng chưa đủ thì phần đã đúng được giữ lại, không phải nói lại từ đầu).
+3. Còn thiếu ý nào → chọn câu hỏi **nhắm đúng ý đó**, độ khó tăng dần mỗi khi học viên vừa tiến bộ.
+   Bạn học AI ghi nhận ngắn phần vừa đúng rồi hỏi tiếp — đó là phần "dẫn dắt".
+4. Qua checkpoint khi **phủ hết rubric**, hoặc khi đã hỏi hết **tối đa 5 câu** (`MAX_QUESTIONS_PER_CP`
+   trong `backend/agent.py`) thì chốt điểm: ≥80% coi là đạt, dưới ngưỡng thì đưa đáp án chuẩn và đánh dấu
+   "cần học lại".
+
+Giao diện hiện dải trạng thái ngay dưới timeline: checkpoint nào, câu thứ mấy trên tối đa, mức độ, và đã nắm
+bao nhiêu ý trên tổng số.
+
+Bài học sinh từ bản cũ (chưa có `question_bank`) sẽ được server **tự bổ sung câu hỏi** ở lần khởi động kế tiếp,
+không cần đọc lại file PDF. Checkpoint nào không sinh được câu hỏi thì tự rơi về lối hỏi cũ (một câu mở đầu,
+tối đa 3 lượt thử).
+
+### Chữ chảy dần & gợi ý trước khi giải thích
+
+**Streaming**: FE gọi `POST /api/chat/stream` (SSE). Server đẩy `evaluation` ngay khi Giáo sư AI chấm xong —
+dải tiến trình và dòng gợi ý hiện lập tức — rồi stream lời thoại của bạn học theo từng đoạn (`delta`), khép lại
+bằng `done`. Provider nào không có hàm `stream` (hiện chỉ OpenAI có) thì tự rơi về trả nguyên cục; `/api/chat`
+thường vẫn giữ nguyên làm đường dự phòng khi SSE lỗi.
+
+**Né tránh / không biết**: Giáo sư AI phân biệt ba kiểu — trả lời sai (`NEEDS_IMPROVEMENT`), **né câu hỏi**
+(`EVADED`: lảng sang chuyện khác, hỏi ngược, nói vài chữ vô nghĩa) và **bỏ cuộc** (`GAVE_UP`: "chịu", "không
+biết", "cho đáp án"). Với hai kiểu sau, hệ thống **không đưa đáp án ngay** mà gợi ý tăng dần tối đa
+`MAX_HINTS_BEFORE_REVEAL = 2` lần:
+
+1. Lần 1 — hướng vào khái niệm còn thiếu kèm số trang slide để đọc lại.
+2. Lần 2 — thu hẹp phạm vi: dùng `hint` của câu hỏi trong ngân hàng, hoặc liệt kê **tên** các ý còn thiếu.
+   Tuyệt đối không đọc `criteria` của rubric ra — criteria viết theo kiểu "câu trả lời phải có X, Y, Z"
+   nên nói ra là lộ nguyên đáp án.
+3. Lần 3 — mới giải thích kiến thức chuẩn (`correction`), đánh dấu "cần học lại" và chuyển checkpoint.
+
+**Ai được nói gì** — hai nhân vật tách bạch:
+
+| Nhân vật | Vai | Được nói gì |
+|---|---|---|
+| **Feynman AI** (bạn học) | Người học giả vờ chưa hiểu, nhờ giảng lại | Chỉ hỏi, phản ứng, bàn giao cho trợ giảng khi bí. **Không bao giờ giảng kiến thức**, kể cả khi bị nài nỉ |
+| **Giáo sư AI** | Trợ giảng đứng sau | Gợi ý và giải thích kiến thức chuẩn. Hiện thành bong bóng riêng (viền tím, nhãn "Giáo sư AI") |
+
+Lượt nào do Giáo sư AI nói thì backend **không gọi LLM cho bạn học** — vừa đúng vai, vừa bớt một lượt gọi ở
+đúng những lượt hay chậm nhất.
+
 ### API liên quan
 
 | Endpoint | Việc |

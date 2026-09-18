@@ -105,6 +105,114 @@ TRẢ VỀ DUY NHẤT một JSON object đúng schema sau (không thêm chữ n�
 """
 
 
+QUESTION_BANK_PROMPT = """Bạn là chuyên gia thiết kế câu hỏi kiểm tra hiểu bài cho nền tảng VLearn AI20k.
+
+Bối cảnh: học viên phải GIẢI THÍCH LẠI kiến thức bằng lời cho một AI đóng vai bạn học ngơ ngác (kỹ thuật
+Feynman). Nhiệm vụ của bạn: sinh NGÂN HÀNG CÂU HỎI cho đúng một checkpoint dưới đây, để hệ thống chọn câu phù
+hợp tuỳ theo ý mà học viên còn thiếu.
+
+THÔNG TIN CHECKPOINT
+- Bài học: {lesson_topic}
+- Checkpoint: {cp_title}
+- Nguồn trong slide: {citation}
+- Các tiêu chí (rubric_points) mà học viên phải nói được:
+{rubric_lines}
+- Đáp án chuẩn đầy đủ: {correction}
+- Hiểu lầm phổ biến: {misconceptions}
+
+YÊU CẦU
+1. Sinh 10-15 câu hỏi, chia 3 mức độ:
+   - "nhan_biet": hỏi lại khái niệm, định nghĩa, thành phần — học viên chỉ cần nhớ và nói ra.
+   - "thong_hieu": hỏi VÌ SAO, hỏi cơ chế, so sánh, hỏi điều gì xảy ra nếu bỏ đi thành phần đó.
+   - "van_dung": đặt một tình huống cụ thể và bắt học viên áp dụng khái niệm để giải thích/quyết định.
+2. Mỗi câu hỏi PHẢI gắn "targets" = danh sách id rubric_point mà câu đó nhắm tới (lấy đúng id đã cho ở trên,
+   không bịa id mới). Mỗi rubric_point phải được ÍT NHẤT 2 câu hỏi nhắm tới, trải đều các mức độ.
+3. Văn phong "question": lời của một BẠN HỌC ngơ ngác đang nhờ giảng lại, xưng "tớ - cậu", tự nhiên như tin
+   nhắn chat, KHÔNG phải giọng đề thi. Không đánh số thứ tự trong câu.
+4. Tuyệt đối không hỏi kiến thức nằm ngoài rubric và đáp án chuẩn ở trên.
+5. "expected_points": nêu ngắn gọn ý mà câu trả lời phải có thì mới tính là đạt cho câu hỏi này.
+6. "hint": một gợi ý ngắn để dẫn dắt khi học viên trả lời thiếu ý (không được lộ thẳng đáp án).
+
+CHỈ trả về DUY NHẤT một JSON object, không markdown fence, đúng schema:
+{{"questions": [
+  {{"id": "q1", "level": "nhan_biet", "targets": ["<rubric_id>"], "question": "...", "expected_points": "...", "hint": "..."}}
+]}}
+"""
+
+LEVELS = ("nhan_biet", "thong_hieu", "van_dung")
+
+
+def _text_complete(prompt: str, *, provider: str | None = None, model: str | None = None) -> str:
+    """Gọi LLM dạng text thuần (không kèm PDF) qua lớp provider chung của backend."""
+    from backend.providers import make_provider
+
+    resolved = provider or os.getenv("LLM_PROVIDER") or _resolve_provider(None)
+    llm = make_provider(resolved)
+    response = llm.complete(
+        [{"role": "user", "content": prompt}],
+        tools=None,
+        model=model or os.getenv("LLM_MODEL") or None,
+        temperature=0.5,
+    )
+    return (response.text or "").strip()
+
+
+def generate_question_bank(
+    checkpoint: dict[str, Any],
+    *,
+    lesson_topic: str = "",
+    provider: str | None = None,
+    model: str | None = None,
+) -> list[dict[str, Any]]:
+    """Sinh 10-15 câu hỏi nhiều mức độ cho MỘT checkpoint, mỗi câu gắn rubric_point mà nó nhắm tới.
+
+    Không gửi lại file PDF ở bước này: rubric_points + correction đã chứa đủ nội dung cần thiết,
+    gửi lại PDF cho mỗi checkpoint sẽ tốn gấp nhiều lần token mà không thêm thông tin.
+    """
+    rubric_points = checkpoint.get("rubric_points") or []
+    rubric_ids = {str(rp.get("id")) for rp in rubric_points if rp.get("id")}
+    rubric_lines = "\n".join(
+        f'  - id="{rp.get("id")}" (weight={rp.get("weight", 30)}): {rp.get("concept")} — {rp.get("criteria", "")}'
+        for rp in rubric_points
+    ) or "  - (không có rubric_points, bám theo tiêu đề checkpoint)"
+
+    prompt = QUESTION_BANK_PROMPT.format(
+        lesson_topic=lesson_topic or "",
+        cp_title=checkpoint.get("title", ""),
+        citation=checkpoint.get("source_citation", ""),
+        rubric_lines=rubric_lines,
+        correction=checkpoint.get("correction", ""),
+        misconceptions="; ".join(checkpoint.get("misconceptions") or []) or "(không có)",
+    )
+
+    raw = _text_complete(prompt, provider=provider, model=model)
+    data = json.loads(re.sub(r"^```(json)?\s*|\s*```$", "", raw.strip()))
+    questions = data.get("questions") if isinstance(data, dict) else data
+    if not isinstance(questions, list):
+        raise ValueError("Model không trả về mảng 'questions'")
+
+    cleaned: list[dict[str, Any]] = []
+    for idx, q in enumerate(questions, start=1):
+        text = (q.get("question") or "").strip()
+        if not text:
+            continue
+        level = q.get("level") if q.get("level") in LEVELS else LEVELS[min(idx - 1, 2) // 5]
+        # Chỉ giữ target là rubric_id có thật; câu nào không trỏ vào rubric nào thì coi như nhắm cả checkpoint.
+        targets = [t for t in (q.get("targets") or []) if str(t) in rubric_ids]
+        cleaned.append({
+            "id": q.get("id") or f"q{idx}",
+            "level": level,
+            "targets": targets or sorted(rubric_ids),
+            "question": text,
+            "expected_points": (q.get("expected_points") or "").strip(),
+            "hint": (q.get("hint") or "").strip(),
+        })
+
+    if len(cleaned) < 4:
+        raise ValueError(f"Chỉ sinh được {len(cleaned)} câu hỏi hợp lệ (cần tối thiểu 4)")
+    return cleaned
+
+
 def _next_lesson_id(existing: list[dict[str, Any]]) -> str:
     nums = [int(m.group(1)) for lsn in existing if (m := re.match(r"lesson_(\d+)$", str(lsn.get("id", ""))))]
     return f"lesson_{(max(nums) + 1) if nums else 1:02d}"
@@ -201,6 +309,15 @@ def _call_openai(pdf_path: Path, prompt: str, model: str | None) -> str:
     # BASE_URL cho phép trỏ tới endpoint tương thích OpenAI khác (proxy/reseller)
     # thay vì mặc định api.openai.com — dùng khi OPENAI_API_KEY không phải key OpenAI gốc.
     client = OpenAI(api_key=api_key, base_url=os.getenv("BASE_URL") or None)
+
+    # SDK openai cũ (hoặc proxy không hỗ trợ /responses) thì không gửi thẳng file PDF được.
+    # Khi đó rút text từng trang bằng pypdf rồi gửi dạng chữ — vẫn giữ đúng SỐ TRANG THẬT
+    # để model điền pdf_page chuẩn.
+    if not hasattr(client, "responses"):
+        print("ℹ SDK openai không có API 'responses' (bản cũ hoặc proxy không hỗ trợ) "
+              "-> chuyển sang rút text PDF bằng pypdf. Muốn gửi thẳng file PDF thì: pip install -U openai")
+        return _call_openai_text_fallback(client, pdf_path, prompt, model)
+
     resp = client.responses.create(
         model=model or os.getenv("LLM_MODEL") or DEFAULT_MODEL_OPENAI,
         input=[
@@ -220,6 +337,56 @@ def _call_openai(pdf_path: Path, prompt: str, model: str | None) -> str:
         temperature=0.3,
     )
     return (resp.output_text or "").strip()
+
+
+def _extract_pdf_text(pdf_path: Path, *, max_chars: int = 120_000) -> str:
+    """Rút text từng trang, có đánh dấu số trang thật để model điền pdf_page cho đúng."""
+    try:
+        from pypdf import PdfReader
+    except ImportError as exc:
+        raise RuntimeError("Cần cài pypdf để đọc slide khi không gửi được file PDF: pip install pypdf") from exc
+
+    reader = PdfReader(str(pdf_path))
+    chunks: list[str] = []
+    used = 0
+    for page_no, page in enumerate(reader.pages, start=1):
+        try:
+            text = (page.extract_text() or "").strip()
+        except Exception:
+            text = ""
+        block = f"\n===== TRANG {page_no} =====\n{text or '(trang này không có chữ — có thể là ảnh)'}"
+        if used + len(block) > max_chars:
+            chunks.append(f"\n(đã lược bớt từ trang {page_no} trở đi vì quá dài)")
+            break
+        chunks.append(block)
+        used += len(block)
+
+    body = "".join(chunks)
+    if len(body.replace(" ", "")) < 200:
+        raise RuntimeError(
+            "Không rút được chữ từ file PDF này (có thể là bản scan ảnh). "
+            "Cần nâng cấp SDK để gửi thẳng PDF (pip install -U openai) hoặc dùng provider Gemini."
+        )
+    return body
+
+
+def _call_openai_text_fallback(client: Any, pdf_path: Path, prompt: str, model: str | None) -> str:
+    """Nhánh dự phòng: gửi nội dung chữ của slide qua chat.completions thay vì gửi file PDF."""
+    slide_text = _extract_pdf_text(pdf_path)
+    resp = client.chat.completions.create(
+        model=model or os.getenv("LLM_MODEL") or DEFAULT_MODEL_OPENAI,
+        messages=[{
+            "role": "user",
+            "content": (
+                f"{prompt}\n\n"
+                f"NỘI DUNG SLIDE (đã rút chữ theo từng trang, số trang dưới đây LÀ SỐ TRANG THẬT "
+                f"để điền vào pdf_page):\n{slide_text}"
+            ),
+        }],
+        temperature=0.3,
+        response_format={"type": "json_object"},
+    )
+    return (resp.choices[0].message.content or "").strip()
 
 
 def generate_lesson_from_pdf(

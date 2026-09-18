@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import base64
 import binascii
+import json
 import mimetypes
+import time
 import os
 import sys
 import threading
@@ -17,7 +19,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 # Nạp path và biến môi trường
@@ -39,7 +41,12 @@ from backend.tools._shared import (
     get_full_lessons,
     invalidate_cache,
 )
-from backend.lesson_ingest import generate_lesson_from_pdf, save_lesson, lesson_json_path
+from backend.lesson_ingest import (
+    generate_lesson_from_pdf,
+    generate_question_bank,
+    save_lesson,
+    lesson_json_path,
+)
 
 # Thư mục chứa các file PDF slide gốc — vừa là nguồn cho Agent 1 phân tích sinh checkpoint,
 # vừa được mount tĩnh ở cuối file để khung PDF.js bên FE tải trực tiếp.
@@ -108,7 +115,14 @@ class ChatMessageRequest(BaseModel):
 def get_lessons(full: int = 0):
     """Danh sách bài giảng. full=1 -> trả nguyên vẹn cả slides + checkpoint (FE nạp 1 lần duy nhất)."""
     if full:
-        return JSONResponse({"lessons": get_full_lessons()})
+        lessons = []
+        for lesson in get_full_lessons():
+            pdf_file = lesson.get("pdf_file")
+            lessons.append({
+                **lesson,
+                "pdf_missing": bool(pdf_file) and not (SLIDES_DIR / pdf_file).exists(),
+            })
+        return JSONResponse({"lessons": lessons})
     return JSONResponse({"lessons": get_all_lessons()})
 
 
@@ -153,6 +167,27 @@ _generate_lock = threading.Lock()
 #   error    — chạy hỏng, kèm lý do
 slide_jobs: dict[str, dict[str, Any]] = {}
 _jobs_lock = threading.Lock()
+
+# Người học đang chat thì việc sinh câu hỏi nền phải nhường đường: cả hai dùng chung một API,
+# chạy song song làm lượt trả lời chậm hẳn (và dễ dính rate limit).
+_last_chat_at = 0.0
+CHAT_PRIORITY_WINDOW = 25.0   # giây: im lặng đủ lâu thì việc nền mới chạy tiếp
+
+
+def _mark_chat_activity() -> None:
+    global _last_chat_at
+    _last_chat_at = time.monotonic()
+
+
+def _wait_while_user_is_chatting(label: str = "") -> None:
+    waited = 0.0
+    while time.monotonic() - _last_chat_at < CHAT_PRIORITY_WINDOW:
+        if waited == 0.0 and label:
+            print(f"⏸ Tạm dừng việc nền ({label}) vì người học đang hỏi bài...")
+        time.sleep(2.0)
+        waited += 2.0
+    if waited and label:
+        print(f"▶ Chạy tiếp việc nền ({label}) sau {waited:.0f}s chờ.")
 
 
 def _set_job(pdf_file: str, status: str, message: str = "", lesson_id: str | None = None) -> None:
@@ -213,6 +248,7 @@ def list_slides():
             "lesson_id": lesson.get("id") if lesson else None,
             "short_title": lesson.get("short_title") if lesson else None,
             "checkpoints_count": len(lesson.get("checkpoints", [])) if lesson else 0,
+            "questions_count": sum(len(cp.get("question_bank") or []) for cp in lesson.get("checkpoints", [])) if lesson else 0,
             "status": status,
             "status_message": job.get("message", ""),
             "json_file": (lesson.get("_source_file") or lesson_json_path(lesson).name) if lesson else None,
@@ -310,6 +346,20 @@ def _ingest_slide(pdf_path: Path, *, lesson_id: str | None = None, video_title: 
         cp.setdefault("short", f"CP{idx}")
         cp.setdefault("order", idx)
 
+    # Lượt 2: mỗi checkpoint gọi LLM thêm một lần để sinh ngân hàng câu hỏi nhiều mức độ.
+    # Tách khỏi lượt đọc PDF vì gộp chung làm JSON quá dài, model hay cắt bớt phần cuối.
+    checkpoints = lesson.get("checkpoints", [])
+    for idx, cp in enumerate(checkpoints, start=1):
+        _wait_while_user_is_chatting(f"sinh câu hỏi {pdf_path.name}")
+        _set_job(pdf_path.name, "running", f"Đang sinh câu hỏi cho {cp.get('short', f'CP{idx}')} ({idx}/{len(checkpoints)})...")
+        try:
+            cp["question_bank"] = generate_question_bank(cp, lesson_topic=lesson.get("topic", ""))
+        except Exception as exc:
+            # Thiếu ngân hàng câu hỏi thì checkpoint đó tự rơi về lối hỏi cũ (1 câu mở đầu, 3 lượt thử).
+            print(f"   ⚠ Không sinh được câu hỏi cho {cp.get('id')}: {exc}")
+            cp["question_bank"] = []
+            warnings.append(f"{cp.get('short', f'CP{idx}')}: không sinh được ngân hàng câu hỏi ({exc}).")
+
     json_path = save_lesson(lesson)   # mỗi slide -> 1 file JSON checkpoint trong backend/data/lessons/
     lesson["_source_file"] = json_path.name
     invalidate_cache()
@@ -318,15 +368,55 @@ def _ingest_slide(pdf_path: Path, *, lesson_id: str | None = None, video_title: 
     for sid in [s_id for s_id, st in sessions.items() if st.lesson_id == lesson["id"]]:
         sessions.pop(sid, None)
 
+    total_questions = sum(len(cp.get("question_bank") or []) for cp in lesson.get("checkpoints", []))
     _set_job(pdf_path.name, "ready",
-             f"{len(lesson.get('checkpoints', []))} checkpoint → {json_path.name}"
+             f"{len(lesson.get('checkpoints', []))} checkpoint · {total_questions} câu hỏi → {json_path.name}"
              + (" · " + "; ".join(warnings) if warnings else ""),
              lesson.get("id"))
     return lesson, warnings
 
 
+def _lessons_missing_questions() -> list[dict[str, Any]]:
+    """Bài học đã có checkpoint nhưng chưa có ngân hàng câu hỏi (vd sinh từ bản trước khi có tính năng này)."""
+    result = []
+    for lesson in get_full_lessons():
+        cps = lesson.get("checkpoints") or []
+        if not lesson.get("pdf_file") or not cps:
+            continue
+        if any(not cp.get("question_bank") for cp in cps):
+            result.append(lesson)
+    return result
+
+
+def _backfill_question_banks() -> None:
+    """Bổ sung ngân hàng câu hỏi cho bài học cũ — chỉ gọi LLM dạng text, KHÔNG đọc lại file PDF."""
+    for lesson in _lessons_missing_questions():
+        pdf_file = lesson.get("pdf_file")
+        checkpoints = [cp for cp in lesson.get("checkpoints", []) if not cp.get("question_bank")]
+        print(f"🤖 Bổ sung câu hỏi cho '{lesson.get('id')}' ({len(checkpoints)} checkpoint còn thiếu) ...")
+        changed = False
+        for idx, cp in enumerate(checkpoints, start=1):
+            _wait_while_user_is_chatting(f"bổ sung câu hỏi {lesson.get('id')}")
+            _set_job(pdf_file, "running",
+                     f"Đang sinh câu hỏi cho {cp.get('short', f'CP{idx}')} ({idx}/{len(checkpoints)})...")
+            try:
+                cp["question_bank"] = generate_question_bank(cp, lesson_topic=lesson.get("topic", ""))
+                changed = True
+            except Exception as exc:
+                print(f"   ⚠ {cp.get('id')}: {exc}")
+                cp["question_bank"] = []
+
+        if changed:
+            save_lesson(lesson)
+            invalidate_cache()
+        total = sum(len(cp.get("question_bank") or []) for cp in lesson.get("checkpoints", []))
+        _set_job(pdf_file, "ready",
+                 f"{len(lesson.get('checkpoints', []))} checkpoint · {total} câu hỏi",
+                 lesson.get("id"))
+
+
 def _auto_ingest_worker() -> None:
-    """Luồng nền: lần lượt phân tích mọi file slide chưa có checkpoint, không chặn lúc server khởi động."""
+    """Luồng nền: phân tích slide chưa có checkpoint, rồi bổ sung ngân hàng câu hỏi cho bài còn thiếu."""
     if not SLIDES_DIR.exists():
         return
 
@@ -344,6 +434,11 @@ def _auto_ingest_worker() -> None:
             print(f"   ⚠ Không phân tích được {path.name}: {exc}")
             _set_job(path.name, "error", str(exc))
 
+    try:
+        _backfill_question_banks()
+    except Exception as exc:
+        print(f"⚠ Lỗi khi bổ sung ngân hàng câu hỏi: {exc}")
+
 
 def kick_auto_ingest() -> None:
     """Khởi động luồng tự phân tích nếu còn slide chưa có checkpoint và chưa có luồng nào đang chạy."""
@@ -352,7 +447,8 @@ def kick_auto_ingest() -> None:
         return
     if not SLIDES_DIR.exists():
         return
-    if not any(not _lesson_for_pdf(p.name) for p in SLIDES_DIR.glob("*.pdf")):
+    has_new_pdf = any(not _lesson_for_pdf(p.name) for p in SLIDES_DIR.glob("*.pdf"))
+    if not has_new_pdf and not _lessons_missing_questions():
         return
     _auto_thread = threading.Thread(target=_auto_ingest_worker, name="auto-ingest", daemon=True)
     _auto_thread.start()
@@ -422,6 +518,7 @@ def chat(req: ChatMessageRequest):
     if not req.message or not req.message.strip():
         raise HTTPException(status_code=400, detail="Vui lòng nhập nội dung giải thích.")
 
+    _mark_chat_activity()
     agent = get_or_create_agent()
     session_id = req.session_id or "default_session"
     state = sessions.get(session_id)
@@ -434,12 +531,52 @@ def chat(req: ChatMessageRequest):
     return {
         "session_id": session_id,
         "assistant_text": result["assistant_text"],
+        "professor_message": result.get("professor_message", ""),
         "latest_evaluation": result["latest_evaluation"],
         "advance_checkpoint": result["advance_checkpoint"],
         "next_checkpoint_title": result["next_checkpoint_title"],
+        "next_question": result.get("next_question"),
+        "current_question": result.get("current_question"),
         "completed": result["completed"],
         "current_checkpoint_index": state.current_checkpoint_index
     }
+
+
+@app.post("/api/chat/stream")
+def chat_stream(req: ChatMessageRequest):
+    """Như /api/chat nhưng trả dần qua SSE: đẩy kết quả chấm trước, rồi stream lời thoại từng đoạn.
+
+    Nhờ vậy người học thấy ngay mình đạt bao nhiêu ý trong khi câu nói của bạn học còn đang chảy ra,
+    thay vì nhìn màn hình đứng im vài giây.
+    """
+    if not req.message or not req.message.strip():
+        raise HTTPException(status_code=400, detail="Vui lòng nhập nội dung giải thích.")
+
+    _mark_chat_activity()
+    agent = get_or_create_agent()
+    session_id = req.session_id or "default_session"
+    state = sessions.get(session_id)
+    if not state:
+        state, _ = agent.start_session(session_id)
+        sessions[session_id] = state
+
+    def event_source():
+        try:
+            for event, payload in agent.chat_step_stream(state, req.message.strip()):
+                _mark_chat_activity()   # giữ nhịp: còn đang stream thì việc nền vẫn phải nhường
+                if event == "done":
+                    payload = {**payload, "session_id": session_id,
+                               "current_checkpoint_index": state.current_checkpoint_index}
+                yield f"event: {event}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
+        except Exception as exc:                      # nổ giữa chừng -> báo cho FE để rơi về /api/chat
+            print(f"⚠️ Lỗi khi stream hội thoại: {exc}")
+            yield f"event: error\ndata: {json.dumps({'detail': str(exc)}, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        event_source(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.get("/api/session/report")

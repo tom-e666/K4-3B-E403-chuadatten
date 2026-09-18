@@ -787,6 +787,42 @@
     background: #eff6ff; border-color: #93c5fd; color: #1d4ed8;
   }
   .btn-analyze-slide:disabled { opacity: 0.5; cursor: progress; }
+  /* Dải cho biết đang ở câu hỏi thứ mấy của checkpoint và ở mức độ nào */
+  /* Giáo sư AI — nhân vật khác hẳn bạn học: chỉ nhân vật này mới được giảng kiến thức */
+  .msg-avatar-prof {
+    width: 30px; height: 30px; flex: none; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe;
+  }
+  .msg-bubble-prof {
+    padding: 11px 14px; border-radius: 4px 12px 12px 12px;
+    background: #faf9ff; border: 1px solid #e9e5ff;
+    font-size: 13.5px; line-height: 1.65; color: var(--text-primary);
+  }
+  .prof-name { color: #6d28d9; font-weight: 600; }
+
+  .msg-bubble-ai.streaming::after {
+    content: '▍'; margin-left: 2px; opacity: 0.55;
+    animation: caretBlink 1s steps(2, start) infinite;
+  }
+  @keyframes caretBlink { to { visibility: hidden; } }
+
+  .question-meta-strip {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 8px; padding: 6px 10px;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--surface-subtle); font-size: 11px; color: var(--text-muted);
+  }
+  .q-level-badge {
+    padding: 2px 7px; border-radius: var(--radius-full); font-weight: 600; font-size: 10.5px;
+    border: 1px solid transparent;
+  }
+  .q-level-badge.nhan_biet { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  .q-level-badge.thong_hieu { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+  .q-level-badge.van_dung { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+  .q-level-badge.plain { background: var(--surface); color: var(--text-subtle); border-color: var(--border); font-weight: 500; }
+  .q-meta-cover { margin-left: auto; color: var(--text-subtle); }
+
   /* Danh sách checkpoint AI vừa sinh, hiển thị ngay đầu hội thoại */
   .cp-outline { margin: 8px 0; display: flex; flex-direction: column; gap: 4px; }
   .cp-outline-row {
@@ -1385,6 +1421,7 @@
       <div class="timeline-track-wrap" id="checkpointTimelineTrack">
         <!-- Rendered dynamically -->
       </div>
+      <div class="question-meta-strip" id="questionMetaStrip" hidden></div>
     </div>
 
     <!-- Chat Messages History (ONLY THIS AREA SCROLLS) -->
@@ -1807,7 +1844,8 @@ function mapApiCheckpoint(cp, i) {
     correction: cp.correction || '',
     sampleCorrect: cp.sample_correct || cp.sampleCorrect || '',
     sampleWrong: cp.sample_wrong || cp.sampleWrong || '',
-    citation: cp.source_citation || ''
+    citation: cp.source_citation || '',
+    questionCount: (cp.question_bank || []).length
   };
 }
 
@@ -1819,6 +1857,7 @@ function mapApiLesson(api) {
     course: api.course || 'VLearn AI20k',
     duration: api.duration || '',
     pdf_file: api.pdf_file || null,
+    pdfMissing: !!api.pdf_missing,
     video_title: api.video_title || api.short_title || '',
     slides: api.slides || [],
     checkpoints: (api.checkpoints || []).map(mapApiCheckpoint)
@@ -2161,6 +2200,24 @@ function renderCurrentSlide() {
   const page = cp && cp.pdfPage ? cp.pdfPage : 1;
   const stage = document.getElementById('slideStage');
 
+  // File PDF gốc đã bị xoá khỏi thư mục slides -> báo rõ thay vì để khung PDF gọi 404.
+  if (lsn.pdf_file && lsn.pdfMissing) {
+    stage.dataset.loadedPdf = '';
+    stage.innerHTML = `
+      <div class="pdf-embed-wrap">
+        <div class="pdf-embed-header">
+          <span class="slide-eyebrow">${lsn.short_title}</span>
+          <span class="pdf-embed-filename">${lsn.pdf_file}</span>
+        </div>
+        <div class="pdf-loading-note">
+          Không còn file <b>${lsn.pdf_file}</b> trong thư mục slides nên không lướt slide được.<br>
+          Checkpoint của bài này vẫn học bình thường. Muốn xem lại slide thì tải file đó lên lần nữa.
+        </div>
+      </div>
+    `;
+    return;
+  }
+
   // Bài học cũ trong lessons.json chưa gắn file slide -> chưa lướt PDF được, mời chạy Agent 1.
   if (!lsn.pdf_file) {
     stage.dataset.loadedPdf = '';
@@ -2376,6 +2433,22 @@ function appendMessage(role, text, timeStr) {
       <div class="user-avatar-tag">HV</div>
     `;
     area.appendChild(row);
+  } else if (role === 'professor') {
+    const row = document.createElement('div');
+    row.className = 'msg-row ai-partner';
+    row.innerHTML = `
+      <div class="msg-avatar-prof">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>
+      </div>
+      <div class="msg-content-wrap">
+        <div class="msg-header-meta">
+          <span class="prof-name">Giáo sư AI</span>
+          <span class="time">${time}</span>
+        </div>
+        <div class="msg-bubble-prof">${formatMarkdown(text)}</div>
+      </div>
+    `;
+    area.appendChild(row);
   } else if (role === 'coach') {
     const row = document.createElement('div');
     row.className = 'msg-row ai-partner';
@@ -2480,9 +2553,170 @@ function handleSubmit() {
   setTimeout(() => processEvaluation(text), 650);
 }
 
+function renderQuestionMeta(info, evalData) {
+  const strip = document.getElementById('questionMetaStrip');
+  if (!strip) return;
+  if (!info) { strip.hidden = true; strip.innerHTML = ''; return; }
+
+  const cps = getCurrentCheckpoints();
+  const cp = cps[state.cpIdx] || {};
+  const cover = (evalData && evalData.rubric_total)
+    ? `đã nắm ${evalData.covered_count}/${evalData.rubric_total} ý · ${evalData.mastery_score}%`
+    : '';
+  // Bài chưa có ngân hàng câu hỏi thì đếm theo lượt thử và không có mức độ để hiện.
+  const counter = info.has_bank === false
+    ? `lượt ${info.index}/${info.max}`
+    : `câu ${info.index}/${info.max}`;
+  const levelBadge = info.level_label
+    ? `<span class="q-level-badge ${info.level || ''}">${info.level_label}</span>`
+    : '<span class="q-level-badge plain">chưa có ngân hàng câu hỏi</span>';
+  strip.hidden = false;
+  strip.innerHTML = `
+    <span><b>${cp.short || ''}</b> · ${counter}</span>
+    ${levelBadge}
+    ${cover ? `<span class="q-meta-cover">${cover}</span>` : ''}
+  `;
+}
+
+/* ---------------- Nhận lời thoại theo kiểu chảy dần (SSE) ---------------- */
+function removeLastStatusPill() {
+  const pills = document.querySelectorAll('#chatArea .eval-status-container');
+  if (pills.length) pills[pills.length - 1].remove();
+}
+
+/* Tạo sẵn một bong bóng rỗng của bạn học rồi đổ chữ dần vào đó. */
+function appendStreamingAi() {
+  const area = document.getElementById('chatArea');
+  const row = document.createElement('div');
+  row.className = 'msg-row ai-partner';
+  row.innerHTML = `
+    <div class="msg-avatar-ai">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg>
+    </div>
+    <div class="msg-content-wrap">
+      <div class="msg-header-meta">
+        <span>Feynman AI</span>
+        <span class="time">${getCurrentTimeString()}</span>
+      </div>
+      <div class="msg-bubble-ai streaming"></div>
+    </div>
+  `;
+  area.appendChild(row);
+  area.scrollTop = area.scrollHeight;
+  return row.querySelector('.msg-bubble-ai');
+}
+
+function finalizeTurn(data, evalData, cp) {
+  const score = evalData ? evalData.mastery_score : 0;
+  if (data.advance_checkpoint) {
+    const gaveUp = evalData && evalData.outcome === 'gave_up';
+    if (gaveUp) {
+      // Giáo sư AI đã giảng ở trên rồi, chỉ cần một dòng ngắn chốt trạng thái + chỗ xem lại.
+      const where = cp.pdfPage ? ` — xem lại slide trang ${cp.pdfPage}` : '';
+      appendMessage('coach-hint', `⚠️ Checkpoint này đánh dấu <b>cần học lại</b>${where}.`);
+    } else {
+      appendMessage('coach', `✓ <b>Đạt chuẩn kiến thức (${score}%):</b> Bạn đã nói được hết các ý mấu chốt của checkpoint này! 🎉`);
+    }
+    getCurrentResults()[state.cpIdx] = { status: gaveUp ? 'fail' : 'pass', score };
+    renderQuestionMeta(null);
+    renderTimelineProgress();
+    advanceFlow(true, data.next_question);
+  } else {
+    setInputEnabled(true);
+  }
+}
+
+/* Trả về true nếu đã xử lý trọn lượt bằng stream; false để gọi rơi về /api/chat thường. */
+async function streamChatTurn(text, cp) {
+  const res = await fetch('/api/chat/stream', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: `vlearn_${state.currentLessonId}`, message: text })
+  });
+  if (!res.ok || !res.body) return false;
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  const area = document.getElementById('chatArea');
+  let buffer = '', streamed = '', bubble = null, evalData = null, doneData = null, errored = false;
+
+  const handleEvent = (name, data) => {
+    if (name === 'evaluation') {
+      evalData = data.latest_evaluation;
+      removeLastStatusPill();
+
+      // Bạn học chỉ nói câu bàn giao; kiến thức để Giáo sư AI nói.
+      if (data.buddy_line) appendMessage('ai', data.buddy_line);
+      if (data.professor_message) {
+        const isHint = evalData && evalData.outcome === 'hint';
+        const prefix = isHint ? `<b>Gợi ý ${evalData.hints_given}/${evalData.max_hints}.</b> ` : '';
+        appendMessage('professor', prefix + data.professor_message);
+      } else if (!data.advance_checkpoint && evalData && (evalData.missing_points || []).length) {
+        const missing = evalData.missing_points.map(m => m.concept).join(', ');
+        appendMessage('coach-hint', `Còn thiếu: [${missing}] — bạn học sẽ hỏi tiếp đúng phần này.`);
+      }
+
+      renderQuestionMeta(data.current_question, evalData);
+      if (data.will_stream !== false) bubble = appendStreamingAi();
+    } else if (name === 'delta') {
+      streamed += data.text || '';
+      if (bubble) {
+        bubble.innerHTML = formatMarkdown(streamed);
+        area.scrollTop = area.scrollHeight;
+      }
+    } else if (name === 'done') {
+      doneData = data;
+    } else if (name === 'error') {
+      errored = true;
+    }
+  };
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let sep;
+    while ((sep = buffer.indexOf('\n\n')) !== -1) {
+      const frame = buffer.slice(0, sep);
+      buffer = buffer.slice(sep + 2);
+      let name = 'message', payload = '';
+      frame.split('\n').forEach(line => {
+        if (line.startsWith('event: ')) name = line.slice(7).trim();
+        else if (line.startsWith('data: ')) payload += line.slice(6);
+      });
+      if (!payload) continue;
+      try { handleEvent(name, JSON.parse(payload)); } catch (err) { console.warn('Frame SSE hỏng:', err); }
+    }
+  }
+
+  if (bubble) bubble.classList.remove('streaming');
+
+  // Chưa kịp hiện gì mà đã hỏng -> để nhánh /api/chat thường xử lý lại từ đầu.
+  if (bubble && !streamed.trim()) bubble.closest('.msg-row').remove();
+  if ((errored || !doneData) && !bubble) return false;
+
+  if (!doneData) {
+    // Stream đứt giữa chừng nhưng đã có chữ: giữ nguyên những gì hiện được, cho người học gõ tiếp.
+    appendMessage('coach-hint', '⚠ Kết nối bị ngắt giữa chừng, phần đánh giá của lượt này có thể chưa đầy đủ.');
+    setInputEnabled(true);
+    return true;
+  }
+
+  finalizeTurn(doneData, evalData || doneData.latest_evaluation, cp);
+  return true;
+}
+
 async function processEvaluation(text) {
   const cps = getCurrentCheckpoints();
   const cp = cps[state.cpIdx];
+
+  // Đường chính: SSE — kết quả chấm hiện ngay, lời thoại chảy dần.
+  try {
+    if (await streamChatTurn(text, cp)) return;
+  } catch (err) {
+    console.warn('Stream lỗi, thử /api/chat thường:', err);
+  }
 
   // Try backend /api/chat
   try {
@@ -2501,28 +2735,39 @@ async function processEvaluation(text) {
       if (data.assistant_text) {
         appendMessage('ai', data.assistant_text);
       }
-
-      if (isPass) {
-        appendMessage('coach', `✓ <b>Đạt chuẩn kiến thức (${score}%):</b> Lời giải thích của bạn đã bao phủ các điểm mấu chốt! 🎉`);
-        getCurrentResults()[state.cpIdx] = { status: 'pass', score };
-        renderTimelineProgress();
-        advanceFlow(true);
-        return;
-      } else {
-        state.attempts++;
-        if (state.attempts < 3) {
-          const missing = evalData && evalData.missing_points ? evalData.missing_points.map(m => m.concept).join(', ') : '';
-          appendMessage('coach-hint', `Gợi ý: Bạn chưa nêu rõ phần [${missing || 'các khái niệm cốt lõi'}]. Hãy bổ sung giải thích cho bạn học nhé!`);
-          setInputEnabled(true);
-          return;
-        } else {
-          appendMessage('coach-hint', `Bạn đã thử 3 lần. Kiến thức chuẩn từ bài giảng: ${cp.correction}`);
-          getCurrentResults()[state.cpIdx] = { status: 'fail', score };
-          renderTimelineProgress();
-          advanceFlow(true);
-          return;
-        }
+      if (data.professor_message) {
+        const isHint = evalData && evalData.outcome === 'hint';
+        const prefix = isHint ? `<b>Gợi ý ${evalData.hints_given}/${evalData.max_hints}.</b> ` : '';
+        appendMessage('professor', prefix + data.professor_message);
       }
+
+      // Backend quyết định khi nào qua checkpoint (phủ hết rubric hoặc hết hạn mức câu hỏi) —
+      // FE không tự đếm lượt nữa, nếu không sẽ cắt ngang chuỗi câu hỏi dẫn dắt.
+      if (data.advance_checkpoint) {
+        const gaveUp = evalData && evalData.outcome === 'gave_up';
+        if (gaveUp) {
+          if (!data.professor_message) {
+            appendMessage('professor', (evalData && evalData.reveal_answer) || cp.correction);
+          }
+          const where = cp.pdfPage ? ` — xem lại slide trang ${cp.pdfPage}` : '';
+          appendMessage('coach-hint', `⚠️ Checkpoint này đánh dấu <b>cần học lại</b>${where}.`);
+        } else {
+          appendMessage('coach', `✓ <b>Đạt chuẩn kiến thức (${score}%):</b> Bạn đã nói được hết các ý mấu chốt của checkpoint này! 🎉`);
+        }
+        getCurrentResults()[state.cpIdx] = { status: gaveUp ? 'fail' : 'pass', score };
+        renderQuestionMeta(null);
+        renderTimelineProgress();
+        advanceFlow(true, data.next_question);
+        return;
+      }
+
+      const missing = evalData && evalData.missing_points ? evalData.missing_points.map(m => m.concept).join(', ') : '';
+      if (missing) {
+        appendMessage('coach-hint', `Còn thiếu: [${missing}] — bạn học sẽ hỏi tiếp đúng phần này.`);
+      }
+      renderQuestionMeta(data.current_question, evalData);
+      setInputEnabled(true);
+      return;
     }
   } catch (err) {
     console.warn("Dùng fallback client evaluation:", err);
@@ -2557,14 +2802,17 @@ async function processEvaluation(text) {
   }
 }
 
-function advanceFlow(skipAiMessage = false) {
+function advanceFlow(skipAiMessage = false, backendNextQuestion = null) {
   const cps = getCurrentCheckpoints();
   if (state.cpIdx + 1 < cps.length) {
     state.cpIdx++;
     state.attempts = 0;
     setTimeout(() => {
       const nextCp = cps[state.cpIdx];
-      if (!skipAiMessage) {
+      // Backend đã chọn sẵn câu mở đầu (mức dễ nhất) cho checkpoint mới -> dùng đúng câu đó.
+      if (backendNextQuestion) {
+        appendMessage('ai', backendNextQuestion);
+      } else if (!skipAiMessage) {
         appendMessage('ai', nextCp.botQuestion);
       }
       scrollToSlide(state.cpIdx);
@@ -2627,6 +2875,7 @@ async function startReview() {
   state.resultsMap[lessonId] = new Array(cps.length).fill(null);
 
   renderTimelineProgress();
+  renderQuestionMeta(null);
   scrollToSlide(0);
   setInputEnabled(false);
 
@@ -2641,11 +2890,12 @@ async function startReview() {
   // Cho người học thấy ngay AI đã chia bài giảng này thành những checkpoint nào (kèm trang slide).
   const lsn = getCurrentLesson();
   const cpList = cps.map(cp =>
-    `<div class="cp-outline-row"><b>${cp.short}</b> · ${cp.title}<span class="cp-outline-page">slide tr.${cp.pdfPage}</span></div>`
+    `<div class="cp-outline-row"><b>${cp.short}</b> · ${cp.title}<span class="cp-outline-page">${cp.questionCount ? cp.questionCount + ' câu · ' : ''}slide tr.${cp.pdfPage}</span></div>`
   ).join('');
-  appendMessage('coach', `📑 <b>${lsn.short_title}</b> — AI đã đọc slide và chia thành <b>${cps.length} checkpoint</b>:
+  const totalQ = cps.reduce((sum, cp) => sum + (cp.questionCount || 0), 0);
+  appendMessage('coach', `📑 <b>${lsn.short_title}</b> — AI đã đọc slide và chia thành <b>${cps.length} checkpoint</b>${totalQ ? ` với <b>${totalQ} câu hỏi</b> nhiều mức độ` : ''}:
     <div class="cp-outline">${cpList}</div>
-    Lần lượt từng phần một, cậu giải thích lại cho tớ nhé — slide sẽ tự lướt tới đúng trang đang nói.`);
+    Tớ sẽ hỏi từ dễ tới khó, trả lời đúng mà chưa đủ ý thì tớ hỏi tiếp đúng phần còn thiếu — slide tự lướt tới trang đang nói.`);
 
   const started = await startBackendSession(lessonId);
   if (myTurn !== reviewSeq) return;
