@@ -113,9 +113,21 @@ CONCEPT_KEYWORDS: dict[str, list[list[str]]] = {
 
 def grade_explanation(checkpoint_id: str, user_explanation: str) -> dict[str, Any]:
     """
-    Đánh giá lời giải thích của học viên đối chiếu với Rubric Points của Checkpoint.
-    Trả về: % Mastery, danh sách ý đạt, ý hổng, và trạng thái PASS (>=80%) hoặc NEEDS_IMPROVEMENT.
+    Sử dụng AI Giáo sư (ProfessorEvaluatorAgent) đọc Slide PDF bài giảng
+    để đánh giá câu trả lời học viên, chấm điểm % Mastery và sinh nhận xét sư phạm.
     """
+    try:
+        from backend.professor_agent import ProfessorEvaluatorAgent
+        prof = ProfessorEvaluatorAgent()
+        # Tự động xác định lesson_id từ checkpoint_id nếu có
+        lesson_id = "lesson_02" if "d2" in checkpoint_id or "problem" in checkpoint_id or "anti" in checkpoint_id or "reward" in checkpoint_id else "lesson_01"
+        result = prof.evaluate_explanation(checkpoint_id=checkpoint_id, user_explanation=user_explanation, lesson_id=lesson_id)
+        if result and "mastery_score" in result:
+            return result
+    except Exception as err:
+        print(f"⚠️ Fallback sang evaluator từ khóa do lỗi: {err}")
+
+    # Fallback đếm từ khóa nếu AI bận
     cp = get_checkpoint_by_id(checkpoint_id)
     if not cp:
         return {
@@ -131,7 +143,6 @@ def grade_explanation(checkpoint_id: str, user_explanation: str) -> dict[str, An
     covered_points = []
     missing_points = []
 
-    # Chấm từng tiêu chí theo từ khóa ngữ nghĩa
     for pt in rubric_points:
         pt_id = pt.get("id", "")
         weight = pt.get("weight", 30)
@@ -161,32 +172,8 @@ def grade_explanation(checkpoint_id: str, user_explanation: str) -> dict[str, An
                 "weight": weight
             })
 
-    # Tính % Mastery (Làm tròn 0-100)
     mastery_score = int(round((earned_weight / total_weight) * 100)) if total_weight > 0 else 0
-
-    # Kiểm tra các lỗi hiểu sai (Misconceptions) học viên có thể vô tình khẳng định
-    misconceptions_flagged = []
-    if "chỉ cần query nhân key là đủ" in norm_text or "không cần value" in norm_text:
-        misconceptions_flagged.append("Khẳng định sai: Không cần dùng Value")
-    if "tăng gấp 8 lần tham số" in norm_text:
-        misconceptions_flagged.append("Khẳng định sai: Multi-Head làm tăng gấp nhiều lần số lượng tham số")
-    if "nối thêm vào embedding" in norm_text:
-        misconceptions_flagged.append("Khẳng định sai: Positional Encoding được nối (concatenate) thay vì cộng (element-wise addition)")
-
     status = "PASS" if mastery_score >= 80 else "NEEDS_IMPROVEMENT"
-
-    # Gợi ý phản hồi cho Persona "Bot Ngu"
-    if status == "PASS":
-        bot_guidance = (
-            f"Học viên đã giải thích rất đầy đủ (đạt {mastery_score}%). "
-            f"Hãy gật gù khen ngợi bạn học, chốt lại 1 ý mấu chốt và đồng ý chuyển sang Checkpoint tiếp theo."
-        )
-    else:
-        missing_names = [p["concept"] for p in missing_points]
-        bot_guidance = (
-            f"Học viên đạt {mastery_score}%, còn thiếu các ý: {', '.join(missing_names)}. "
-            f"Hãy tiếp tục đóng vai ngơ ngác, hỏi xoáy vào 1 trong các ý còn thiếu để học viên giải thích sâu hơn."
-        )
 
     return {
         "checkpoint_id": checkpoint_id,
@@ -196,7 +183,8 @@ def grade_explanation(checkpoint_id: str, user_explanation: str) -> dict[str, An
         "threshold": 80,
         "covered_points": covered_points,
         "missing_points": missing_points,
-        "misconceptions_flagged": misconceptions_flagged,
+        "professor_feedback": "Học viên cần giải thích thêm các khái niệm mấu chốt.",
         "source_citation": cp.get("source_citation", ""),
-        "bot_guidance": bot_guidance
+        "bot_guidance": f"Học viên đạt {mastery_score}%."
     }
+
