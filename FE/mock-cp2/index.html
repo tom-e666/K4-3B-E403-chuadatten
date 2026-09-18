@@ -2128,7 +2128,7 @@ async function processEvaluation(text) {
         appendMessage('coach', `✓ <b>Đạt chuẩn kiến thức (${score}%):</b> Lời giải thích của bạn đã bao phủ các điểm mấu chốt! 🎉`);
         getCurrentResults()[state.cpIdx] = { status: 'pass', score };
         renderTimelineProgress();
-        advanceFlow();
+        advanceFlow(true);
         return;
       } else {
         state.attempts++;
@@ -2141,7 +2141,7 @@ async function processEvaluation(text) {
           appendMessage('coach-hint', `Bạn đã thử 3 lần. Kiến thức chuẩn từ bài giảng: ${cp.correction}`);
           getCurrentResults()[state.cpIdx] = { status: 'fail', score };
           renderTimelineProgress();
-          advanceFlow();
+          advanceFlow(true);
           return;
         }
       }
@@ -2179,14 +2179,16 @@ async function processEvaluation(text) {
   }
 }
 
-function advanceFlow() {
+function advanceFlow(skipAiMessage = false) {
   const cps = getCurrentCheckpoints();
   if (state.cpIdx + 1 < cps.length) {
     state.cpIdx++;
     state.attempts = 0;
     setTimeout(() => {
       const nextCp = cps[state.cpIdx];
-      appendMessage('ai', nextCp.botQuestion);
+      if (!skipAiMessage) {
+        appendMessage('ai', nextCp.botQuestion);
+      }
       scrollToSlide(nextCp.slide);
       renderTimelineProgress();
       setInputEnabled(true);
