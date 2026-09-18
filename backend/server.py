@@ -24,6 +24,7 @@ from backend.providers import make_provider
 from backend.agent import FeynmanAgent, SessionState
 from backend.tools.reporter import generate_session_report
 from backend.tools._shared import load_lessons_data, get_all_lessons, get_lesson_by_id
+from backend.checkpoint_generator import CheckpointGeneratorAgent
 
 app = FastAPI(title="Feynman AI — Reverse Tutoring API", version="1.0.0")
 
@@ -82,6 +83,10 @@ class ChatMessageRequest(BaseModel):
     message: str
 
 
+class GenerateCheckpointsRequest(BaseModel):
+    pdf_filename: str = "d1-slide-hackathon.pdf"
+
+
 # ----------------- API Endpoints -----------------
 @app.get("/api/lessons")
 def get_lessons():
@@ -116,6 +121,19 @@ def get_checkpoints(lesson_id: str | None = None):
             for cp in data.get("checkpoints", [])
         ]
     })
+
+
+@app.post("/api/checkpoints/generate")
+def generate_checkpoints(req: GenerateCheckpointsRequest):
+    """Sử dụng CheckpointGeneratorAgent để phân tích Slide PDF và sinh danh sách Checkpoint phù hợp."""
+    try:
+        agent = get_or_create_agent()
+        gen_agent = CheckpointGeneratorAgent(provider=agent.provider, model=agent.model)
+        checkpoints = gen_agent.generate_checkpoints_from_pdf(req.pdf_filename)
+        return JSONResponse({"pdf_filename": req.pdf_filename, "count": len(checkpoints), "checkpoints": checkpoints})
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Lỗi khi sinh checkpoints: {str(exc)}")
+
 
 
 @app.post("/api/session/start")
@@ -179,6 +197,11 @@ def get_report(session_id: str = "default_session"):
     report = generate_session_report(eval_results)
     return report
 
+
+# Phục vụ thư mục Slides PDF
+SLIDES_DIR = PROJECT_ROOT / "backend" / "data" / "vlearn-pack" / "slides"
+if SLIDES_DIR.exists():
+    app.mount("/slides", StaticFiles(directory=str(SLIDES_DIR)), name="slides")
 
 # Phục vụ thư mục Frontend
 FE_DIR = PROJECT_ROOT / "FE" / "mock-cp2"
