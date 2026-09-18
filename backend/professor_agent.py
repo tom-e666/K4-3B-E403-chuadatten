@@ -64,14 +64,16 @@ class ProfessorEvaluatorAgent:
         if provider is None:
             provider_name = os.getenv("LLM_PROVIDER")
             if not provider_name:
-                if os.getenv("OPENROUTER_API_KEY"):
+                if os.getenv("DEEPSEEK_API_KEY"):
+                    provider_name = "deepseek"
+                elif os.getenv("OPENROUTER_API_KEY"):
                     provider_name = "openrouter"
                 elif os.getenv("GEMINI_API_KEY"):
                     provider_name = "gemini"
                 elif os.getenv("OPENAI_API_KEY"):
                     provider_name = "openai"
                 else:
-                    provider_name = "openrouter"
+                    provider_name = "deepseek"
             provider = make_provider(provider_name)
         self.provider = provider
         self.model = model

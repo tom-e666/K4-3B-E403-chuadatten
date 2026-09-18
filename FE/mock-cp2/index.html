@@ -1997,13 +1997,17 @@ async function processEvaluation(text) {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_id: `vlearn_${state.currentLessonId}`, message: text })
+      body: JSON.stringify({
+        session_id: `vlearn_${state.currentLessonId}`,
+        lesson_id: state.currentLessonId,
+        message: text
+      })
     });
 
     if (res.ok) {
       const data = await res.json();
       const evalData = data.latest_evaluation;
-      const score = evalData ? evalData.mastery_score : 85;
+      const score = evalData ? (evalData.mastery_score ?? 40) : (text.length > 35 ? 80 : 35);
       const isPass = evalData ? (evalData.status === 'PASS') : (score >= 80);
 
       if (data.assistant_text) {
@@ -2020,11 +2024,11 @@ async function processEvaluation(text) {
         state.attempts++;
         if (state.attempts < 3) {
           const missing = evalData && evalData.missing_points ? evalData.missing_points.map(m => m.concept).join(', ') : '';
-          appendMessage('coach-hint', `Gợi ý: Bạn chưa nêu rõ phần [${missing || 'các khái niệm cốt lõi'}]. Hãy bổ sung giải thích cho bạn học nhé!`);
+          appendMessage('coach-hint', `⚠️ <b>Chưa đạt (${score}%):</b> ${evalData?.professor_feedback || `Bạn chưa nêu rõ [${missing || 'các khái niệm cốt lõi'}]. Hãy giải thích chi tiết hơn nhé!`}`);
           setInputEnabled(true);
           return;
         } else {
-          appendMessage('coach-hint', `Bạn đã thử 3 lần. Kiến thức chuẩn từ bài giảng: ${cp.correction}`);
+          appendMessage('coach-hint', `Bạn đã thử 3 lần (${score}%). Kiến thức chuẩn từ bài giảng: ${cp.correction || 'Cần ôn tập thêm từ slide.'}`);
           getCurrentResults()[state.cpIdx] = { status: 'fail', score };
           renderTimelineProgress();
           advanceFlow(true);
@@ -2041,7 +2045,7 @@ async function processEvaluation(text) {
   const sampleWords = (cp.sampleCorrect || "").toLowerCase().split(/\s+/).filter(w => w.length > 3);
   let matchCount = 0;
   sampleWords.forEach(w => { if (lower.includes(w)) matchCount++; });
-  const isPass = (matchCount >= 2 || lower.includes("query") || lower.includes("tương quan") || lower.includes("xác suất") || lower.includes("pain point") || lower.includes("user"));
+  const isPass = (text.length > 30 && (matchCount >= 2 || lower.includes("query") || lower.includes("tương quan") || lower.includes("xác suất") || lower.includes("pain point")));
   const score = isPass ? 90 : 35;
 
   if (isPass) {
@@ -2123,7 +2127,7 @@ function showMasteryReport() {
   setInputEnabled(false);
 }
 
-function startReview() {
+async function startReview() {
   const lsn = getCurrentLesson();
   const cps = getCurrentCheckpoints();
 
@@ -2131,6 +2135,19 @@ function startReview() {
   state.cpIdx = 0;
   state.attempts = 0;
   state.resultsMap[state.currentLessonId] = [null, null, null];
+
+  try {
+    await fetch('/api/session/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: `vlearn_${state.currentLessonId}`,
+        lesson_id: state.currentLessonId
+      })
+    });
+  } catch (err) {
+    console.warn("Backend session/start warning:", err);
+  }
 
   renderTimelineProgress();
   appendMessage('ai', cps[0].botQuestion, '10:42');

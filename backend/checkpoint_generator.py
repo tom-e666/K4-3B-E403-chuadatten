@@ -56,7 +56,9 @@ MỖI CHECKPOINT CẦN CÓ CẤU TRÚC JSON CHUẨN SAU:
 }
 
 YÊU CẦU ĐẦU RA:
-- Trả về ĐÚNG MỘT JSON ARRAY chứa từ 3 đến 4 Checkpoints.
+- Trả về ĐÚNG MỘT JSON ARRAY có số lượng checkpoints phù hợp với nội dung bài học.
+- (Tùy vào độ khó bài học mà có số lượng checkpoint khác nhau, có thể nhiều hơn 4 nhưng phải phù hợp với nội dung slide)
+- Tuỳ vào nội dung giữa các check point mà đưa ra số lượng tiêu chí khác nhau (không nhất thiết phải luôn luôn là 3 tiêu chí)
 - Tổng trọng số (weight) của các rubric_points trong mỗi Checkpoint phải bằng 100.
 - Không kèm bất kỳ văn bản giải thích thừa nào ngoài khối JSON.
 """
