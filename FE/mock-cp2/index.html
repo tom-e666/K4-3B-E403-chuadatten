@@ -356,36 +356,6 @@
     color: var(--text-muted);
   }
 
-  /* Quick Lesson Selector in Sidebar */
-  .sidebar-module-selector {
-    padding: 10px 14px;
-    margin: 8px;
-    background: var(--surface-subtle);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-  }
-  .selector-label {
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    display: flex;
-    justify-content: space-between;
-  }
-  .lesson-select-dropdown {
-    width: 100%;
-    padding: 6px 8px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-primary);
-    background: #ffffff;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    outline: none;
-    cursor: pointer;
-  }
-
   /* ==========================================================================
      4. CENTER LEARNING VIEWER (Primary Surface: flex: 1)
      ========================================================================== */
@@ -499,89 +469,57 @@
     position: relative;
   }
 
-  .slide-grid-container {
-    display: grid;
-    grid-template-columns: 1.15fr 1fr;
-    gap: 32px;
-    align-items: center;
-    min-height: 100%;
-  }
-
-  .slide-left-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
   .slide-eyebrow {
     font-size: 15px;
     font-weight: 700;
     color: var(--vlearn-blue);
   }
-  .slide-main-title {
-    font-size: 32px;
-    font-weight: 800;
-    color: #0b192c;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-  }
-  .slide-subtitle {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    line-height: 1.45;
-  }
-  .slide-sub-points {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 8px;
-  }
-  .slide-sub-points li {
-    font-size: 13.5px;
-    color: #334155;
-    line-height: 1.5;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .slide-sub-points li::before {
-    content: "•";
-    color: var(--vlearn-blue);
-    font-weight: bold;
-    font-size: 16px;
-    line-height: 1;
-  }
 
-  .slide-meta-badge {
-    margin-top: 24px;
+  /* Khung nhúng PDF slide gốc (thay cho sơ đồ tự vẽ) */
+  .pdf-embed-wrap {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    border-top: 1px solid #f1f5f9;
-    padding-top: 16px;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-height: 0;
   }
-  .meta-brand {
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--vlearn-blue);
+  .pdf-embed-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
   }
-  .meta-brand span { color: var(--vlearn-red); }
-  .meta-phase {
-    font-size: 11.5px;
+  .pdf-embed-filename {
+    font-size: 12px;
     color: var(--text-muted);
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
   }
-
-  /* Slide Diagram Canvas (SVG/HTML Box on Right) */
-  .slide-diagram-canvas {
-    background: #fdfdfd;
-    border: 1px solid #f1f5f9;
+  /* Khung cuộn PDF tự vẽ bằng PDF.js (thay iframe) — cho phép JS biết đang xem trang nào */
+  .pdf-embed-scroll {
+    flex: 1 1 auto;
+    min-height: 420px;
+    width: 100%;
+    overflow-y: auto;
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    padding: 20px;
+    background: #525659;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+    gap: 14px;
+    padding: 18px 0;
+  }
+  .pdf-page-canvas {
+    max-width: calc(100% - 32px);
+    height: auto;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+    border-radius: 2px;
+    scroll-margin-top: 14px;
+  }
+  .pdf-loading-note {
+    margin: auto;
+    color: #e2e8f0;
+    font-size: 13px;
   }
 
   /* Slide Footer */
@@ -733,12 +671,28 @@
     color: var(--text-primary);
   }
 
+  /* Bài nhiều checkpoint thì các mốc bị bóp lại đến mức không đọc được tên -> cho kéo ngang.
+     Đường kẻ nền dùng width của nội dung (min-width: max-content) nên vẫn chạy hết cả vùng cuộn. */
   .timeline-track-wrap {
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    gap: 14px;
+    min-width: max-content;
+    padding: 0 2px 2px;
   }
+  .timeline-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  .timeline-scroll::-webkit-scrollbar { height: 6px; }
+  .timeline-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-strong); border-radius: var(--radius-full);
+  }
+  .timeline-scroll::-webkit-scrollbar-track { background: transparent; }
   .timeline-line-bg {
     position: absolute;
     top: 9px;
@@ -766,6 +720,8 @@
     align-items: center;
     gap: 4px;
     cursor: pointer;
+    flex: 0 0 auto;
+    min-width: 76px;
   }
   .timeline-node-circle {
     width: 20px;
@@ -804,6 +760,170 @@
   }
   .timeline-node.current .timeline-node-label { color: var(--vlearn-blue); font-weight: 700; }
   .timeline-node.done .timeline-node-label { color: var(--success); }
+
+  /* Trang PDF vừa được lướt tới cho checkpoint hiện tại — loé sáng vài giây để người học
+     biết ngay "phần bài đang nói nằm ở đây", rồi tự tắt để không chói khi đọc lâu. */
+  .pdf-page-canvas.cp-focus {
+    outline: 2px solid rgba(99, 179, 237, 0.9);
+    outline-offset: 3px;
+    border-radius: 6px;
+    animation: cpFocusPulse 1.8s ease-out 2;
+  }
+  @keyframes cpFocusPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(99, 179, 237, 0.55); }
+    70%  { box-shadow: 0 0 0 14px rgba(99, 179, 237, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(99, 179, 237, 0); }
+  }
+
+  /* Panel "Nguồn slide PDF" — nơi bấm cho AI đọc slide và tự sinh checkpoint.
+     Dùng đúng bộ token màu sáng của VLearn theme (sidebar nền trắng). */
+  .slide-source-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 7px 10px; border-radius: var(--radius-md);
+    font-size: 12.5px; color: var(--text-secondary);
+  }
+  .slide-source-item:hover { background: var(--surface-hover); }
+  .slide-source-main {
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 0; flex: 1; cursor: pointer;
+  }
+  .slide-source-name {
+    color: var(--text-secondary); font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .slide-source-item:hover .slide-source-name { color: var(--text-primary); }
+  .slide-source-meta { font-size: 10.5px; color: var(--text-subtle); }
+  .slide-source-meta.ready { color: var(--success); }
+  .btn-analyze-slide {
+    flex: none; cursor: pointer; font-size: 11px; line-height: 1; font-weight: 600;
+    padding: 6px 9px; border-radius: var(--radius-md); white-space: nowrap;
+    border: 1px solid var(--border-strong);
+    background: var(--surface-subtle); color: var(--text-muted);
+    transition: all 0.15s ease;
+  }
+  .btn-analyze-slide:hover:not(:disabled) {
+    background: #eff6ff; border-color: #93c5fd; color: #1d4ed8;
+  }
+  .btn-analyze-slide:disabled { opacity: 0.5; cursor: progress; }
+  /* Dải cho biết đang ở câu hỏi thứ mấy của checkpoint và ở mức độ nào */
+  /* Thẻ tổng kết cuối phiên + nút học lại từng checkpoint */
+  .report-card {
+    border: 1px solid var(--border); border-radius: var(--radius-lg);
+    background: var(--surface); overflow: hidden;
+  }
+  .report-card-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 13px 15px; background: var(--surface-subtle); border-bottom: 1px solid var(--border);
+  }
+  .report-card-title { font-size: 13.5px; font-weight: 700; }
+  .report-card-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .report-card-score { font-size: 22px; font-weight: 800; color: var(--vlearn-blue, #2563eb); }
+  .report-advice {
+    padding: 9px 15px; font-size: 12px; line-height: 1.6;
+    background: #fffbeb; color: #92400e; border-bottom: 1px solid var(--border);
+  }
+  .report-advice.ok { background: var(--success-soft); color: #166534; }
+  .report-rows { display: flex; flex-direction: column; }
+  .report-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 15px; border-bottom: 1px solid var(--border);
+    border-left: 3px solid transparent;
+  }
+  .report-row:last-child { border-bottom: none; }
+  .report-row.ok { border-left-color: var(--success); }
+  .report-row.warn { border-left-color: var(--warning); }
+  .report-row.muted { border-left-color: var(--border-strong); }
+  .report-row-main { flex: 1; min-width: 0; }
+  .report-row-title { font-size: 12.5px; }
+  .report-row-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.5; }
+  .report-rec-tag {
+    margin-left: 6px; font-size: 10px; padding: 1px 6px; border-radius: var(--radius-full);
+    background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa;
+  }
+  .report-redo-btn {
+    flex: none; cursor: pointer; font-size: 11.5px; font-weight: 600;
+    padding: 6px 10px; border-radius: var(--radius-md);
+    border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-secondary);
+  }
+  .report-redo-btn:hover { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+  .report-card-foot { padding: 10px 15px; display: flex; justify-content: flex-end; }
+
+  /* Giáo sư AI — nhân vật khác hẳn bạn học: chỉ nhân vật này mới được giảng kiến thức */
+  .msg-avatar-prof {
+    width: 30px; height: 30px; flex: none; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe;
+  }
+  .msg-bubble-prof {
+    padding: 11px 14px; border-radius: 4px 12px 12px 12px;
+    background: #faf9ff; border: 1px solid #e9e5ff;
+    font-size: 13.5px; line-height: 1.65; color: var(--text-primary);
+  }
+  .prof-name { color: #6d28d9; font-weight: 600; }
+
+  .msg-bubble-ai.streaming::after {
+    content: '▍'; margin-left: 2px; opacity: 0.55;
+    animation: caretBlink 1s steps(2, start) infinite;
+  }
+  @keyframes caretBlink { to { visibility: hidden; } }
+
+  .question-meta-strip {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 8px; padding: 6px 10px;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--surface-subtle); font-size: 11px; color: var(--text-muted);
+  }
+  .q-level-badge {
+    padding: 2px 7px; border-radius: var(--radius-full); font-weight: 600; font-size: 10.5px;
+    border: 1px solid transparent;
+  }
+  .q-level-badge.nhan_biet { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  .q-level-badge.thong_hieu { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+  .q-level-badge.van_dung { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+  .q-level-badge.plain { background: var(--surface); color: var(--text-subtle); border-color: var(--border); font-weight: 500; }
+  .q-meta-cover { margin-left: auto; color: var(--text-subtle); }
+
+  /* Danh sách checkpoint AI vừa sinh, hiển thị ngay đầu hội thoại */
+  .cp-outline { margin: 8px 0; display: flex; flex-direction: column; gap: 4px; }
+  .cp-outline-row {
+    display: flex; align-items: baseline; gap: 6px;
+    padding: 5px 9px; border-radius: var(--radius-md);
+    background: var(--surface-subtle); border: 1px solid var(--border);
+    font-size: 12px; color: var(--text-secondary);
+  }
+  .cp-outline-page { margin-left: auto; font-size: 10.5px; color: var(--text-subtle); white-space: nowrap; }
+
+  /* Khu vực tải file slide PDF lên — nguồn khởi đầu của cả luồng sinh checkpoint */
+  .slide-dropzone {
+    margin: 4px 6px 8px; padding: 12px 10px; cursor: pointer; text-align: center;
+    border: 1.5px dashed var(--border-strong); border-radius: var(--radius-lg);
+    background: var(--surface-subtle); transition: all 0.15s ease;
+  }
+  .slide-dropzone:hover, .slide-dropzone.dragover { border-color: #93c5fd; background: #eff6ff; }
+  .slide-dropzone.dragover { border-style: solid; }
+  .slide-dropzone-title { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+  .slide-dropzone-hint { margin-top: 3px; font-size: 10.5px; line-height: 1.45; color: var(--text-subtle); }
+
+  .slide-source-item.busy { opacity: 0.85; }
+  .slide-spinner {
+    flex: none; width: 13px; height: 13px; border-radius: 50%;
+    border: 2px solid var(--border-strong); border-top-color: var(--vlearn-blue, #2563eb);
+    animation: slideSpin 0.8s linear infinite;
+  }
+  @keyframes slideSpin { to { transform: rotate(360deg); } }
+
+  .slide-gen-status {
+    padding: 6px 10px; font-size: 11px; line-height: 1.55;
+    color: var(--text-muted); white-space: pre-wrap;
+  }
+  .slide-gen-status.error { color: var(--vlearn-red); }
+  .slide-gen-status.ok { color: var(--success); }
+
+  /* "Đang xem" — nêu bật checkpoint khớp với trang PDF đang lướt tới, độc lập với trạng thái done/current */
+  .timeline-node.viewing .timeline-node-circle {
+    outline: 2px dashed var(--vlearn-blue);
+    outline-offset: 2px;
+  }
 
   /* Chat Messages (ONLY THIS AREA SCROLLS) */
   .chat-messages-area {
@@ -1138,7 +1258,6 @@
   @media (max-width: 1280px) {
     .lesson-sidebar { width: 220px; flex: 0 0 220px; }
     .feynman-ai-panel { width: 400px; flex: 0 0 400px; }
-    .slide-grid-container { grid-template-columns: 1fr; gap: 20px; }
   }
 </style>
 </head>
@@ -1203,31 +1322,36 @@
       <button class="sidebar-close-btn" onclick="toggleSidebar()" title="Đóng">✕</button>
     </div>
 
-    <!-- Quick Switcher to support 2 official lessons from vlearn-pack slides -->
-    <div class="sidebar-module-selector">
-      <div class="selector-label">
-        <span>Chọn bài giảng</span>
-        <span style="color:var(--vlearn-blue)">2 bài</span>
-      </div>
-      <select class="lesson-select-dropdown" id="lessonDropdown" onchange="switchLesson(this.value)">
-        <option value="lesson_01">Bài 1: Day 1 — AI & LLM Foundation</option>
-        <option value="lesson_02">Bài 2: Day 2 — AI Product & Business Problem</option>
-      </select>
-    </div>
-
-    <!-- Section 1: Slides Bài Giảng (1 bộ slide PDF duy nhất mỗi bài) -->
+    <!-- Section 1: Slides Bài Giảng — chọn bài giảng ngay ở đây (mỗi bài = 1 file PDF slide thật) -->
     <div class="sidebar-group">
       <div class="group-header" onclick="toggleSection('slidesSection', this)">
         <span>Slides Bài Giảng</span>
         <span class="chev">▾</span>
       </div>
       <div class="nav-item-list" id="slidesSection">
-        <div class="nav-item active" onclick="scrollToSlide(1)">
-          <div class="left-part">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span id="activeSlideFileName">d1-slide-hackathon.pdf</span>
-          </div>
-          <span class="nav-tag-badge">PDF (29 trang)</span>
+        <!-- Rendered dynamically by renderLessonNavList() -->
+      </div>
+    </div>
+
+    <!-- Section 1b: Nguồn slide PDF — AI đọc file này để TỰ SINH checkpoint -->
+    <div class="sidebar-group">
+      <div class="group-header" onclick="toggleSection('slideSourceSection', this)">
+        <span>Nguồn slide PDF (AI sinh checkpoint)</span>
+        <span class="chev">▾</span>
+      </div>
+      <div class="nav-item-list" id="slideSourceSection">
+        <div class="slide-dropzone" id="slideDropzone" onclick="document.getElementById('slideFileInput').click()">
+          <input type="file" id="slideFileInput" accept="application/pdf,.pdf" multiple hidden
+                 onchange="handleSlideFiles(this.files); this.value='';">
+          <div class="slide-dropzone-title">⬆ Tải slide PDF lên</div>
+          <div class="slide-dropzone-hint">Chọn file hoặc kéo thả vào đây — AI sẽ tự đọc và tạo file checkpoint</div>
+        </div>
+        <div id="slideSourceList"></div>
+        <div class="slide-gen-status" id="slideGenStatus"></div>
+        <div class="slide-gen-status">
+          <a href="/teacher" target="_blank" rel="noopener" style="color:#1d4ed8;text-decoration:none;">
+            📊 Báo cáo lớp cho giảng viên →
+          </a>
         </div>
       </div>
     </div>
@@ -1299,9 +1423,9 @@
         </div>
 
         <div class="toolbar-right">
-          <button class="slide-arrow-btn" onclick="prevSlide()" title="Slide trước">‹</button>
-          <span class="slide-counter-badge">Slide <span id="slideCurrentNum">1</span>/<span id="slideTotalNum">3</span></span>
-          <button class="slide-arrow-btn" onclick="nextSlide()" title="Slide sau">›</button>
+          <button class="slide-arrow-btn" onclick="prevSlide()" title="Checkpoint trước">‹</button>
+          <span class="slide-counter-badge">Checkpoint <span id="slideCurrentNum">1</span>/<span id="slideTotalNum">3</span></span>
+          <button class="slide-arrow-btn" onclick="nextSlide()" title="Checkpoint sau">›</button>
         </div>
       </div>
 
@@ -1359,9 +1483,12 @@
         <span class="timeline-header-title">TIẾN TRÌNH BÀI HỌC</span>
         <span class="timeline-count-badge" id="timelineCountText">3/3</span>
       </div>
-      <div class="timeline-track-wrap" id="checkpointTimelineTrack">
-        <!-- Rendered dynamically -->
+      <div class="timeline-scroll" id="checkpointTimelineScroll">
+        <div class="timeline-track-wrap" id="checkpointTimelineTrack">
+          <!-- Rendered dynamically -->
+        </div>
       </div>
+      <div class="question-meta-strip" id="questionMetaStrip" hidden></div>
     </div>
 
     <!-- Chat Messages History (ONLY THIS AREA SCROLLS) -->
@@ -1414,67 +1541,216 @@
 
 </div>
 
+<!-- PDF.js chỉ có bản ES module ở version mới nhất — nạp riêng rồi gắn vào window
+     để script chính (non-module, dùng inline onclick="") gọi được như hàm toàn cục. -->
+<script type="module">
+  import * as pdfjsLib from '/static/vendor/pdfjs/pdf.min.mjs';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/static/vendor/pdfjs/pdf.worker.min.mjs';
+  window.pdfjsLib = pdfjsLib;
+</script>
+
 <!-- ==========================================================================
      3. CLIENT-SIDE LOGIC & REAL MOCKED LESSON DATA (vlearn-pack)
      ========================================================================== -->
 <script>
 const MOCK_LESSONS = [
   {
+    id: "lesson_02",
+    short_title: "Bài 2: Transformer Architecture",
+    topic: "Day 1 (Chiều) — Transformer Architecture & Attention Mechanism",
+    course: "AI20k Khóa 4 - Module Deep Learning",
+    duration: "55 phút",
+    lecture_file: "4-day02-lecture-slides",
+    pdf_file: "d1-slide-hackathon.pdf",
+    video_title: "Transformer Architecture",
+    slides: [
+      {
+        slide: 1,
+        eyebrow: "Bài 2",
+        title: "Transformer Architecture",
+        subtitle: "From Self-Attention to Large Language Models",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L3-L4 - Khóa 4 Phase 1 · AI in Action · Module Deep Learning",
+        diagramType: "transformer_block",
+        bullets: [
+          "Cơ chế Self-Attention: Cho phép mỗi từ chú ý đến toàn bộ các từ khác trong câu cùng lúc.",
+          "Bộ ba Query, Key, Value: Q (từ đang tìm kiếm gì), K (nhãn so khớp độ liên quan), V (nội dung thông tin lấy về).",
+          "Tích vô hướng tỉ lệ: Chia cho căn bậc hai d_k để tránh triệt tiêu gradient khi số chiều lớn."
+        ]
+      },
+      {
+        slide: 2,
+        eyebrow: "Bài 2 · Checkpoint 2",
+        title: "Multi-Head Attention",
+        subtitle: "Chiếu đa không gian biểu diễn (Subspace Projections)",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L3-L4 - Khóa 4 Phase 1 · AI in Action · Module Deep Learning",
+        diagramType: "multi_head",
+        bullets: [
+          "Tránh hiện tượng trung bình hóa: 1 Head duy nhất sẽ làm lu mờ các mối quan hệ cú pháp và đại từ.",
+          "8 Heads song song: Mỗi head tập trung vào một khía cạnh (ngữ pháp, đại từ chỉ định, liên hệ từ xa).",
+          "Ghép nối Concat + W_O: Ghép các head lại và nhân ma trận tuyến tính để giữ nguyên số chiều d_model."
+        ]
+      },
+      {
+        slide: 3,
+        eyebrow: "Bài 2 · Checkpoint 3",
+        title: "Positional Encoding",
+        subtitle: "Bổ sung thông tin vị trí cho dữ liệu chuỗi trong xử lý song song",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L3-L4 - Khóa 4 Phase 1 · AI in Action · Module Deep Learning",
+        diagramType: "positional_encoding",
+        bullets: [
+          "Bất biến hoán vị: Self-Attention xử lý tất cả token cùng lúc, không tự biết từ nào đứng trước hay sau.",
+          "Cộng trực tiếp vào Embedding: Vector vị trí được cộng trực tiếp vào word embedding vector.",
+          "Sóng hình sin/cosin: Tần số bước sóng khác nhau giúp mô hình học khoảng cách tương đối giữa các từ."
+        ]
+      }
+    ],
+    checkpoints: [
+      {
+        id: "cp1_self_attention",
+        short: "CP1",
+        label: "Self-Attention",
+        title: "Self-Attention & Bộ ba Q, K, V",
+        slide: 1,
+        // Ghi chú: nội dung Q/K/V không có trong d1-slide-hackathon.pdf (đã kiểm bằng cách trích
+        // toàn bộ text 29 trang, không tìm thấy "query/key/value") — tạm trỏ trang 1, chờ Agent 1
+        // phân tích lại từ nguồn slide đầy đủ hơn để có pdf_page chính xác.
+        pdfPage: 1,
+        botQuestion: "Chào bạn! Chúng ta đang ở checkpoint **CP1 - Self-Attention**.\n\nTheo bạn, Self-Attention là gì? Hãy giải thích bằng cách hiểu của bạn nhé!",
+        hints: [
+          "Gợi ý: Query nhân với Key chỉ mới tạo ra 'Attention Score'. Vậy điểm số này được chuẩn hoá qua hàm gì và nhân với vector nào để lấy nội dung?",
+          "Gợi ý thêm: Cần nhắc đến: (1) Query tìm kiếm, Key khớp độ liên quan, (2) Softmax tạo trọng số, (3) Nhân với Value."
+        ],
+        correction: "Query nhân Key cho ra Attention Score (độ liên quan), sau đó qua Softmax thành trọng số xác suất, rồi mới nhân với Value để lấy ra tổng hợp thông tin ngữ cảnh.",
+        sampleCorrect: "Tôi nghĩ Self-Attention là cơ chế giúp mô hình tự tập trung vào các từ quan trọng trong câu, bằng cách tính độ tương quan giữa các từ với nhau qua Query và Key, rồi qua Softmax nhân với Value để lấy thông tin.",
+        sampleWrong: "Nó chỉ là hàm tìm kiếm từ khóa trên Google thôi chứ không có phép tính toán ma trận gì phức tạp cả."
+      },
+      {
+        id: "cp2_multi_head_attention",
+        short: "CP2",
+        label: "Multi-Head Attention",
+        title: "Multi-Head Attention",
+        slide: 2,
+        pdfPage: 1, // xem ghi chú ở CP1 — Multi-Head Attention cũng không có trong d1-slide-hackathon.pdf
+        botQuestion: "Ý tưởng của bạn khá tốt! 👍\n\nVậy theo bạn, làm thế nào mô hình biết từ nào quan trọng hơn các từ khác? Và tại sao cần chia nhỏ thành nhiều Head (Multi-Head) thay vì 1 Head to?",
+        hints: [
+          "Gợi ý: Nếu một từ vừa có quan hệ ngữ pháp vừa có quan hệ đại từ ('nó' trỏ về ai), 1 Head có thể bị trung bình hóa.",
+          "Gợi ý thêm: Nhiều Head cho phép chiếu vector vào các không gian con (subspaces) khác nhau."
+        ],
+        correction: "1 Head sẽ làm các mối quan hệ ngữ nghĩa bị trung bình hóa. Multi-Head chia thành nhiều không gian con (subspaces) để học song song nhiều khía cạnh (ngữ pháp, đại từ, ngữ cảnh xa).",
+        sampleCorrect: "Vì nếu dùng 1 head thì các mối quan hệ khác nhau sẽ bị tính trung bình và triệt tiêu nhau. Multi-Head cho phép chiếu vào nhiều subspaces khác nhau để cùng lúc nhìn được nhiều góc độ như ngữ pháp, đại từ, rồi ghép lại bằng concat.",
+        sampleWrong: "Chia nhiều head chỉ để chạy nhanh hơn trên nhiều máy tính thôi chứ ý nghĩa toán học hoàn toàn giống hệt 1 head."
+      },
+      {
+        id: "cp3_positional_encoding",
+        short: "CP3",
+        label: "Positional Encoding",
+        title: "Positional Encoding",
+        slide: 3,
+        pdfPage: 1, // xem ghi chú ở CP1 — Positional Encoding cũng không có trong d1-slide-hackathon.pdf
+        botQuestion: "Chính xác! Câu hỏi cuối cùng: Tại sao Transformer lại cần Positional Encoding cộng vào embedding, trong khi RNN ngày xưa không cần?",
+        hints: [
+          "Gợi ý: Transformer xử lý tất cả từ CÙNG LÚC (song song), không đọc tuần tự như RNN.",
+          "Gợi ý thêm: Positional Encoding cộng thêm vector sin/cos vào embedding để mã hóa tọa độ vị trí."
+        ],
+        correction: "Vì Transformer xử lý các từ song song nên tự nó không biết thứ tự (bất biến hoán vị). Positional Encoding cộng thêm thông tin vị trí vào embedding của từng từ để mô hình phân biệt thứ tự ngữ pháp.",
+        sampleCorrect: "Vì Transformer xử lý song song tất cả các từ cùng lúc nên bất biến hoán vị, không tự biết thứ tự trước sau như RNN. Do đó cần cộng thêm vector Positional Encoding vào word embedding để mã hóa vị trí và khoảng cách bằng hàm sin cos.",
+        sampleWrong: "Transformer đọc từ trái sang phải như người nên nó đã biết vị trí rồi, cộng thêm chỉ để cho đẹp công thức."
+      }
+    ]
+  },
+  {
     id: "lesson_01",
     short_title: "Bài 1: Day 1 — AI & LLM Foundation",
     topic: "Day 1 — AI & LLM Foundation: Bản chất LLM & Context Window",
     course: "AI20k Khóa 4 - Module Foundation",
     duration: "45 phút",
-    lecture_file: "d1-slide-hackathon.pdf",
-    pdf_url: "/slides/d1-slide-hackathon.pdf",
-    video_title: "AI & LLM Foundation",
-    slides: Array.from({length: 29}, (_, i) => ({
-      slide: i + 1,
-      eyebrow: `Trang ${i + 1}`,
-      metaBrand: "VLearn AI20k",
-      metaPhase: "Day 1 · AI & LLM Foundation",
-      bullets: [
-        "Kiến thức tổng quan AI, Machine Learning & Deep Learning",
-        "Cơ chế Next-Token Prediction và nguồn gốc Hallucination",
-        "Quản lý Context Window và hiện tượng Context Rot"
-      ]
-    })),
+    lecture_file: "4-day01-lecture-slides",
+    pdf_file: "d1-slide-hackathon.pdf",
+    video_title: "Foundation & LLM Context",
+    slides: [
+      {
+        slide: 1,
+        eyebrow: "Bài 1",
+        title: "AI & Large Language Models",
+        subtitle: "Bức tranh tổng quan AI, Machine Learning & GenAI",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L1-L2 - Khóa 4 Phase 1 · Foundation Module",
+        diagramType: "ai_hierarchy",
+        bullets: [
+          "AI (1956) là tập cha lớn nhất mô phỏng trí thông minh con người.",
+          "Machine Learning: Học quy luật từ dữ liệu thay vì viết luật bằng tay.",
+          "Deep Learning & LLM: Mạng nơ-ron sâu sinh văn bản theo xác suất token."
+        ]
+      },
+      {
+        slide: 2,
+        eyebrow: "Bài 1 · Checkpoint 2",
+        title: "Next-Token Prediction",
+        subtitle: "Bản chất cỗ máy xác suất & Hiện tượng ảo giác (Hallucination)",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L1-L2 - Khóa 4 Phase 1 · Foundation Module",
+        diagramType: "next_token",
+        bullets: [
+          "Vòng lặp tự hồi quy (Autoregressive): Dự đoán token tiếp theo có xác suất cao nhất.",
+          "Nguồn gốc Ảo giác: Mô hình ưu tiên ghép từ thuận tai, không có ý thức kiểm chứng sự thật."
+        ]
+      },
+      {
+        slide: 3,
+        eyebrow: "Bài 1 · Checkpoint 3",
+        title: "Context Window & Context Rot",
+        subtitle: "Quản lý cửa sổ ngữ cảnh và hiện tượng phân tán attention",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L1-L2 - Khóa 4 Phase 1 · Foundation Module",
+        diagramType: "context_rot",
+        bullets: [
+          "Context Window là 'bàn làm việc': Càng nhồi nhét quá tải thì càng dễ gặp Context Rot.",
+          "Nguyên tắc Less is More: Chọn lọc dữ liệu tinh gọn, ghi log/plan từng bước."
+        ]
+      }
+    ],
     checkpoints: [
       {
         id: "cp1_ai_foundation",
         short: "CP1",
-        label: "Cơ sở AI & LLM",
-        title: "Cơ sở của AI và LLM",
-        slide: 3,
-        botQuestion: "Tớ không hiểu tại sao AI lại có nhiều loại như Machine Learning, Deep Learning, và LLM. Chúng khác nhau như thế nào nhỉ?",
-        hints: ["Gợi ý: AI là tập lớn nhất, Machine Learning học quy luật từ dữ liệu, Deep Learning dùng mạng nơ-ron sâu, LLM là mô hình ngôn ngữ lớn."],
-        correction: "AI bao gồm Machine Learning (học từ dữ liệu) và Deep Learning (mạng nơ-ron). LLM là tập con của Deep Learning chuyên xử lý ngôn ngữ.",
-        sampleCorrect: "AI là trí tuệ nhân tạo nói chung. Machine Learning dạy máy học từ dữ liệu. Deep Learning dùng mạng nơ-ron sâu tự trích xuất đặc trưng. Còn LLM là mô hình ngôn ngữ lớn chuyên về văn bản.",
-        sampleWrong: "Tất cả các loại AI đều giống nhau hoàn toàn."
+        label: "Next-Token & Ảo giác",
+        title: "Next-Token Prediction & Ảo giác",
+        slide: 2,
+        pdfPage: 11, // đã kiểm tra thật trong d1-slide-hackathon.pdf: trang giải thích cơ chế dự đoán xác suất
+        botQuestion: "Chào bạn! Tại sao ChatGPT trả lời câu cú rất mượt mà nhưng thỉnh thoảng lại tự tin nói sai sự thật (ảo giác - hallucination) vậy cậu?",
+        hints: ["Gợi ý: LLM chọn từ tiếp theo dựa trên cái gì? Phân phối xác suất hay sự thật khách quan?"],
+        correction: "LLM chỉ là cỗ máy dự đoán token tiếp theo theo xác suất thống kê. Vì chỉ tối ưu tính trôi chảy ngôn ngữ nên có thể tự tin sinh ra thông tin ảo giác.",
+        sampleCorrect: "LLM bản chất là cỗ máy dự đoán next-token dựa trên phân phối xác suất thống kê. Nó không có ý thức mà chỉ chọn từ thuận tai nhất nên có thể sinh ra ảo giác dù hành văn rất trôi chảy.",
+        sampleWrong: "Do ChatGPT bị lỗi bộ nhớ RAM tạm thời nên nó cố tình nói dối trêu người dùng."
       },
       {
         id: "cp2_transformer_mechanism",
         short: "CP2",
-        label: "Cơ chế Transformer",
-        title: "Cơ chế hoạt động của Transformer",
-        slide: 8,
-        botQuestion: "Tớ không hiểu tại sao Transformer lại quan trọng trong AI. Nó hoạt động như thế nào nhỉ?",
-        hints: ["Gợi ý: Transformer dùng cơ chế Attention cho phép mô hình hiểu ngữ cảnh toàn câu và tính toán song song trên GPU."],
-        correction: "Transformer tạo đột phá nhờ cơ chế Self-Attention giúp mô hình đánh giá độ liên quan giữa các từ và xử lý song song thay vì đọc tuần tự.",
-        sampleCorrect: "Transformer đột phá nhờ cơ chế Attention giúp mô hình nhìn toàn bộ câu cùng lúc và xử lý song song trên GPU thay vì đọc tuần tự từng chữ như RNN.",
-        sampleWrong: "Transformer chỉ là mô hình AI đơn giản không có gì đặc biệt."
+        label: "Context Window",
+        title: "Context Window & Context Rot",
+        slide: 3,
+        pdfPage: 14, // đã kiểm tra thật trong d1-slide-hackathon.pdf: trang "bàn làm việc" + Context Rot
+        botQuestion: "Context Window 1 triệu token có phải càng nhồi nhiều sách vào là AI càng trả lời thông minh không?",
+        hints: ["Gợi ý: Nhắc đến hiện tượng Context Rot và attention bị phân tán chú ý sai chỗ."],
+        correction: "Khi nhồi quá nhiều token, mô hình gặp hiện tượng Context Rot (phân tán chú ý, dễ quên). Cần quản lý context tinh gọn, chất lượng.",
+        sampleCorrect: "Không đúng, nhồi quá nhiều dữ liệu sẽ gây hiện tượng Context Rot khiến attention bị phân tán, chú ý sai chỗ và quên thông tin. Cần quản lý context tinh gọn và chắt lọc.",
+        sampleWrong: "Đúng rồi, cứ nhồi càng nhiều triệu token thì AI càng học thuộc lòng và trả lời chuẩn xác 100%."
       },
       {
         id: "cp3_llm_training_process",
         short: "CP3",
-        label: "Quá trình đào tạo LLM",
-        title: "Quá trình đào tạo LLM",
-        slide: 18,
-        botQuestion: "Tớ không hiểu tại sao LLM cần nhiều bước đào tạo như vậy. Tại sao không chỉ cần một bước thôi?",
-        hints: ["Gợi ý: Đào tạo LLM gồm Pre-training (học tri thức diện rộng) và Fine-tuning/RLHF (căn chỉnh theo chỉ thị người dùng)."],
-        correction: "LLM cần Pre-training để tích lũy tri thức ngôn ngữ diện rộng, sau đó cần Fine-tuning và RLHF để học cách tuân thủ chỉ thị người dùng an toàn.",
-        sampleCorrect: "Vì bước Pre-training chỉ giúp mô hình học tri thức và dự đoán từ tiếp theo. Cần thêm các bước Fine-tuning và RLHF để mô hình biết trả lời câu hỏi và tuân thủ chỉ thị một cách an toàn.",
-        sampleWrong: "LLM chỉ cần một bước đào tạo duy nhất là xong."
+        label: "Attention vs RNN",
+        title: "Attention song song vs Bottleneck RNN",
+        slide: 3,
+        pdfPage: 15, // đã kiểm tra thật trong d1-slide-hackathon.pdf: trang giải thích Attention
+        botQuestion: "Tại sao cơ chế Attention trong Transformer lại vượt trội hoàn toàn so với mạng RNN tuần tự ngày xưa?",
+        hints: ["Gợi ý: RNN đọc tuần tự từng chữ bị nghẽn câu dài. Transformer nhìn toàn câu và chạy song song trên GPU."],
+        correction: "RNN đọc tuần tự từng chữ nên bị nghẽn cổ chai và quên ngữ cảnh câu dài. Transformer dùng Attention nhìn toàn bộ câu cùng lúc và xử lý song song trên GPU.",
+        sampleCorrect: "RNN đọc tuần tự từng chữ nên câu dài sẽ quên thông tin phía trước và không song song hóa được. Transformer dùng Attention cho phép nhìn toàn bộ câu cùng lúc và tận dụng tính toán song song trên GPU.",
+        sampleWrong: "Do Transformer có tên nghe hiện đại hơn thôi chứ bản chất toán học không khác gì RNN."
       }
     ]
   },
@@ -1484,8 +1760,8 @@ const MOCK_LESSONS = [
     topic: "Day 2 — Xác định bài toán kinh doanh cho AI (Problem Definition)",
     course: "AI20k Khóa 4 - Module AI Product & Business",
     duration: "40 phút",
-    lecture_file: "d2-slide-hackathon.pdf",
-    pdf_url: "/slides/d2-slide-hackathon.pdf",
+    lecture_file: "4-day03-ai-product",
+    pdf_file: "d2-slide-hackathon.pdf",
     video_title: "AI Product & Business Problem",
     slides: Array.from({length: 29}, (_, i) => ({
       slide: i + 1,
@@ -1504,38 +1780,41 @@ const MOCK_LESSONS = [
       {
         id: "cp1_problem_statement",
         short: "CP1",
-        label: "Problem Statement",
-        title: "Xác định Problem Statement trong AI",
-        slide: 9,
-        botQuestion: "Tớ không hiểu tại sao phải có Problem Statement rõ ràng trước khi làm AI. Nó có quan trọng không?",
-        hints: ["Gợi ý: Problem Statement định hình rõ Actor, Workflow, Bottleneck, Impact và Success Metric trước khi chọn công nghệ."],
-        correction: "Problem Statement giúp làm rõ nỗi đau thật, đối tượng ảnh hưởng và chỉ số đo lường thành công để tránh làm sai bài toán.",
-        sampleCorrect: "Problem Statement cực kỳ quan trọng để xác định rõ Actor, Workflow, điểm nghẽn và Success Metric trước khi tốn nguồn lực làm AI.",
-        sampleWrong: "Chỉ cần có ý tưởng là code luôn, không cần định hình vấn đề."
+        label: "Jumping to Solution",
+        title: "Tránh bẫy Jumping to Solution",
+        slide: 1,
+        pdfPage: 7, // đã kiểm tra thật trong d2-slide-hackathon.pdf: trang "Ưu tiên giải pháp (Solution-first)"
+        botQuestion: "Sếp bảo công ty phải làm ngay một AI Chatbot support, tớ định code luôn bằng LangChain. Cậu thấy đã chuẩn chưa?",
+        hints: ["Gợi ý: Chatbot chỉ là giải pháp bề mặt. Cần lùi lại dùng 5 Whys tìm pain point thực sự."],
+        correction: "Vội vàng làm chatbot là bẫy Jumping to Solution. Cần lùi lại tìm pain point thực sự qua 5 Whys và xem xét giải pháp đơn giản trước.",
+        sampleCorrect: "Bạn đang mắc bẫy Jumping to Solution rồi, chatbot chỉ là giải pháp. Cần dừng lại hỏi 5 Whys tìm pain point thực sự và xem có giải pháp quy trình đơn giản nào trước khi build AI.",
+        sampleWrong: "Chuẩn rồi, sếp bảo làm chatbot thì cứ dựng vector database code ngay cho kịp tiến độ."
       },
       {
         id: "cp2_anti_patterns",
         short: "CP2",
-        label: "Anti-patterns trong AI",
-        title: "Nhận biết Anti-patterns trong dự án AI",
-        slide: 23,
-        botQuestion: "Tại sao lại có những sai lầm thường gặp khi làm AI? Tớ không hiểu rõ về Anti-patterns.",
-        hints: ["Gợi ý: Anti-patterns bao gồm Solution-first (vội làm AI), No baseline (không đo lường), No evaluation (không kiểm thử)."],
-        correction: "Anti-patterns là các bẫy như nhảy thẳng vào giải pháp trước khi hiểu nỗi đau, thiếu điểm đo lường cơ sở (baseline) hoặc không đánh giá kiểm thử.",
-        sampleCorrect: "Anti-patterns là các sai lầm phổ biến như Solution-first (chưa hiểu đau đã làm AI), thiếu baseline để so sánh, và không đánh giá kiểm thử chất lượng.",
-        sampleWrong: "Công nghệ tốt thì không bao giờ mắc sai lầm."
+        label: "Product vs Project",
+        title: "Product vs Project Mindset",
+        slide: 2,
+        pdfPage: 1, // không tìm thấy nội dung Product/Project Mindset trong d2-slide-hackathon.pdf
+        botQuestion: "Làm Product Manager với Project Manager trong dự án AI có giống nhau không cậu?",
+        hints: ["Gợi ý: Project Manager quản lý tiến độ/ngân sách. Product Manager lấy người dùng làm trung tâm và tìm bài toán đáng làm."],
+        correction: "Project Manager tập trung vào tiến độ, ngân sách theo spec. Product Manager tập trung vào người dùng, thị trường và cải tiến liên tục.",
+        sampleCorrect: "Khác nhau nhiều. Project Manager tập trung tiến độ và ngân sách spec có sẵn. Còn Product Manager phải lấy người dùng làm trung tâm, tự tìm bài toán đáng làm và liên tục đo lường cải tiến.",
+        sampleWrong: "Hai vị trí này hoàn toàn là một, chỉ khác tên gọi tiếng Anh thôi."
       },
       {
         id: "cp3_reward_function",
         short: "CP3",
-        label: "Reward Function",
-        title: "Thiết kế Reward Function & Đánh đổi",
-        slide: 57,
-        botQuestion: "Tớ không hiểu Reward Function là gì và tại sao nó lại quan trọng trong AI.",
-        hints: ["Gợi ý: Reward Function định nghĩa mục tiêu thưởng/phạt cho AI, phải cân bằng giữa Precision và Recall."],
-        correction: "Reward Function định hướng hành vi mô hình AI, giúp tối ưu hóa mục tiêu kinh doanh và cân bằng đánh đổi Precision vs Recall.",
-        sampleCorrect: "Reward Function định nghĩa cơ chế thưởng phạt để định hướng hành vi mô hình AI theo đúng mục tiêu sản phẩm và cân bằng giữa Precision và Recall.",
-        sampleWrong: "Reward Function chỉ đơn giản là đúng hoặc sai."
+        label: "Dogfooding",
+        title: "Chiến lược Dogfooding",
+        slide: 3,
+        pdfPage: 1, // không tìm thấy nội dung Dogfooding trong d2-slide-hackathon.pdf
+        botQuestion: "Tự mình dùng sản phẩm của mình (Dogfooding) có tác dụng gì đâu khi mình có thể phỏng vấn user ngoài?",
+        hints: ["Gợi ý: Dogfooding giúp team là tester đầu tiên, cảm nhận nỗi đau thật và tối ưu feedback loop cực nhanh."],
+        correction: "Dogfooding giúp chính đội ngũ là tester đầu tiên, cảm nhận trực tiếp nỗi đau và rút ngắn vòng phản hồi (như Jira build Jira, Claude Code).",
+        sampleCorrect: "Dogfooding là chính đội ngũ tự dùng sản phẩm hàng ngày như user thật. Điều này giúp cảm nhận trực tiếp nỗi đau thực tế và tối ưu feedback loop cực nhanh như Jira hay Claude Code.",
+        sampleWrong: "Dogfooding là mang sản phẩm cho người khác dùng thử miễn phí để lấy tiếng tăm."
       }
     ]
   }
@@ -1543,28 +1822,322 @@ const MOCK_LESSONS = [
 
 /* ---------------- Global State ---------------- */
 const state = {
-  currentLessonId: "lesson_01",
-  currentSlide: 1,
+  currentLessonId: "lesson_02",
+  currentSlide: 0, // chỉ số checkpoint (0-based) đang hiện trong khung slide-stage
   cpIdx: 0,
   attempts: 0,
   awaitingContinue: false,
-  resultsMap: {
-    lesson_01: [{status: 'pass', score: 100}, {status: 'pass', score: 100}, {status: 'pass', score: 100}],
-    lesson_02: [{status: 'pass', score: 100}, {status: 'pass', score: 100}, {status: 'pass', score: 100}]
-  }
+  resultsMap: {} // { [lessonId]: Array(checkpoints.length) chứa null | {status, score} — khởi tạo động, số checkpoint tùy bài
+};
+
+const PLACEHOLDER_LESSON = {
+  id: '__waiting__',
+  short_title: 'Đang chuẩn bị bài học...',
+  topic: '', course: '', duration: '',
+  pdf_file: null, video_title: '', slides: [], checkpoints: []
 };
 
 function getCurrentLesson() {
-  return MOCK_LESSONS.find(l => l.id === state.currentLessonId) || MOCK_LESSONS[0];
+  return LESSONS.find(l => l.id === state.currentLessonId) || LESSONS[0] || PLACEHOLDER_LESSON;
 }
 function getCurrentCheckpoints() {
   return getCurrentLesson().checkpoints || [];
 }
 function getCurrentResults() {
   if (!state.resultsMap[state.currentLessonId]) {
-    state.resultsMap[state.currentLessonId] = [null, null, null];
+    state.resultsMap[state.currentLessonId] = new Array(getCurrentCheckpoints().length).fill(null);
   }
   return state.resultsMap[state.currentLessonId];
+}
+
+/* ==========================================================================
+   NGUỒN DỮ LIỆU THẬT — checkpoint do LLM (Agent 1) tự đọc slide PDF sinh ra.
+   FE ưu tiên nạp /api/lessons?full=1; nếu backend không chạy thì rơi về
+   LESSONS ở trên để bản demo mở bằng file tĩnh vẫn xem được.
+   ========================================================================== */
+let LESSONS = MOCK_LESSONS.slice();
+let usingMockData = true;
+let SLIDE_SOURCES = [];
+let reviewSeq = 0; // chặn phiên startReview cũ ghi đè lên phiên vừa mở của bài học mới
+
+function shortLabelFromTitle(title) {
+  const t = (title || '').split(/[—–:(]/)[0].trim();
+  return t.length > 26 ? t.slice(0, 24) + '…' : t;
+}
+
+function mapApiCheckpoint(cp, i) {
+  // Gợi ý: nếu Agent 1 không sinh sẵn "hints" thì dựng từ chính rubric_points —
+  // đó đúng là những ý học viên còn thiếu, nên dùng làm định hướng là hợp lý nhất.
+  const rubricHints = (cp.rubric_points || []).map(r => `Gợi ý: ${r.concept}${r.criteria ? ' — ' + r.criteria : ''}`);
+  return {
+    id: cp.id || `cp${i + 1}`,
+    short: cp.short || `CP${i + 1}`,
+    label: cp.label || shortLabelFromTitle(cp.title),
+    title: cp.title || `Checkpoint ${i + 1}`,
+    slide: cp.slide || i + 1,
+    pdfPage: cp.pdf_page || cp.pdfPage || 1,
+    botQuestion: cp.student_starter_message || cp.botQuestion || `Cậu giải thích giúp tớ phần "${cp.title}" với!`,
+    hints: (cp.hints && cp.hints.length) ? cp.hints : (rubricHints.length ? rubricHints : ['Gợi ý: hãy nói rõ bản chất khái niệm và vì sao nó cần thiết.']),
+    correction: cp.correction || '',
+    sampleCorrect: cp.sample_correct || cp.sampleCorrect || '',
+    sampleWrong: cp.sample_wrong || cp.sampleWrong || '',
+    citation: cp.source_citation || '',
+    questionCount: (cp.question_bank || []).length
+  };
+}
+
+function mapApiLesson(api) {
+  return {
+    id: api.id,
+    short_title: api.short_title || api.topic || api.id,
+    topic: api.topic || '',
+    course: api.course || 'VLearn AI20k',
+    duration: api.duration || '',
+    pdf_file: api.pdf_file || null,
+    pdfMissing: !!api.pdf_missing,
+    video_title: api.video_title || api.short_title || '',
+    slides: api.slides || [],
+    checkpoints: (api.checkpoints || []).map(mapApiCheckpoint)
+  };
+}
+
+/* Ném lỗi = KHÔNG gọi được backend (mới rơi về mock). Backend chạy nhưng chưa có bài nào
+   thì trả mảng rỗng — đó là trạng thái bình thường khi AI còn đang đọc slide lần đầu. */
+async function loadLessonsFromApi() {
+  const res = await fetch('/api/lessons?full=1');
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  // Chỉ nhận bài học đã gắn với file slide thật — đó là bài do AI sinh từ PDF.
+  LESSONS = (data.lessons || [])
+    .filter(l => (l.checkpoints || []).length && l.pdf_file)
+    .map(mapApiLesson);
+  usingMockData = false;
+  if (LESSONS.length && !LESSONS.find(l => l.id === state.currentLessonId)) {
+    state.currentLessonId = LESSONS[0].id;
+  }
+  return LESSONS;
+}
+
+/* ---------------- Nguồn slide PDF — server TỰ phân tích, FE chỉ theo dõi ----------------
+   Không cần bấm nút nào: backend quét thư mục slides lúc khởi động, lần lượt cho LLM đọc
+   từng file PDF chưa có checkpoint. FE hỏi /api/slides theo nhịp để biết đang đọc tới đâu,
+   xong file nào thì tự nạp bài học đó lên giao diện và mở hội thoại với bạn học. */
+let slideSourceError = '';
+let slidePollTimer = null;
+
+async function loadSlideSources() {
+  slideSourceError = '';
+
+  // Mở thẳng file index.html (file://) thì mọi fetch tới /api đều chết -> báo đúng nguyên nhân.
+  if (location.protocol === 'file:') {
+    SLIDE_SOURCES = [];
+    slideSourceError = 'Trang đang mở trực tiếp từ file (file://) nên không gọi được API. Chạy run_server.bat rồi mở http://localhost:8000.';
+    renderSlideSourceList();
+    return;
+  }
+
+  let analyzing = false;
+  try {
+    const res = await fetch('/api/slides');
+    if (res.status === 404) {
+      throw new Error('Server đang chạy BẢN CŨ (chưa có /api/slides). Hãy tắt cửa sổ server rồi chạy lại run_server.bat.');
+    }
+    if (!res.ok) throw new Error('Server trả về HTTP ' + res.status);
+    const data = await res.json();
+    SLIDE_SOURCES = data.slides || [];
+    analyzing = !!data.analyzing;
+  } catch (err) {
+    SLIDE_SOURCES = [];
+    slideSourceError = err.message.includes('Failed to fetch')
+      ? 'Không kết nối được tới server (' + location.origin + '). Kiểm tra cửa sổ run_server.bat còn chạy không.'
+      : err.message;
+  }
+
+  renderSlideSourceList();
+  await syncNewlyReadyLessons();
+
+  // Còn file đang chờ/đang đọc -> hỏi lại sau vài giây cho tới khi AI làm xong hết.
+  clearTimeout(slidePollTimer);
+  if (analyzing) slidePollTimer = setTimeout(loadSlideSources, 4000);
+}
+
+/* Có bài học mới AI vừa sinh xong -> nạp vào FE. Nếu người học đang không có bài nào
+   (lần chạy đầu) thì mở luôn bài vừa xong để họ bắt đầu ngay, không phải bấm gì. */
+async function syncNewlyReadyLessons() {
+  const readyIds = SLIDE_SOURCES.filter(sl => sl.lesson_id && sl.checkpoints_count).map(sl => sl.lesson_id);
+  const missing = readyIds.filter(id => !LESSONS.find(l => l.id === id));
+  if (!missing.length) return;
+
+  const hadNothing = !LESSONS.length || usingMockData;
+  try {
+    await loadLessonsFromApi();
+  } catch (err) {
+    return;
+  }
+
+  renderLessonNavList();
+  updateLessonNavButtons();
+
+  if (hadNothing && LESSONS.length) {
+    switchLesson(LESSONS[0].id);
+  } else if (!getCurrentCheckpoints().length && LESSONS.length) {
+    switchLesson(LESSONS[0].id);
+  } else {
+    renderTimelineProgress();
+  }
+}
+
+const SLIDE_STATUS_TEXT = {
+  pending: '⏳ Đang xếp hàng chờ AI đọc',
+  running: '🤖 AI đang đọc slide để tạo checkpoint...',
+  error: '⚠ Phân tích lỗi'
+};
+
+function renderSlideSourceList() {
+  const box = document.getElementById('slideSourceList');
+  if (!box) return;
+
+  if (!SLIDE_SOURCES.length) {
+    const why = slideSourceError || 'Chưa có slide nào — tải một file PDF lên để AI tạo checkpoint.';
+    box.innerHTML = `<div class="slide-gen-status ${slideSourceError ? 'error' : ''}">${why}</div>
+      <div class="slide-gen-status"><span class="btn-analyze-slide" onclick="loadSlideSources()">↻ Thử lại</span></div>`;
+    return;
+  }
+
+  box.innerHTML = SLIDE_SOURCES.map(sl => {
+    const ready = !!(sl.lesson_id && sl.checkpoints_count);
+    const meta = ready
+      ? `${sl.checkpoints_count} checkpoint · ${sl.json_file || sl.pages + ' trang'}`
+      : (SLIDE_STATUS_TEXT[sl.status] || '⏳ Đang chuẩn bị') + (sl.status === 'error' ? `: ${sl.status_message}` : '');
+    const action = ready
+      ? `<button class="btn-analyze-slide" onclick="reanalyzeSlide('${sl.file}')" title="Cho AI đọc lại slide này">↻</button>`
+      : (sl.status === 'error'
+          ? `<button class="btn-analyze-slide" onclick="reanalyzeSlide('${sl.file}')" title="Thử phân tích lại">↻ Thử lại</button>`
+          : '<span class="slide-spinner" aria-hidden="true"></span>');
+    return `
+      <div class="slide-source-item ${ready ? '' : 'busy'}">
+        <div class="slide-source-main" ${ready ? `onclick="switchLesson('${sl.lesson_id}')"` : ''} title="${sl.file}">
+          <span class="slide-source-name">${ready ? (sl.short_title || sl.file) : sl.file}</span>
+          <span class="slide-source-meta ${ready ? 'ready' : ''}">${meta}</span>
+        </div>
+        ${action}
+      </div>
+    `;
+  }).join('');
+}
+
+/* ---------------- Tải slide PDF lên -> server tự sinh file JSON checkpoint ---------------- */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+    reader.onerror = () => reject(new Error('Không đọc được file ' + file.name));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleSlideFiles(fileList) {
+  const files = Array.from(fileList || []).filter(f => /\.pdf$/i.test(f.name));
+  if (!files.length) {
+    setSlideStatus('Chỉ nhận file PDF.', 'error');
+    return;
+  }
+  for (const file of files) {
+    await uploadSlideFile(file);
+  }
+}
+
+async function uploadSlideFile(file) {
+  setSlideStatus(`Đang tải "${file.name}" lên server...`);
+  try {
+    const data_base64 = await fileToBase64(file);
+    const res = await fetch('/api/slides/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: file.name, data_base64 })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || ('HTTP ' + res.status));
+
+    setSlideStatus(`${data.message} (${data.pages || '?'} trang) — theo dõi tiến trình ngay bên dưới.`, 'ok');
+    await loadSlideSources();   // bắt đầu vòng theo dõi, xong là tự nạp bài học lên
+
+    // Chưa có bài nào để học -> viết lại lời chào cho đúng việc AI đang làm.
+    if (!getCurrentCheckpoints().length) startReview();
+  } catch (err) {
+    setSlideStatus(`Tải "${file.name}" thất bại: ${err.message}`, 'error');
+  }
+}
+
+function setSlideStatus(text, kind) {
+  const el = document.getElementById('slideGenStatus');
+  if (!el) return;
+  el.className = 'slide-gen-status' + (kind ? ' ' + kind : '');
+  el.textContent = text;
+}
+
+function initSlideDropzone() {
+  const zone = document.getElementById('slideDropzone');
+  if (!zone) return;
+  ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation(); zone.classList.add('dragover');
+  }));
+  ['dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation(); zone.classList.remove('dragover');
+  }));
+  zone.addEventListener('drop', e => handleSlideFiles(e.dataTransfer.files));
+}
+
+/* Chỉ dùng khi muốn AI đọc LẠI một slide đã có checkpoint (hoặc thử lại file bị lỗi). */
+async function reanalyzeSlide(file) {
+  const status = document.getElementById('slideGenStatus');
+  status.className = 'slide-gen-status';
+  status.textContent = `AI đang đọc lại "${file}"... (thường mất 30–90 giây)`;
+  document.querySelectorAll('.btn-analyze-slide').forEach(b => { b.disabled = true; });
+
+  try {
+    const res = await fetch('/api/lessons/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdf_file: file, force: true })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || ('HTTP ' + res.status));
+
+    const lesson = mapApiLesson(data.lesson);
+    if (usingMockData) { LESSONS = []; usingMockData = false; }
+    const idx = LESSONS.findIndex(l => l.id === lesson.id);
+    if (idx >= 0) LESSONS[idx] = lesson; else LESSONS.push(lesson);
+    delete state.resultsMap[lesson.id]; // số checkpoint có thể đã đổi -> bỏ kết quả cũ
+
+    const warn = (data.warnings && data.warnings.length) ? '\n⚠ ' + data.warnings.join('\n⚠ ') : '';
+    status.className = 'slide-gen-status ok';
+    status.textContent = `Xong — AI sinh ${lesson.checkpoints.length} checkpoint từ "${file}".` + warn;
+
+    await loadSlideSources();
+    switchLesson(lesson.id);
+  } catch (err) {
+    status.className = 'slide-gen-status error';
+    status.textContent = 'Không phân tích được: ' + err.message;
+  } finally {
+    document.querySelectorAll('.btn-analyze-slide').forEach(b => { b.disabled = false; });
+  }
+}
+
+/* Đồng bộ phiên chấm điểm ở backend theo đúng bài học đang mở — nếu bỏ bước này,
+   /api/chat sẽ tự tạo session với lesson mặc định và chấm sai bộ checkpoint. */
+async function startBackendSession(lessonId) {
+  try {
+    const res = await fetch('/api/session/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: `vlearn_${lessonId}`, lesson_id: lessonId })
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
 }
 
 /* ---------------- Sidebar Navigation & Switcher ---------------- */
@@ -1586,40 +2159,58 @@ function toggleDemoDrawer() {
 
 function switchLesson(lessonId) {
   state.currentLessonId = lessonId;
-  state.currentSlide = 1;
+  state.currentSlide = 0;
   state.cpIdx = 0;
   state.attempts = 0;
   state.awaitingContinue = false;
 
-  const dropdown = document.getElementById('lessonDropdown');
-  if (dropdown) dropdown.value = lessonId;
-
   const lsn = getCurrentLesson();
   document.getElementById('topbarLessonTitle').textContent = lsn.short_title;
-  document.getElementById('activeSlideFileName').textContent = lsn.lecture_file;
   document.getElementById('sidebarVideoTitle').textContent = lsn.video_title;
 
+  renderLessonNavList();
   renderCurrentSlide();
   renderTimelineProgress();
   startReview();
   updateLessonNavButtons();
 }
 
+function renderLessonNavList() {
+  const list = document.getElementById('slidesSection');
+  if (!list) return;
+  if (!LESSONS.length) {
+    list.innerHTML = '<div class="slide-gen-status">Chưa có bài học nào — AI đang đọc slide để tạo checkpoint.</div>';
+    return;
+  }
+  list.innerHTML = LESSONS.map(lsn => {
+    const isActive = lsn.id === state.currentLessonId;
+    return `
+      <div class="nav-item ${isActive ? 'active' : 'muted'}" onclick="switchLesson('${lsn.id}')">
+        <div class="left-part">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span>${lsn.short_title}</span>
+        </div>
+        ${isActive ? '<span class="nav-tag-badge">Đang học</span>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
 function goToPrevLesson() {
-  const curIdx = MOCK_LESSONS.findIndex(l => l.id === state.currentLessonId);
-  if (curIdx > 0) switchLesson(MOCK_LESSONS[curIdx - 1].id);
+  const curIdx = LESSONS.findIndex(l => l.id === state.currentLessonId);
+  if (curIdx > 0) switchLesson(LESSONS[curIdx - 1].id);
 }
 function goToNextLesson() {
-  const curIdx = MOCK_LESSONS.findIndex(l => l.id === state.currentLessonId);
-  if (curIdx < MOCK_LESSONS.length - 1) switchLesson(MOCK_LESSONS[curIdx + 1].id);
+  const curIdx = LESSONS.findIndex(l => l.id === state.currentLessonId);
+  if (curIdx < LESSONS.length - 1) switchLesson(LESSONS[curIdx + 1].id);
 }
 function updateLessonNavButtons() {
-  const curIdx = MOCK_LESSONS.findIndex(l => l.id === state.currentLessonId);
+  const curIdx = LESSONS.findIndex(l => l.id === state.currentLessonId);
   const prevBtn = document.getElementById('btnPrevLesson');
   const nextBtn = document.getElementById('btnNextLesson');
   if (prevBtn) prevBtn.disabled = (curIdx === 0);
   if (nextBtn) {
-    if (curIdx === MOCK_LESSONS.length - 1) {
+    if (curIdx === LESSONS.length - 1) {
       nextBtn.textContent = '🎉 Đã hoàn thành khóa học';
       nextBtn.disabled = true;
     } else {
@@ -1629,174 +2220,160 @@ function updateLessonNavButtons() {
   }
 }
 
-/* ---------------- Center Slide Viewer Rendering ---------------- */
+/* ---------------- Center Slide Viewer Rendering (PDF.js — tự vẽ trang, theo dõi được đang cuộn tới đâu) ---------------- */
+const pdfDocCache = {};      // pdf_file -> pdfjs document đã tải (khỏi tải lại khi quay lại cùng bài)
+let pdfPageObserver = null;  // IntersectionObserver đang theo dõi khung slide-stage hiện tại
+let lastViewedPdfPage = 1;   // trang PDF đang hiện rõ nhất trong khung nhìn (theo dõi bởi observer)
+let pdfPendingPage = 1;      // trang cần lướt tới ngay khi vẽ xong PDF (yêu cầu đến trước lúc render xong)
+
 function renderCurrentSlide() {
   const lsn = getCurrentLesson();
-  const slide = lsn.slides[state.currentSlide - 1] || lsn.slides[0];
+  const cps = getCurrentCheckpoints();
+  const idx = Math.max(0, Math.min(cps.length - 1, state.currentSlide));
+  const cp = cps[idx];
+  document.getElementById('slideCurrentNum').textContent = cps.length ? idx + 1 : 0;
+  document.getElementById('slideTotalNum').textContent = cps.length;
+
+  const page = cp && cp.pdfPage ? cp.pdfPage : 1;
   const stage = document.getElementById('slideStage');
-  document.getElementById('slideCurrentNum').textContent = state.currentSlide;
-  document.getElementById('slideTotalNum').textContent = lsn.slides.length;
 
-  const pdfUrl = lsn.pdf_url || "/slides/d1-slide-hackathon.pdf";
-
-  // Hiển thị trực tiếp Slide PDF thực tế từ vlearn-pack/slides
-  if (state.viewMode !== 'diagram') {
-    stage.style.padding = "0";
+  // File PDF gốc đã bị xoá khỏi thư mục slides -> báo rõ thay vì để khung PDF gọi 404.
+  if (lsn.pdf_file && lsn.pdfMissing) {
+    stage.dataset.loadedPdf = '';
     stage.innerHTML = `
-      <div style="width:100%; height:100%; display:flex; flex-direction:column; background:#1e293b; overflow:hidden;">
-        <div style="padding: 8px 16px; background:#0f172a; color:#f8fafc; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; font-size:12.5px;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="background:#ef4444; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;">PDF SLIDE</span>
-            <strong style="color:#e2e8f0;">${lsn.short_title}</strong> — Trang ${state.currentSlide} / ${lsn.slides.length}
-          </div>
-          <div style="display:flex; gap:10px; align-items:center;">
-            <button onclick="state.viewMode='diagram'; renderCurrentSlide();" style="background:#334155; color:#cbd5e1; border:1px solid #475569; padding:4px 10px; border-radius:4px; font-size:11.5px; cursor:pointer;">📊 Xem Sơ Đồ Tóm Tắt</button>
-            <a href="${pdfUrl}#page=${state.currentSlide}" target="_blank" style="color:#60a5fa; text-decoration:none; font-size:11.5px; font-weight:600;">Mở PDF Cửa Sổ Mới ↗</a>
-          </div>
+      <div class="pdf-embed-wrap">
+        <div class="pdf-embed-header">
+          <span class="slide-eyebrow">${lsn.short_title}</span>
+          <span class="pdf-embed-filename">${lsn.pdf_file}</span>
         </div>
-        <iframe src="${pdfUrl}#page=${state.currentSlide}" style="width:100%; flex:1; min-height:480px; border:none; background:#ffffff;"></iframe>
+        <div class="pdf-loading-note">
+          Không còn file <b>${lsn.pdf_file}</b> trong thư mục slides nên không lướt slide được.<br>
+          Checkpoint của bài này vẫn học bình thường. Muốn xem lại slide thì tải file đó lên lần nữa.
+        </div>
       </div>
     `;
     return;
   }
 
-  stage.style.padding = "36px 44px";
-  let diagramHtml = '';
-  if (slide.diagramType === 'transformer_block') {
-    diagramHtml = `
-      <div class="slide-diagram-canvas">
-        <svg width="250" height="310" viewBox="0 0 250 310" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Output (Next Token) -->
-          <text x="125" y="16" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0f172a">Output (Next Token)</text>
-          <line x1="125" y1="22" x2="125" y2="40" stroke="#0f172a" stroke-width="1.5" marker-end="url(#arrow)"/>
-          
-          <!-- Feed Forward Network -->
-          <rect x="50" y="42" width="150" height="38" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.2"/>
-          <text x="125" y="65" text-anchor="middle" font-size="11.5" font-weight="600" fill="#166534">Feed Forward Network</text>
-          
-          <!-- Arrow -->
-          <line x1="125" y1="80" x2="125" y2="96" stroke="#64748b" stroke-width="1.5"/>
-          
-          <!-- Add & Norm -->
-          <rect x="50" y="98" width="150" height="32" rx="8" fill="#ffedd5" stroke="#fed7aa" stroke-width="1.2"/>
-          <text x="125" y="118" text-anchor="middle" font-size="11" font-weight="600" fill="#9a3412">Add & Norm</text>
-          
-          <!-- Arrow -->
-          <line x1="125" y1="130" x2="125" y2="146" stroke="#64748b" stroke-width="1.5"/>
-          
-          <!-- Multi-Head Attention -->
-          <rect x="44" y="152" width="150" height="42" rx="8" fill="#e0f2fe" stroke="#93c5fd" stroke-width="1.5"/>
-          <rect x="50" y="148" width="150" height="42" rx="8" fill="#dbeafe" stroke="#bfdbfe" stroke-width="1.5"/>
-          <text x="125" y="173" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8">Multi-Head Attention</text>
-          
-          <!-- Arrow -->
-          <line x1="125" y1="190" x2="125" y2="206" stroke="#64748b" stroke-width="1.5"/>
-          
-          <!-- Add & Norm -->
-          <rect x="50" y="208" width="150" height="32" rx="8" fill="#ffedd5" stroke="#fed7aa" stroke-width="1.2"/>
-          <text x="125" y="228" text-anchor="middle" font-size="11" font-weight="600" fill="#9a3412">Positional Encoding</text>
-          
-          <!-- Input Tokens -->
-          <line x1="85" y1="240" x2="85" y2="264" stroke="#64748b" stroke-width="1.5"/>
-          <line x1="125" y1="240" x2="125" y2="264" stroke="#64748b" stroke-width="1.5"/>
-          <line x1="165" y1="240" x2="165" y2="264" stroke="#64748b" stroke-width="1.5"/>
-          
-          <rect x="75" y="266" width="20" height="14" rx="3" fill="#e2e8f0"/>
-          <rect x="115" y="266" width="20" height="14" rx="3" fill="#e2e8f0"/>
-          <rect x="155" y="266" width="20" height="14" rx="3" fill="#e2e8f0"/>
-          <text x="125" y="296" text-anchor="middle" font-size="10.5" font-weight="500" fill="#64748b">Input Tokens</text>
-          
-          <!-- Stack Bracket Nx -->
-          <path d="M 210 44 Q 218 44 218 140 Q 224 140 218 140 Q 218 238 210 238" fill="none" stroke="#64748b" stroke-width="1.2"/>
-          <text x="228" y="145" font-size="13" font-weight="700" fill="#0f172a">Nx</text>
-        </svg>
-      </div>
-    `;
-  } else if (slide.diagramType === 'multi_head') {
-    diagramHtml = `
-      <div class="slide-diagram-canvas">
-        <svg width="240" height="280" viewBox="0 0 240 280" fill="none">
-          <rect x="20" y="20" width="200" height="36" rx="6" fill="#1d4ed8"/>
-          <text x="120" y="43" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Linear (Concat + W_O)</text>
-          
-          <line x1="120" y1="56" x2="120" y2="78" stroke="#94a3b8" stroke-width="1.5"/>
-          
-          <!-- 3 Parallel Heads Shown -->
-          <g transform="translate(10, 80)">
-            <rect x="0" y="0" width="65" height="110" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
-            <text x="32" y="24" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1d4ed8">Head 1</text>
-            <text x="32" y="44" text-anchor="middle" font-size="9" fill="#64748b">Cú pháp</text>
-            <rect x="8" y="60" width="49" height="36" rx="4" fill="#ffffff" stroke="#e2e8f0"/>
-            <text x="32" y="82" text-anchor="middle" font-size="8.5" font-weight="600" fill="#3b82f6">Q · K · V</text>
-          </g>
-          
-          <g transform="translate(87, 80)">
-            <rect x="0" y="0" width="65" height="110" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
-            <text x="32" y="24" text-anchor="middle" font-size="10.5" font-weight="700" fill="#16a34a">Head 2</text>
-            <text x="32" y="44" text-anchor="middle" font-size="9" fill="#64748b">Đại từ</text>
-            <rect x="8" y="60" width="49" height="36" rx="4" fill="#ffffff" stroke="#e2e8f0"/>
-            <text x="32" y="82" text-anchor="middle" font-size="8.5" font-weight="600" fill="#16a34a">Q · K · V</text>
-          </g>
-          
-          <g transform="translate(165, 80)">
-            <rect x="0" y="0" width="65" height="110" rx="6" fill="#fef3c7" stroke="#fde68a"/>
-            <text x="32" y="24" text-anchor="middle" font-size="10.5" font-weight="700" fill="#b45309">Head h</text>
-            <text x="32" y="44" text-anchor="middle" font-size="9" fill="#64748b">Từ xa</text>
-            <rect x="8" y="60" width="49" height="36" rx="4" fill="#ffffff" stroke="#e2e8f0"/>
-            <text x="32" y="82" text-anchor="middle" font-size="8.5" font-weight="600" fill="#b45309">Q · K · V</text>
-          </g>
-          
-          <text x="120" y="225" text-anchor="middle" font-size="11" font-weight="600" fill="#334155">8 Subspace Projections song song</text>
-        </svg>
-      </div>
-    `;
-  } else {
-    diagramHtml = `
-      <div class="slide-diagram-canvas">
-        <svg width="240" height="240" viewBox="0 0 240 240" fill="none">
-          <rect x="25" y="30" width="190" height="42" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
-          <text x="120" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8">Word Embedding Vector</text>
-          
-          <circle cx="120" cy="100" r="14" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
-          <text x="120" y="105" text-anchor="middle" font-size="16" font-weight="800" fill="#2563eb">+</text>
-          
-          <rect x="25" y="130" width="190" height="42" rx="6" fill="#fef2f2" stroke="#fecaca"/>
-          <text x="120" y="155" text-anchor="middle" font-size="12" font-weight="700" fill="#dc2626">Positional Encoding (Sin/Cos)</text>
-          
-          <line x1="120" y1="172" x2="120" y2="195" stroke="#94a3b8" stroke-width="1.5"/>
-          <rect x="25" y="196" width="190" height="32" rx="6" fill="#1e293b"/>
-          <text x="120" y="217" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">= Input Vector hoàn chỉnh</text>
-        </svg>
-      </div>
-    `;
-  }
-
-  stage.innerHTML = `
-    <div style="margin-bottom:12px; display:flex; justify-content:flex-end;">
-      <button onclick="state.viewMode='pdf'; renderCurrentSlide();" style="background:#2563eb; color:#ffffff; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">📄 Chuyển Sang Xem PDF Thật</button>
-    </div>
-    <div class="slide-grid-container">
-      <div class="slide-left-content">
-        <div class="slide-eyebrow">${slide.eyebrow || ''}</div>
-        <h1 class="slide-main-title">${slide.title || ''}</h1>
-        <div class="slide-subtitle">${slide.subtitle || ''}</div>
-        <ul class="slide-sub-points">
-          ${(slide.bullets || []).map(b => `<li>${b}</li>`).join('')}
-        </ul>
-        <div class="slide-meta-badge">
-          <div class="meta-brand">VLearn <span>AI20k</span></div>
-          <div class="meta-phase">Slide PDF: ${pdfUrl}</div>
+  // Bài học cũ trong lessons.json chưa gắn file slide -> chưa lướt PDF được, mời chạy Agent 1.
+  if (!lsn.pdf_file) {
+    stage.dataset.loadedPdf = '';
+    stage.innerHTML = `
+      <div class="pdf-embed-wrap">
+        <div class="pdf-embed-header">
+          <span class="slide-eyebrow">${lsn.short_title}</span>
+        </div>
+        <div class="pdf-loading-note">
+          🤖 AI đang đọc slide bài giảng để tự chia checkpoint.<br>
+          Khung slide sẽ hiện ngay khi xong — theo dõi tiến trình ở mục <b>Nguồn slide PDF</b> bên trái.
         </div>
       </div>
-      ${diagramHtml}
-    </div>
-  `;
+    `;
+    return;
+  }
+
+  // Chỉ dựng lại toàn bộ khung PDF (chậm, phải vẽ từng trang) khi đổi bài học;
+  // cùng một bài thì chỉ cần cuộn tới đúng trang của checkpoint đang chọn.
+  if (stage.dataset.loadedPdf !== lsn.pdf_file) {
+    stage.dataset.loadedPdf = lsn.pdf_file;
+    stage.innerHTML = `
+      <div class="pdf-embed-wrap">
+        <div class="pdf-embed-header">
+          <span class="slide-eyebrow">${lsn.short_title}</span>
+          <span class="pdf-embed-filename">${lsn.pdf_file}</span>
+        </div>
+        <div class="pdf-embed-scroll" id="pdfScrollContainer">
+          <div class="pdf-loading-note">Đang tải slide PDF...</div>
+        </div>
+      </div>
+    `;
+    // Vẽ PDF mất vài giây; trong lúc đó checkpoint có thể đã đổi (startReview chạy ngay sau),
+    // nên lướt tới pdfPendingPage — trang MỚI NHẤT được yêu cầu — chứ không phải trang lúc bắt đầu tải.
+    pdfPendingPage = page;
+    renderPdfIntoScroll(lsn).then(() => scrollPdfToPage(pdfPendingPage));
+  } else {
+    pdfPendingPage = page;
+    scrollPdfToPage(page); // PDF chưa vẽ xong thì lệnh này tự bỏ qua, nhánh .then ở trên sẽ lo
+  }
 }
 
+async function renderPdfIntoScroll(lsn) {
+  const container = document.getElementById('pdfScrollContainer');
+  if (!window.pdfjsLib) {
+    container.innerHTML = '<div class="pdf-loading-note">Không tải được thư viện xem PDF (pdf.js). Kiểm tra kết nối mạng.</div>';
+    return;
+  }
+  try {
+    let pdf = pdfDocCache[lsn.pdf_file];
+    if (!pdf) {
+      // pdf.js 6.x bỏ hẳn dạng getDocument("<url chuỗi>") — phải truyền object {url},
+      // nếu không sẽ văng 'expected either data, range, or url parameter' và khung slide trắng.
+      pdf = await window.pdfjsLib.getDocument({ url: `/slides/${lsn.pdf_file}` }).promise;
+      pdfDocCache[lsn.pdf_file] = pdf;
+    }
 
-function scrollToSlide(n) {
-  const lsn = getCurrentLesson();
-  state.currentSlide = Math.max(1, Math.min(lsn.slides.length, n));
+    container.innerHTML = '';
+    if (pdfPageObserver) pdfPageObserver.disconnect();
+
+    const pageCanvases = [];
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 1.3 });
+      const canvas = document.createElement('canvas');
+      canvas.className = 'pdf-page-canvas';
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      canvas.dataset.page = pageNum;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      container.appendChild(canvas);
+      pageCanvases.push(canvas);
+    }
+
+    // Trang nào đang hiện rõ nhất trong khung nhìn -> tự nêu bật checkpoint tương ứng trên timeline.
+    pdfPageObserver = new IntersectionObserver((entries) => {
+      let best = null;
+      entries.forEach(e => {
+        if (e.isIntersecting && (!best || e.intersectionRatio > best.intersectionRatio)) best = e;
+      });
+      if (best) {
+        lastViewedPdfPage = parseInt(best.target.dataset.page, 10);
+        highlightCheckpointForPage(lastViewedPdfPage);
+      }
+    }, { root: container, threshold: [0.2, 0.5, 0.8] });
+    pageCanvases.forEach(c => pdfPageObserver.observe(c));
+  } catch (err) {
+    console.error('Lỗi tải PDF:', err);
+    container.innerHTML = '<div class="pdf-loading-note">Không tải được file PDF này.</div>';
+  }
+}
+
+function scrollPdfToPage(pageNum) {
+  const canvas = document.querySelector(`#pdfScrollContainer .pdf-page-canvas[data-page="${pageNum}"]`);
+  if (!canvas) return;
+  canvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Loé sáng trang vừa lướt tới để người học thấy ngay checkpoint đang nói nằm ở đâu.
+  document.querySelectorAll('#pdfScrollContainer .pdf-page-canvas.cp-focus')
+    .forEach(el => el.classList.remove('cp-focus'));
+  void canvas.offsetWidth; // ép trình duyệt chạy lại animation khi quay lại đúng trang cũ
+  canvas.classList.add('cp-focus');
+  clearTimeout(scrollPdfToPage._timer);
+  scrollPdfToPage._timer = setTimeout(() => canvas.classList.remove('cp-focus'), 4200);
+}
+
+function highlightCheckpointForPage(pageNum) {
+  const cps = getCurrentCheckpoints();
+  // Checkpoint "đang xem" = checkpoint cuối cùng có pdfPage <= trang đang hiện.
+  let viewingIdx = 0;
+  cps.forEach((cp, i) => { if ((cp.pdfPage || 1) <= pageNum) viewingIdx = i; });
+  document.querySelectorAll('.timeline-node').forEach((el, idx) => {
+    el.classList.toggle('viewing', idx === viewingIdx);
+  });
+}
+
+function scrollToSlide(idx) {
+  const cps = getCurrentCheckpoints();
+  state.currentSlide = Math.max(0, Math.min(cps.length - 1, idx));
   renderCurrentSlide();
 }
 function prevSlide() { scrollToSlide(state.currentSlide - 1); }
@@ -1811,9 +2388,15 @@ function renderTimelineProgress() {
   const doneCount = results.filter(r => r && r.status === 'pass').length;
   document.getElementById('timelineCountText').textContent = `${doneCount}/${cps.length}`;
   document.getElementById('progressText').textContent = `${doneCount}/${cps.length} hoàn thành`;
-  document.getElementById('courseProgress').style.width = Math.round((doneCount / cps.length) * 100) + '%';
+  const donePct = cps.length ? Math.round((doneCount / cps.length) * 100) : 0;
+  document.getElementById('courseProgress').style.width = donePct + '%';
 
-  const activePct = (doneCount > 0) ? ((doneCount - 1) / (cps.length - 1)) * 100 : 0;
+  if (!cps.length) {
+    track.innerHTML = '<div class="timeline-line-bg"></div>';
+    return;
+  }
+
+  const activePct = (doneCount > 0 && cps.length > 1) ? ((doneCount - 1) / (cps.length - 1)) * 100 : 0;
 
   let nodesHtml = '';
   cps.forEach((cp, idx) => {
@@ -1831,7 +2414,7 @@ function renderTimelineProgress() {
     }
 
     nodesHtml += `
-      <div class="timeline-node ${stateClass}" onclick="scrollToSlide(${cp.slide})" title="${cp.short}: ${cp.title}">
+      <div class="timeline-node ${stateClass}" onclick="scrollToSlide(${idx})" title="${cp.short}: ${cp.title}">
         <div class="timeline-node-circle">${iconContent}</div>
         <div class="timeline-node-label">${cp.short} ${cp.label || ''}</div>
       </div>
@@ -1843,6 +2426,20 @@ function renderTimelineProgress() {
     <div class="timeline-line-active" style="width: ${activePct}%;"></div>
     ${nodesHtml}
   `;
+
+  // Timeline vừa bị dựng lại (mất hết class) -> áp lại "đang xem" theo trang PDF đã biết gần nhất.
+  highlightCheckpointForPage(lastViewedPdfPage);
+  scrollTimelineToCurrent();
+}
+
+/* Bài dài thì mốc đang học có thể nằm ngoài vùng nhìn -> kéo nó vào giữa khung cuộn. */
+function scrollTimelineToCurrent() {
+  const box = document.getElementById('checkpointTimelineScroll');
+  if (!box) return;
+  const node = box.querySelectorAll('.timeline-node')[state.cpIdx];
+  if (!node) return;
+  const target = node.offsetLeft - (box.clientWidth / 2) + (node.offsetWidth / 2);
+  box.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
 }
 
 /* ---------------- Chat Experience & Flow ---------------- */
@@ -1882,6 +2479,22 @@ function appendMessage(role, text, timeStr) {
         <div class="msg-bubble-user">${escapeHtml(text)}</div>
       </div>
       <div class="user-avatar-tag">HV</div>
+    `;
+    area.appendChild(row);
+  } else if (role === 'professor') {
+    const row = document.createElement('div');
+    row.className = 'msg-row ai-partner';
+    row.innerHTML = `
+      <div class="msg-avatar-prof">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>
+      </div>
+      <div class="msg-content-wrap">
+        <div class="msg-header-meta">
+          <span class="prof-name">Giáo sư AI</span>
+          <span class="time">${time}</span>
+        </div>
+        <div class="msg-bubble-prof">${formatMarkdown(text)}</div>
+      </div>
     `;
     area.appendChild(row);
   } else if (role === 'coach') {
@@ -1988,16 +2601,178 @@ function handleSubmit() {
   setTimeout(() => processEvaluation(text), 650);
 }
 
+function renderQuestionMeta(info, evalData) {
+  const strip = document.getElementById('questionMetaStrip');
+  if (!strip) return;
+  if (!info) { strip.hidden = true; strip.innerHTML = ''; return; }
+
+  const cps = getCurrentCheckpoints();
+  const cp = cps[state.cpIdx] || {};
+  const cover = (evalData && evalData.rubric_total)
+    ? `đã nắm ${evalData.covered_count}/${evalData.rubric_total} ý · ${evalData.mastery_score}%`
+    : '';
+  // Bài chưa có ngân hàng câu hỏi thì đếm theo lượt thử và không có mức độ để hiện.
+  const counter = info.has_bank === false
+    ? `lượt ${info.index}/${info.max}`
+    : `câu ${info.index}/${info.max}`;
+  const levelBadge = info.level_label
+    ? `<span class="q-level-badge ${info.level || ''}">${info.level_label}</span>`
+    : '<span class="q-level-badge plain">chưa có ngân hàng câu hỏi</span>';
+  strip.hidden = false;
+  strip.innerHTML = `
+    <span><b>${cp.short || ''}</b> · ${counter}</span>
+    ${levelBadge}
+    ${cover ? `<span class="q-meta-cover">${cover}</span>` : ''}
+  `;
+}
+
+/* ---------------- Nhận lời thoại theo kiểu chảy dần (SSE) ---------------- */
+function removeLastStatusPill() {
+  const pills = document.querySelectorAll('#chatArea .eval-status-container');
+  if (pills.length) pills[pills.length - 1].remove();
+}
+
+/* Tạo sẵn một bong bóng rỗng của bạn học rồi đổ chữ dần vào đó. */
+function appendStreamingAi() {
+  const area = document.getElementById('chatArea');
+  const row = document.createElement('div');
+  row.className = 'msg-row ai-partner';
+  row.innerHTML = `
+    <div class="msg-avatar-ai">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg>
+    </div>
+    <div class="msg-content-wrap">
+      <div class="msg-header-meta">
+        <span>Feynman AI</span>
+        <span class="time">${getCurrentTimeString()}</span>
+      </div>
+      <div class="msg-bubble-ai streaming"></div>
+    </div>
+  `;
+  area.appendChild(row);
+  area.scrollTop = area.scrollHeight;
+  return row.querySelector('.msg-bubble-ai');
+}
+
+function finalizeTurn(data, evalData, cp) {
+  const score = evalData ? evalData.mastery_score : 0;
+  if (data.advance_checkpoint) {
+    const gaveUp = evalData && evalData.outcome === 'gave_up';
+    if (gaveUp) {
+      // Giáo sư AI đã giảng ở trên rồi, chỉ cần một dòng ngắn chốt trạng thái + chỗ xem lại.
+      const where = cp.pdfPage ? ` — xem lại slide trang ${cp.pdfPage}` : '';
+      appendMessage('coach-hint', `⚠️ Checkpoint này đánh dấu <b>cần học lại</b>${where}.`);
+    } else {
+      appendMessage('coach', `✓ <b>Đạt chuẩn kiến thức (${score}%):</b> Bạn đã nói được hết các ý mấu chốt của checkpoint này! 🎉`);
+    }
+    getCurrentResults()[state.cpIdx] = { status: gaveUp ? 'fail' : 'pass', score };
+    renderQuestionMeta(null);
+    renderTimelineProgress();
+    advanceFlow(true, data.next_question);
+  } else {
+    setInputEnabled(true);
+  }
+}
+
+/* Trả về true nếu đã xử lý trọn lượt bằng stream; false để gọi rơi về /api/chat thường. */
+async function streamChatTurn(text, cp) {
+  const res = await fetch('/api/chat/stream', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    // Gửi kèm lesson_id: server vừa restart (phiên nằm trong RAM) vẫn mở lại đúng bài này.
+    body: JSON.stringify({ session_id: `vlearn_${state.currentLessonId}`, lesson_id: state.currentLessonId, message: text })
+  });
+  if (!res.ok || !res.body) return false;
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  const area = document.getElementById('chatArea');
+  let buffer = '', streamed = '', bubble = null, evalData = null, doneData = null, errored = false;
+
+  const handleEvent = (name, data) => {
+    if (name === 'evaluation') {
+      evalData = data.latest_evaluation;
+      removeLastStatusPill();
+
+      // Bạn học chỉ nói câu bàn giao; kiến thức để Giáo sư AI nói.
+      if (data.buddy_line) appendMessage('ai', data.buddy_line);
+      if (data.professor_message) {
+        const isHint = evalData && evalData.outcome === 'hint';
+        const prefix = isHint ? `<b>Gợi ý ${evalData.hints_given}/${evalData.max_hints}.</b> ` : '';
+        appendMessage('professor', prefix + data.professor_message);
+      } else if (!data.advance_checkpoint && evalData && (evalData.missing_points || []).length) {
+        const missing = evalData.missing_points.map(m => m.concept).join(', ');
+        appendMessage('coach-hint', `Còn thiếu: [${missing}] — bạn học sẽ hỏi tiếp đúng phần này.`);
+      }
+
+      renderQuestionMeta(data.current_question, evalData);
+      if (data.will_stream !== false) bubble = appendStreamingAi();
+    } else if (name === 'delta') {
+      streamed += data.text || '';
+      if (bubble) {
+        bubble.innerHTML = formatMarkdown(streamed);
+        area.scrollTop = area.scrollHeight;
+      }
+    } else if (name === 'done') {
+      doneData = data;
+    } else if (name === 'error') {
+      errored = true;
+    }
+  };
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let sep;
+    while ((sep = buffer.indexOf('\n\n')) !== -1) {
+      const frame = buffer.slice(0, sep);
+      buffer = buffer.slice(sep + 2);
+      let name = 'message', payload = '';
+      frame.split('\n').forEach(line => {
+        if (line.startsWith('event: ')) name = line.slice(7).trim();
+        else if (line.startsWith('data: ')) payload += line.slice(6);
+      });
+      if (!payload) continue;
+      try { handleEvent(name, JSON.parse(payload)); } catch (err) { console.warn('Frame SSE hỏng:', err); }
+    }
+  }
+
+  if (bubble) bubble.classList.remove('streaming');
+
+  // Chưa kịp hiện gì mà đã hỏng -> để nhánh /api/chat thường xử lý lại từ đầu.
+  if (bubble && !streamed.trim()) bubble.closest('.msg-row').remove();
+  if ((errored || !doneData) && !bubble) return false;
+
+  if (!doneData) {
+    // Stream đứt giữa chừng nhưng đã có chữ: giữ nguyên những gì hiện được, cho người học gõ tiếp.
+    appendMessage('coach-hint', '⚠ Kết nối bị ngắt giữa chừng, phần đánh giá của lượt này có thể chưa đầy đủ.');
+    setInputEnabled(true);
+    return true;
+  }
+
+  finalizeTurn(doneData, evalData || doneData.latest_evaluation, cp);
+  return true;
+}
+
 async function processEvaluation(text) {
   const cps = getCurrentCheckpoints();
   const cp = cps[state.cpIdx];
+
+  // Đường chính: SSE — kết quả chấm hiện ngay, lời thoại chảy dần.
+  try {
+    if (await streamChatTurn(text, cp)) return;
+  } catch (err) {
+    console.warn('Stream lỗi, thử /api/chat thường:', err);
+  }
 
   // Try backend /api/chat
   try {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_id: `vlearn_${state.currentLessonId}`, message: text })
+      body: JSON.stringify({ session_id: `vlearn_${state.currentLessonId}`, lesson_id: state.currentLessonId, message: text })
     });
 
     if (res.ok) {
@@ -2009,28 +2784,39 @@ async function processEvaluation(text) {
       if (data.assistant_text) {
         appendMessage('ai', data.assistant_text);
       }
-
-      if (isPass) {
-        appendMessage('coach', `✓ <b>Đạt chuẩn kiến thức (${score}%):</b> Lời giải thích của bạn đã bao phủ các điểm mấu chốt! 🎉`);
-        getCurrentResults()[state.cpIdx] = { status: 'pass', score };
-        renderTimelineProgress();
-        advanceFlow(true);
-        return;
-      } else {
-        state.attempts++;
-        if (state.attempts < 3) {
-          const missing = evalData && evalData.missing_points ? evalData.missing_points.map(m => m.concept).join(', ') : '';
-          appendMessage('coach-hint', `Gợi ý: Bạn chưa nêu rõ phần [${missing || 'các khái niệm cốt lõi'}]. Hãy bổ sung giải thích cho bạn học nhé!`);
-          setInputEnabled(true);
-          return;
-        } else {
-          appendMessage('coach-hint', `Bạn đã thử 3 lần. Kiến thức chuẩn từ bài giảng: ${cp.correction}`);
-          getCurrentResults()[state.cpIdx] = { status: 'fail', score };
-          renderTimelineProgress();
-          advanceFlow(true);
-          return;
-        }
+      if (data.professor_message) {
+        const isHint = evalData && evalData.outcome === 'hint';
+        const prefix = isHint ? `<b>Gợi ý ${evalData.hints_given}/${evalData.max_hints}.</b> ` : '';
+        appendMessage('professor', prefix + data.professor_message);
       }
+
+      // Backend quyết định khi nào qua checkpoint (phủ hết rubric hoặc hết hạn mức câu hỏi) —
+      // FE không tự đếm lượt nữa, nếu không sẽ cắt ngang chuỗi câu hỏi dẫn dắt.
+      if (data.advance_checkpoint) {
+        const gaveUp = evalData && evalData.outcome === 'gave_up';
+        if (gaveUp) {
+          if (!data.professor_message) {
+            appendMessage('professor', (evalData && evalData.reveal_answer) || cp.correction);
+          }
+          const where = cp.pdfPage ? ` — xem lại slide trang ${cp.pdfPage}` : '';
+          appendMessage('coach-hint', `⚠️ Checkpoint này đánh dấu <b>cần học lại</b>${where}.`);
+        } else {
+          appendMessage('coach', `✓ <b>Đạt chuẩn kiến thức (${score}%):</b> Bạn đã nói được hết các ý mấu chốt của checkpoint này! 🎉`);
+        }
+        getCurrentResults()[state.cpIdx] = { status: gaveUp ? 'fail' : 'pass', score };
+        renderQuestionMeta(null);
+        renderTimelineProgress();
+        advanceFlow(true, data.next_question);
+        return;
+      }
+
+      const missing = evalData && evalData.missing_points ? evalData.missing_points.map(m => m.concept).join(', ') : '';
+      if (missing) {
+        appendMessage('coach-hint', `Còn thiếu: [${missing}] — bạn học sẽ hỏi tiếp đúng phần này.`);
+      }
+      renderQuestionMeta(data.current_question, evalData);
+      setInputEnabled(true);
+      return;
     }
   } catch (err) {
     console.warn("Dùng fallback client evaluation:", err);
@@ -2065,17 +2851,20 @@ async function processEvaluation(text) {
   }
 }
 
-function advanceFlow(skipAiMessage = false) {
+function advanceFlow(skipAiMessage = false, backendNextQuestion = null) {
   const cps = getCurrentCheckpoints();
   if (state.cpIdx + 1 < cps.length) {
     state.cpIdx++;
     state.attempts = 0;
     setTimeout(() => {
       const nextCp = cps[state.cpIdx];
-      if (!skipAiMessage) {
+      // Backend đã chọn sẵn câu mở đầu (mức dễ nhất) cho checkpoint mới -> dùng đúng câu đó.
+      if (backendNextQuestion) {
+        appendMessage('ai', backendNextQuestion);
+      } else if (!skipAiMessage) {
         appendMessage('ai', nextCp.botQuestion);
       }
-      scrollToSlide(nextCp.slide);
+      scrollToSlide(state.cpIdx);
       renderTimelineProgress();
       setInputEnabled(true);
     }, 600);
@@ -2084,57 +2873,176 @@ function advanceFlow(skipAiMessage = false) {
   }
 }
 
-function showMasteryReport() {
-  const lsn = getCurrentLesson();
-  const cps = getCurrentCheckpoints();
-  const results = getCurrentResults();
-  const scores = results.map(r => r ? r.score : 0);
-  const overall = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-
-  const rows = cps.map((cp, i) => {
-    const r = results[i] || { status: 'fail', score: 0 };
-    const label = r.status === 'pass' ? '✓ Đạt' : '⚠️ Cần xem lại';
-    return `
-      <div class="report-compact-row">
-        <span><b>${cp.short}</b> · ${cp.title}</span>
-        <span class="report-status-tag">${r.score}% (${label})</span>
-      </div>
-    `;
-  }).join('');
-
-  const reportArea = document.createElement('div');
-  reportArea.className = 'msg-row ai-partner';
-  reportArea.innerHTML = `
-    <div class="msg-content-wrap" style="max-width: 95%;">
-      <div class="report-compact-card">
-        <div class="report-compact-header">
-          <span class="report-compact-title">📊 Kết Quả Ôn Tập — ${lsn.short_title}</span>
-          <span class="report-compact-score">${overall}%</span>
-        </div>
-        ${rows}
-        <div style="margin-top:12px; display:flex; justify-content:flex-end;">
-          <button class="ai-action-btn" onclick="startReview()">↻ Luyện tập lại</button>
-        </div>
-      </div>
-    </div>
-  `;
-  document.getElementById('chatArea').appendChild(reportArea);
-  document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
-  setInputEnabled(false);
+async function showMasteryReport() {
+  let report = null;
+  try {
+    const res = await fetch(`/api/session/report?session_id=vlearn_${encodeURIComponent(state.currentLessonId)}`);
+    if (res.ok) report = await res.json();
+  } catch (err) {
+    console.warn('Không lấy được báo cáo từ server, dựng tại chỗ:', err.message);
+  }
+  renderReportCard(report || buildLocalReport());
 }
 
-function startReview() {
-  const lsn = getCurrentLesson();
+/* Backend không sẵn (bản tĩnh) -> dựng thẻ tổng kết từ kết quả FE đang giữ. */
+function buildLocalReport() {
   const cps = getCurrentCheckpoints();
+  const results = getCurrentResults();
+  const items = cps.map((cp, i) => {
+    const r = results[i];
+    return {
+      index: i, short: cp.short, title: cp.title, pdf_page: cp.pdfPage,
+      score: r ? r.score : 0,
+      status: !r ? 'chua_hoc' : (r.status === 'pass' ? 'dat' : 'can_hoc_lai'),
+      missing_points: []
+    };
+  });
+  const scored = items.filter(i => i.status !== 'chua_hoc');
+  return {
+    lesson_title: getCurrentLesson().short_title,
+    overall_score: scored.length ? Math.round(scored.reduce((a, b) => a + b.score, 0) / scored.length) : 0,
+    total_checkpoints: items.length,
+    passed: items.filter(i => i.status === 'dat').length,
+    need_review: items.filter(i => i.status === 'can_hoc_lai').length,
+    items,
+    recommended: items.filter(i => i.status !== 'dat')
+                      .sort((a, b) => a.score - b.score).slice(0, 3).map(i => i.index)
+  };
+}
+
+const REPORT_STATUS = {
+  dat: { label: '✓ Đạt', cls: 'ok' },
+  can_hoc_lai: { label: '⚠️ Cần học lại', cls: 'warn' },
+  chua_hoc: { label: '— Chưa học', cls: 'muted' }
+};
+
+function renderReportCard(rep) {
+  const recommended = rep.recommended || [];
+  const rows = (rep.items || []).map(item => {
+    const st = REPORT_STATUS[item.status] || REPORT_STATUS.chua_hoc;
+    const isRec = recommended.includes(item.index);
+    const missing = (item.missing_points || []).filter(Boolean);
+    return `
+      <div class="report-row ${st.cls}">
+        <div class="report-row-main">
+          <div class="report-row-title">
+            <b>${item.short}</b> · ${item.title}
+            ${isRec ? '<span class="report-rec-tag">nên học lại trước</span>' : ''}
+          </div>
+          <div class="report-row-meta">
+            ${st.label} · ${item.score}%${item.pdf_page ? ` · slide trang ${item.pdf_page}` : ''}
+            ${missing.length ? `<br>Còn hổng: ${missing.join(', ')}` : ''}
+          </div>
+        </div>
+        <button class="report-redo-btn" onclick="relearnCheckpoint(${item.index})">↻ Học lại</button>
+      </div>`;
+  }).join('');
+
+  const recNames = recommended
+    .map(i => (rep.items.find(x => x.index === i) || {}).short)
+    .filter(Boolean);
+
+  const card = document.createElement('div');
+  card.className = 'msg-row ai-partner';
+  card.innerHTML = `
+    <div class="msg-content-wrap" style="max-width: 96%;">
+      <div class="report-card">
+        <div class="report-card-head">
+          <div>
+            <div class="report-card-title">📊 Kết quả ôn tập — ${rep.lesson_title || ''}</div>
+            <div class="report-card-sub">${rep.passed}/${rep.total_checkpoints} checkpoint đạt${rep.need_review ? ` · ${rep.need_review} cần học lại` : ''}</div>
+          </div>
+          <div class="report-card-score">${rep.overall_score}%</div>
+        </div>
+        ${recNames.length ? `<div class="report-advice">Nên học lại trước: <b>${recNames.join(', ')}</b> — bấm "Học lại" ở đúng dòng đó, slide sẽ tự lướt về trang tương ứng.</div>` : '<div class="report-advice ok">Bạn đã nắm hết các checkpoint của bài này. 🎉</div>'}
+        <div class="report-rows">${rows}</div>
+        <div class="report-card-foot">
+          <button class="ai-action-btn" onclick="startReview()">↻ Luyện lại cả bài</button>
+        </div>
+      </div>
+    </div>`;
+  const area = document.getElementById('chatArea');
+  area.appendChild(card);
+  area.scrollTop = area.scrollHeight;
+  setInputEnabled(false);
+  renderQuestionMeta(null);
+}
+
+/* Học lại đúng một checkpoint từ thẻ tổng kết. */
+async function relearnCheckpoint(index) {
+  const cps = getCurrentCheckpoints();
+  if (!(index >= 0 && index < cps.length)) return;
+
+  state.cpIdx = index;
+  state.attempts = 0;
+  state.awaitingContinue = false;
+  getCurrentResults()[index] = null;
+
+  let opening = cps[index].botQuestion;
+  try {
+    const res = await fetch('/api/session/restart_checkpoint', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: `vlearn_${state.currentLessonId}`,
+        lesson_id: state.currentLessonId,
+        checkpoint_index: index
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.opening_message) opening = data.opening_message;
+    }
+  } catch (err) {
+    console.warn('Không gọi được restart_checkpoint, học lại ở phía giao diện:', err.message);
+  }
+
+  appendMessage('coach', `↻ Học lại <b>${cps[index].short} · ${cps[index].title}</b>.`);
+  appendMessage('ai', opening);
+  renderTimelineProgress();
+  scrollToSlide(index);
+  setInputEnabled(true);
+}
+
+async function startReview() {
+  const cps = getCurrentCheckpoints();
+  const myTurn = ++reviewSeq; // đổi bài học giữa chừng -> phiên cũ tự huỷ, không chen tin nhắn lạc
+  const lessonId = state.currentLessonId;
 
   document.getElementById('chatArea').innerHTML = '';
   state.cpIdx = 0;
   state.attempts = 0;
-  state.resultsMap[state.currentLessonId] = [null, null, null];
+  state.awaitingContinue = false;
+  state.resultsMap[lessonId] = new Array(cps.length).fill(null);
 
   renderTimelineProgress();
-  appendMessage('ai', cps[0].botQuestion, '10:42');
-  scrollToSlide(cps[0].slide);
+  renderQuestionMeta(null);
+  scrollToSlide(0);
+  setInputEnabled(false);
+
+  if (!cps.length) {
+    const busy = SLIDE_SOURCES.some(sl => sl.status === 'pending' || sl.status === 'running');
+    appendMessage('coach', busy
+      ? '🤖 <b>AI đang đọc slide bài giảng</b> để tự chia thành các checkpoint. Chờ khoảng 30–90 giây, hội thoại sẽ tự bắt đầu ngay khi xong.'
+      : 'Chưa có bài giảng nào. Hãy <b>tải một file slide PDF lên</b> ở mục "Nguồn slide PDF" bên trái — AI sẽ tự đọc, tạo file checkpoint và bắt đầu hỏi bạn ngay tại đây.');
+    return;
+  }
+
+  // Cho người học thấy ngay AI đã chia bài giảng này thành những checkpoint nào (kèm trang slide).
+  const lsn = getCurrentLesson();
+  const cpList = cps.map(cp =>
+    `<div class="cp-outline-row"><b>${cp.short}</b> · ${cp.title}<span class="cp-outline-page">${cp.questionCount ? cp.questionCount + ' câu · ' : ''}slide tr.${cp.pdfPage}</span></div>`
+  ).join('');
+  const totalQ = cps.reduce((sum, cp) => sum + (cp.questionCount || 0), 0);
+  appendMessage('coach', `📑 <b>${lsn.short_title}</b> — AI đã đọc slide và chia thành <b>${cps.length} checkpoint</b>${totalQ ? ` với <b>${totalQ} câu hỏi</b> nhiều mức độ` : ''}:
+    <div class="cp-outline">${cpList}</div>
+    Tớ sẽ hỏi từ dễ tới khó, trả lời đúng mà chưa đủ ý thì tớ hỏi tiếp đúng phần còn thiếu — slide tự lướt tới trang đang nói.`);
+
+  const started = await startBackendSession(lessonId);
+  if (myTurn !== reviewSeq) return;
+
+  const opening = (started && started.starter_message) ? started.starter_message : cps[0].botQuestion;
+  appendMessage('ai', opening, getCurrentTimeString());
   setInputEnabled(true);
 }
 
@@ -2143,11 +3051,31 @@ function showVideoModal() {
 }
 
 /* ---------------- Init Application ---------------- */
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  // Ưu tiên dữ liệu thật do Agent 1 sinh từ slide; chỉ khi KHÔNG gọi được backend mới giữ MOCK.
+  try {
+    await loadLessonsFromApi();
+  } catch (err) {
+    console.warn('Không nạp được /api/lessons, dùng dữ liệu mock:', err.message);
+  }
+
+  const lsn = getCurrentLesson();
+  document.getElementById('topbarLessonTitle').textContent = lsn.short_title;
+  document.getElementById('sidebarVideoTitle').textContent = lsn.video_title || lsn.short_title;
+
+  initSlideDropzone();
+  renderLessonNavList();
   renderCurrentSlide();
   renderTimelineProgress();
-  startReview();
   updateLessonNavButtons();
+
+  // Đợi biết trạng thái phân tích slide TRƯỚC khi mở hội thoại, để lời chào nói đúng việc
+  // ("AI đang đọc slide..." thay vì "chưa có checkpoint"). Hàm này cũng tự nạp bài học
+  // ngay khi AI phân tích xong, nên không cần người dùng bấm gì.
+  await loadSlideSources();
+
+  // loadSlideSources có thể đã tự mở bài học vừa phân tích xong (kèm startReview) -> đừng mở lại.
+  if (!document.getElementById('chatArea').children.length) startReview();
 });
 </script>
 </body>

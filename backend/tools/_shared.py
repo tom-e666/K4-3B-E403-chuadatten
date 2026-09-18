@@ -7,6 +7,9 @@ from typing import Any
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 LESSONS_MULTI_FILE = DATA_DIR / "lessons.json"
 LESSONS_SINGLE_FILE = DATA_DIR / "transformer_lessons.json"
+# Mỗi file slide PDF được Agent 1 phân tích sẽ sinh ra ĐÚNG MỘT file JSON checkpoint trong thư mục này
+# (vd: d1-slide-hackathon.json). Checkpoint hiển thị trên UI được nạp từ chính các file đó.
+LESSONS_DIR = DATA_DIR / "lessons"
 
 VLEARN_SLIDES_DIR = DATA_DIR / "vlearn-pack" / "slides"
 
@@ -44,22 +47,56 @@ def load_slides_from_pdf(pdf_filename: str) -> list[dict[str, Any]]:
 
 
 def _load_raw_store() -> dict[str, Any]:
+    """Gộp bài học từ 2 nguồn: các file JSON sinh theo từng slide (ưu tiên) và file lessons.json cũ."""
     global _CACHED_STORE
     if _CACHED_STORE is not None:
         return _CACHED_STORE
 
+    lessons: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+
+    # 1) Nguồn chính: mỗi slide một file JSON trong data/lessons/
+    if LESSONS_DIR.exists():
+        for path in sorted(LESSONS_DIR.glob("*.json")):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    lesson = json.load(f)
+            except (OSError, json.JSONDecodeError) as exc:
+                print(f"⚠ Bỏ qua file checkpoint hỏng {path.name}: {exc}")
+                continue
+            lesson["_source_file"] = path.name
+            if lesson.get("id"):
+                seen_ids.add(lesson["id"])
+            lessons.append(lesson)
+
+    # 2) Nguồn cũ (tương thích ngược): lessons.json gộp nhiều bài trong 1 file
     if LESSONS_MULTI_FILE.exists():
-        with open(LESSONS_MULTI_FILE, "r", encoding="utf-8") as f:
-            _CACHED_STORE = json.load(f)
-            return _CACHED_STORE
+        try:
+            with open(LESSONS_MULTI_FILE, "r", encoding="utf-8") as f:
+                for lesson in json.load(f).get("lessons", []):
+                    if lesson.get("id") not in seen_ids:
+                        lessons.append(lesson)
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"⚠ Không đọc được lessons.json: {exc}")
 
-    if LESSONS_SINGLE_FILE.exists():
+    if not lessons and LESSONS_SINGLE_FILE.exists():
         with open(LESSONS_SINGLE_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            _CACHED_STORE = {"lessons": [data]}
-            return _CACHED_STORE
+            lessons = [json.load(f)]
 
-    raise FileNotFoundError(f"Missing lessons file at: {LESSONS_MULTI_FILE} or {LESSONS_SINGLE_FILE}")
+    _CACHED_STORE = {"lessons": lessons}
+    return _CACHED_STORE
+
+
+def invalidate_cache() -> None:
+    """Xoá cache lessons đang giữ trong RAM — gọi ngay sau khi Agent 1 ghi thêm/ghi đè
+    bài học mới vào lessons.json, để các request sau đọc được dữ liệu vừa sinh."""
+    global _CACHED_STORE
+    _CACHED_STORE = None
+
+
+def get_full_lessons() -> list[dict[str, Any]]:
+    """Trả về nguyên vẹn danh sách bài học (đủ slides + checkpoints), dùng cho FE nạp 1 lần."""
+    return _load_raw_store().get("lessons", [])
 
 
 CHECKPOINTS_D1_FILE = DATA_DIR / "checkpoints_d1.json"

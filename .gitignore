@@ -22,7 +22,7 @@ credentials.json
 # "Không commit data pack vào repo nộp bài — repo công khai nghĩa là dữ liệu thật
 # của khoá học sẽ lên mạng. Vi phạm thẳng quy định bảo mật."
 # ------------------------------------------------------------------------------
-/data/
+backend/data/lessons
 data/
 vlearn-pack/
 discord-pack/
@@ -102,3 +102,6 @@ scratch*
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Nhat ky tien do hoc (sinh ra luc chay, khong commit)
+backend/data/progress/

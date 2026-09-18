@@ -282,3 +282,133 @@ Cẩn trọng khi đưa data vào công cụ ngoài — chỉ đưa phần tối
 Không cố suy ngược danh tính từ dữ liệu đã ẩn danh (S####, T#####, D####, [HV], [học viên]). Riêng discord-pack/: người trong đó là bạn cùng khoá — tuyệt đối không đoán/hỏi "tin này của ai"; trích dẫn tối đa 2 câu mỗi ví dụ (xem data/discord-pack/README.md).
 Sau sự kiện, xoá các bản sao data pack khỏi máy cá nhân và các công cụ đã upload nếu ban tổ chức yêu cầu.
 Vi phạm được xử lý theo quy định của khoá và có thể ảnh hưởng trực tiếp đến điểm của nhóm.
+
+---
+
+## Luồng "Tải slide PDF lên → AI sinh file JSON checkpoint → UI nạp từ file đó"
+
+**Mỗi file slide PDF = một bài giảng = một file JSON checkpoint riêng.**
+
+1. Chạy `run_server.bat`, mở **http://localhost:8000** (mở thẳng `index.html` sẽ không gọi được API).
+2. Sidebar trái, mục **Nguồn slide PDF** → bấm **⬆ Tải slide PDF lên** hoặc kéo thả file PDF vào ô đó.
+   File được gửi lên `POST /api/slides/upload` (base64 trong JSON, không cần `python-multipart`), lưu vào
+   `backend/data/vlearn-pack/slides/`; trùng tên thì tự thêm hậu tố `-2`, `-3`… chứ không đè.
+3. Server lập tức cho Agent 1 (`backend/lesson_ingest.py`) đọc file PDF đó bằng LLM ở luồng nền và **ghi ra
+   `backend/data/lessons/<tên-slide>.json`** — chứa toàn bộ checkpoint: `rubric_points` để chấm, câu hỏi mở đầu
+   của bạn học, `correction`, và `pdf_page` (trang slide giảng kỹ nhất khái niệm đó). Mất khoảng 30–90 giây.
+4. Giao diện hiện tiến trình ("🤖 AI đang đọc slide...") và tự hỏi lại server mỗi 4 giây. Xong là **checkpoint
+   được nạp lên từ chính file JSON vừa sinh**: khung chat liệt kê các checkpoint kèm số trang, bạn học AI hỏi
+   câu đầu tiên, khung slide tự cuộn tới đúng trang và loé sáng.
+5. Nút **↻** cạnh mỗi bài chỉ dùng khi muốn AI **đọc lại** slide (ghi đè đúng file JSON đó).
+
+Dữ liệu nằm ở đâu:
+
+```
+backend/data/
+├── vlearn-pack/slides/<file>.pdf     ← slide gốc (upload vào đây)
+├── lessons/<file>.json               ← checkpoint do LLM sinh, UI nạp từ đây
+└── lessons.json                      ← kho cũ, chỉ còn các bài viết tay không gắn slide
+```
+
+Server cũng tự quét thư mục slides lúc khởi động: file PDF nào chưa có JSON checkpoint thì phân tích luôn,
+nên copy tay file PDF vào thư mục đó cũng có tác dụng tương tự upload.
+
+### Ngân hàng câu hỏi & cách hỏi dẫn dắt
+
+Sau khi đọc slide sinh checkpoint, mỗi checkpoint được gọi LLM **thêm một lượt** (chỉ text, không gửi lại PDF)
+để sinh **10–15 câu hỏi** chia 3 mức độ, lưu trong cùng file JSON ở trường `question_bank`:
+
+| Mức | Hỏi gì |
+|---|---|
+| `nhan_biet` | Khái niệm, định nghĩa, thành phần — chỉ cần nhớ và nói ra |
+| `thong_hieu` | Vì sao, cơ chế, so sánh, bỏ đi thì sao |
+| `van_dung` | Đặt tình huống cụ thể, bắt áp dụng khái niệm để giải thích |
+
+Mỗi câu gắn `targets` = các `rubric_points` mà nó nhắm tới. Nhờ vậy vòng hội thoại chạy như sau:
+
+1. Mở checkpoint bằng câu **dễ nhất** trong ngân hàng.
+2. Mỗi câu trả lời được chấm trên **toàn bộ rubric**, ý nào đạt thì **cộng dồn** vào phiên
+   (trả lời đúng nhưng chưa đủ thì phần đã đúng được giữ lại, không phải nói lại từ đầu).
+3. Còn thiếu ý nào → chọn câu hỏi **nhắm đúng ý đó**, độ khó tăng dần mỗi khi học viên vừa tiến bộ.
+   Bạn học AI ghi nhận ngắn phần vừa đúng rồi hỏi tiếp — đó là phần "dẫn dắt".
+4. Qua checkpoint khi **phủ hết rubric**, hoặc khi đã hỏi hết **tối đa 5 câu** (`MAX_QUESTIONS_PER_CP`
+   trong `backend/agent.py`) thì chốt điểm: ≥80% coi là đạt, dưới ngưỡng thì đưa đáp án chuẩn và đánh dấu
+   "cần học lại".
+
+Giao diện hiện dải trạng thái ngay dưới timeline: checkpoint nào, câu thứ mấy trên tối đa, mức độ, và đã nắm
+bao nhiêu ý trên tổng số.
+
+Bài học sinh từ bản cũ (chưa có `question_bank`) sẽ được server **tự bổ sung câu hỏi** ở lần khởi động kế tiếp,
+không cần đọc lại file PDF. Checkpoint nào không sinh được câu hỏi thì tự rơi về lối hỏi cũ (một câu mở đầu,
+tối đa 3 lượt thử).
+
+### Chữ chảy dần & gợi ý trước khi giải thích
+
+**Streaming**: FE gọi `POST /api/chat/stream` (SSE). Server đẩy `evaluation` ngay khi Giáo sư AI chấm xong —
+dải tiến trình và dòng gợi ý hiện lập tức — rồi stream lời thoại của bạn học theo từng đoạn (`delta`), khép lại
+bằng `done`. Provider nào không có hàm `stream` (hiện chỉ OpenAI có) thì tự rơi về trả nguyên cục; `/api/chat`
+thường vẫn giữ nguyên làm đường dự phòng khi SSE lỗi.
+
+**Né tránh / không biết**: Giáo sư AI phân biệt ba kiểu — trả lời sai (`NEEDS_IMPROVEMENT`), **né câu hỏi**
+(`EVADED`: lảng sang chuyện khác, hỏi ngược, nói vài chữ vô nghĩa) và **bỏ cuộc** (`GAVE_UP`: "chịu", "không
+biết", "cho đáp án"). Với hai kiểu sau, hệ thống **không đưa đáp án ngay** mà gợi ý tăng dần tối đa
+`MAX_HINTS_BEFORE_REVEAL = 2` lần:
+
+1. Lần 1 — hướng vào khái niệm còn thiếu kèm số trang slide để đọc lại.
+2. Lần 2 — thu hẹp phạm vi: dùng `hint` của câu hỏi trong ngân hàng, hoặc liệt kê **tên** các ý còn thiếu.
+   Tuyệt đối không đọc `criteria` của rubric ra — criteria viết theo kiểu "câu trả lời phải có X, Y, Z"
+   nên nói ra là lộ nguyên đáp án.
+3. Lần 3 — mới giải thích kiến thức chuẩn (`correction`), đánh dấu "cần học lại" và chuyển checkpoint.
+
+**Ai được nói gì** — hai nhân vật tách bạch:
+
+| Nhân vật | Vai | Được nói gì |
+|---|---|---|
+| **Feynman AI** (bạn học) | Người học giả vờ chưa hiểu, nhờ giảng lại | Chỉ hỏi, phản ứng, bàn giao cho trợ giảng khi bí. **Không bao giờ giảng kiến thức**, kể cả khi bị nài nỉ |
+| **Giáo sư AI** | Trợ giảng đứng sau | Gợi ý và giải thích kiến thức chuẩn. Hiện thành bong bóng riêng (viền tím, nhãn "Giáo sư AI") |
+
+Lượt nào do Giáo sư AI nói thì backend **không gọi LLM cho bạn học** — vừa đúng vai, vừa bớt một lượt gọi ở
+đúng những lượt hay chậm nhất.
+
+### Chống chép slide, thẻ tổng kết và báo cáo lớp
+
+**Chống chép nguyên văn** (`backend/tools/copy_check.py`): câu trả lời được so với text của đúng trang slide
+mà checkpoint trỏ tới (đọc bằng pypdf, cache theo trang). Trùng ≥45% số cụm 6 từ thì coi là chép: **không tính
+đạt, không tốn lượt gọi LLM**, Giáo sư AI yêu cầu nói lại bằng lời của mình. Nhắc tối đa 2 lần rồi mới chấm
+bình thường để người học không bị kẹt. Câu dưới 25 từ được bỏ qua vì không đủ cơ sở kết luận.
+
+**Thẻ tổng kết cuối phiên**: học hết các checkpoint là hiện thẻ có điểm tổng, trạng thái từng checkpoint
+(đạt / cần học lại / chưa học), ý còn hổng, số trang slide, **đề xuất nên học lại checkpoint nào trước**
+(điểm thấp nhất trước) và nút **↻ Học lại** cho từng checkpoint — bấm là mở lại đúng checkpoint đó từ câu hỏi
+dễ nhất, slide tự lướt về trang tương ứng.
+
+**Báo cáo lớp cho giảng viên**: mỗi checkpoint hoàn tất được ghi một dòng vào
+`backend/data/progress/<lesson_id>.jsonl`. Mở **http://localhost:8000/teacher** để xem tỉ lệ đạt, điểm trung
+bình, số lần bỏ cuộc và những ý học viên hay thiếu nhất của từng checkpoint — checkpoint xếp cuối bảng là chỗ
+cần giảng lại. (Thư mục `progress/` là dữ liệu chạy, đã cho vào `.gitignore`.)
+
+**Không mất phiên khi restart**: FE gửi kèm `lesson_id` mỗi lượt chat; server mất phiên (RAM) hoặc lệch bài thì
+mở lại đúng bài đó thay vì rơi về lesson mặc định rồi chấm nhầm checkpoint của bài khác.
+
+**Kiểm thử cho checkpoint sinh tự động**:
+
+```bash
+python eval/build_auto_dataset.py    # dựng case từ chính file checkpoint (thêm --all cho toàn bộ)
+python eval/run_eval_auto.py         # chấm bằng Evaluator thật, mặc định 24 case; --dry-run để xem trước
+```
+
+Sáu nhóm case: `happy_path`, `misconception`, `partial`, `gave_up`, `evaded`, `copied`. Kết quả ghi vào
+`eval/eval_report_auto.json`. Bộ cũ `run_eval.py` vẫn giữ nguyên cho bài Transformer viết tay.
+
+### API liên quan
+
+| Endpoint | Việc |
+|---|---|
+| `POST /api/slides/upload` | `{filename, data_base64}` — nhận file PDF, lưu vào thư mục slides và xếp hàng cho AI đọc. Trả về ngay, không chờ LLM |
+| `GET /api/slides` | Liệt kê slide + trạng thái `pending` / `running` / `ready` / `error`, tên file JSON checkpoint, và cờ `analyzing` |
+| `POST /api/lessons/generate` | `{pdf_file, force: true}` — bắt AI đọc lại một slide đã có checkpoint |
+| `GET /api/lessons?full=1` | Toàn bộ bài học (gộp các file JSON trong `data/lessons/` và kho cũ) |
+| `POST /api/session/start` | `{session_id, lesson_id}` — FE gọi mỗi khi đổi bài để chấm đúng bộ checkpoint |
+
+`pdf_page` do LLM trả về luôn được kiểm lại theo số trang thật của file PDF (dùng `pypdf`): thiếu → về trang 1,
+vượt quá → ép về trang cuối, và báo rõ trong `warnings` để không bao giờ nhảy tới trang không tồn tại.
