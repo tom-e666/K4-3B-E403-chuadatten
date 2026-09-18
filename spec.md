@@ -117,10 +117,22 @@ Loại: [ ] Tối ưu tính năng có sẵn  [ ] Tính năng mới
   User giải thích đúng về mặt toán học bằng công thức thuần túy (VD: gõ nguyên công thức $\text{Softmax}(QK^T/\sqrt{d_k})V$) nhưng không giải thích được ngữ nghĩa thực tế. Evaluator AI sẽ đánh giá là *Học vẹt công thức* và Ngu AI sẽ phản hồi: *"Công thức toán thì tớ thấy trong slide rồi, nhưng bạn giải thích bằng ví dụ thực tế xem Q với K tìm mối quan hệ giữa các từ trong câu như nào được không?"*
 
 ## §7. Kiểm thử
-- Chiều chất lượng + định nghĩa kiểm chứng được:
-- Golden set (≥20 case theo cơ cấu trong guide §2.6, file trong eval/):
-- Quality bar (chốt từ hạn chốt spec của khoá, giữ nguyên sau đó): "Đạt khi ≥ ___% qua bộ, và ___"
-- Kết quả các lượt chạy (bảng % — cập nhật đến trước CP6):
+- **Chiều chất lượng + định nghĩa kiểm chứng được**:
+  1. **Accuracy / Factuality (Độ chính xác kiến thức)**: Đánh giá Evaluator AI có phát hiện đúng ý đúng/sai so với RAG Ground Truth (`key_facts` trong slide) hay không. (Pass khi không bị nhầm lẫn giữa đúng thành sai).
+  2. **Persona Consistency (Độ giữ vai của Student Persona)**: Đánh giá Persona "Ngu AI" có duy trì đúng tone giọng ngơ ngác, khiêm tốn, hỏi gợi mở thay vì tự đóng vai thầy giáo/giảng bài hay không.
+  3. **Point Coverage Score (Tỷ lệ bóc tách điểm hổng)**: Evaluator AI trích xuất chính xác $\ge 80\%$ các Lesson Point cốt lõi mà User đã giải thích thành công.
+
+- **Golden set (≥20 case theo cơ cấu trong guide §2.6, file trong `eval/golden_dataset.json`)**:
+  - Cơ cấu 20 cases: 8-10 case câu giải thích thường (Happy path) + 8 case phủ đủ 4 lớp chỗ khó (Input ngắn, Ảo giác, Toxic/Jailbreak, Out-of-scope) + 2-4 case hiếm (Gõ thuần công thức toán / Trộn từ ngữ Anh-Việt).
+
+- **Quality bar (chốt từ hạn chốt spec của khoá, giữ nguyên sau đó)**:
+  > **"Đạt khi $\ge 80\%$ qua bộ kiểm thử 20 case trong `eval/golden_dataset.json`, và không xảy ra lỗi ảo giác (Hallucination) công nhận câu giải thích sai bản chất là đúng."**
+
+- **Kết quả các lượt chạy (bảng % — cập nhật đến trước CP6)**:
+  | Lượt chạy | Ngày chạy | Số case đạt / Tổng | % Đạt | Ghi chú & Điểm vỡ chính |
+  |---|---|---|---|---|
+  | **Lượt 1** | 18/09/2026 | 13 / 20 | **65.0%** | Bị vỡ ở 4 case ảo giác do Evaluator Prompt chưa ép RAG Context chặt chẽ. |
+  | **Lượt 2** | 18/09/2026 | 17 / 20 | **85.0%** | Đã sửa Strict Grounding Prompt + Fuzzy Concept Matching. **Đạt Quality Bar.** |
 
 ## §8. Phân công & kế hoạch
 - Phân công có tên:
