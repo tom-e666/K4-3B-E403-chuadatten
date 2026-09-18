@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import binascii
 import json
+from datetime import datetime
 import mimetypes
 import time
 import os
@@ -52,6 +53,8 @@ from backend.lesson_ingest import (
 # vừa được mount tĩnh ở cuối file để khung PDF.js bên FE tải trực tiếp.
 SLIDES_DIR = PROJECT_ROOT / "backend" / "data" / "vlearn-pack" / "slides"
 MAX_UPLOAD_BYTES = 40 * 1024 * 1024  # trần kích thước file slide tải lên
+# Nhật ký kết quả từng checkpoint (mỗi bài một file .jsonl) — nguồn cho báo cáo của giảng viên.
+PROGRESS_DIR = PROJECT_ROOT / "backend" / "data" / "progress"
 
 app = FastAPI(title="Feynman AI — Reverse Tutoring API", version="1.0.0")
 
@@ -108,6 +111,9 @@ class StartSessionRequest(BaseModel):
 class ChatMessageRequest(BaseModel):
     session_id: str | None = "default_session"
     message: str
+    # FE gửi kèm để nếu server vừa restart (phiên nằm trong RAM nên mất) thì mở lại đúng bài này,
+    # thay vì rơi về lesson mặc định rồi chấm nhầm sang checkpoint của bài khác.
+    lesson_id: str | None = None
 
 
 # ----------------- API Endpoints -----------------
@@ -153,6 +159,96 @@ def get_checkpoints(lesson_id: str | None = None):
             for cp in data.get("checkpoints", [])
         ]
     })
+
+
+@app.get("/api/report/lesson/{lesson_id}")
+def lesson_report(lesson_id: str):
+    """Báo cáo lớp cho một bài: checkpoint nào nhiều người hổng nhất, cần giảng lại trang nào."""
+    lesson = get_lesson_by_id(lesson_id)
+    if not lesson:
+        raise HTTPException(status_code=404, detail=f"Không tìm thấy bài học: '{lesson_id}'")
+
+    path = PROGRESS_DIR / f"{lesson_id}.jsonl"
+    records: list[dict[str, Any]] = []
+    if path.exists():
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    records.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+
+    by_cp: dict[str, list[dict[str, Any]]] = {}
+    for rec in records:
+        by_cp.setdefault(rec.get("checkpoint_id"), []).append(rec)
+
+    items = []
+    for idx, cp in enumerate(lesson.get("checkpoints", [])):
+        rows = by_cp.get(cp["id"], [])
+        attempts = len(rows)
+        passed = sum(1 for r in rows if r.get("outcome") == "pass" and int(r.get("score", 0)) >= 80)
+        gave_up = sum(1 for r in rows if r.get("outcome") == "gave_up")
+        avg = int(round(sum(int(r.get("score", 0)) for r in rows) / attempts)) if attempts else 0
+
+        missing_count: dict[str, int] = {}
+        for r in rows:
+            for concept in r.get("missing") or []:
+                if concept:
+                    missing_count[concept] = missing_count.get(concept, 0) + 1
+
+        items.append({
+            "index": idx,
+            "checkpoint_id": cp["id"],
+            "short": cp.get("short", f"CP{idx + 1}"),
+            "title": cp.get("title", ""),
+            "pdf_page": cp.get("pdf_page"),
+            "attempts": attempts,
+            "learners": len({r.get("session_id") for r in rows}),
+            "passed": passed,
+            "gave_up": gave_up,
+            "pass_rate": int(round(passed / attempts * 100)) if attempts else None,
+            "avg_score": avg,
+            "top_missing": sorted(missing_count.items(), key=lambda kv: -kv[1])[:3],
+        })
+
+    ranked = sorted(
+        [i for i in items if i["attempts"]],
+        key=lambda i: (i["pass_rate"] if i["pass_rate"] is not None else 100, i["avg_score"]),
+    )
+
+    return JSONResponse({
+        "lesson_id": lesson_id,
+        "lesson_title": lesson.get("short_title") or lesson.get("topic", ""),
+        "pdf_file": lesson.get("pdf_file"),
+        "total_records": len(records),
+        "learners": len({r.get("session_id") for r in records}),
+        "items": items,
+        "weakest": [i["checkpoint_id"] for i in ranked[:3]],
+    })
+
+
+@app.get("/api/report/lessons")
+def lessons_with_progress():
+    """Danh sách bài đã có người học, cho trang báo cáo của giảng viên chọn."""
+    out = []
+    for lesson in get_full_lessons():
+        if not lesson.get("pdf_file"):
+            continue
+        path = PROGRESS_DIR / f"{lesson.get('id')}.jsonl"
+        count = 0
+        if path.exists():
+            with open(path, "r", encoding="utf-8") as f:
+                count = sum(1 for line in f if line.strip())
+        out.append({
+            "lesson_id": lesson.get("id"),
+            "title": lesson.get("short_title") or lesson.get("topic", ""),
+            "checkpoints": len(lesson.get("checkpoints", [])),
+            "records": count,
+        })
+    return JSONResponse({"lessons": out})
 
 
 # ----------------- Agent 1: đọc slide PDF -> tự sinh checkpoint -----------------
@@ -512,6 +608,42 @@ def start_session(req: StartSessionRequest):
     }
 
 
+def _log_checkpoint_result(state, result: dict[str, Any]) -> None:
+    """Ghi lại kết quả một checkpoint vừa kết thúc, để giảng viên xem cả lớp hổng chỗ nào."""
+    if not result.get("advance_checkpoint"):
+        return
+    ev = result.get("latest_evaluation") or {}
+    try:
+        PROGRESS_DIR.mkdir(parents=True, exist_ok=True)
+        record = {
+            "ts": datetime.now().isoformat(timespec="seconds"),
+            "session_id": state.session_id,
+            "lesson_id": state.lesson_id,
+            "checkpoint_id": ev.get("checkpoint_id"),
+            "checkpoint_title": ev.get("checkpoint_title"),
+            "score": ev.get("mastery_score", 0),
+            "outcome": ev.get("outcome"),
+            "covered_count": ev.get("covered_count", 0),
+            "rubric_total": ev.get("rubric_total", 0),
+            "missing": [m.get("concept", "") for m in (ev.get("missing_points") or [])],
+        }
+        with open(PROGRESS_DIR / f"{state.lesson_id}.jsonl", "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except OSError as exc:
+        print(f"⚠ Không ghi được nhật ký tiến độ: {exc}")
+
+
+def _resolve_session(agent, session_id: str, lesson_id: str | None):
+    """Lấy phiên đang có, hoặc mở phiên mới đúng bài. Lệch bài cũng mở lại cho khớp."""
+    state = sessions.get(session_id)
+    if state is None or (lesson_id and state.lesson_id != lesson_id):
+        if state is not None and lesson_id:
+            print(f"ℹ Phiên '{session_id}' đang ở '{state.lesson_id}' nhưng FE hỏi bài '{lesson_id}' -> mở lại phiên.")
+        state, _ = agent.start_session(session_id, lesson_id) if lesson_id else agent.start_session(session_id)
+        sessions[session_id] = state
+    return state
+
+
 @app.post("/api/chat")
 def chat(req: ChatMessageRequest):
     """Gửi tin nhắn giải thích từ học viên đến Bot Ngu & nhận phản hồi."""
@@ -521,13 +653,10 @@ def chat(req: ChatMessageRequest):
     _mark_chat_activity()
     agent = get_or_create_agent()
     session_id = req.session_id or "default_session"
-    state = sessions.get(session_id)
-
-    if not state:
-        state, _ = agent.start_session(session_id)
-        sessions[session_id] = state
+    state = _resolve_session(agent, session_id, req.lesson_id)
 
     result = agent.chat_step(state, req.message.strip())
+    _log_checkpoint_result(state, result)
     return {
         "session_id": session_id,
         "assistant_text": result["assistant_text"],
@@ -555,16 +684,14 @@ def chat_stream(req: ChatMessageRequest):
     _mark_chat_activity()
     agent = get_or_create_agent()
     session_id = req.session_id or "default_session"
-    state = sessions.get(session_id)
-    if not state:
-        state, _ = agent.start_session(session_id)
-        sessions[session_id] = state
+    state = _resolve_session(agent, session_id, req.lesson_id)
 
     def event_source():
         try:
             for event, payload in agent.chat_step_stream(state, req.message.strip()):
                 _mark_chat_activity()   # giữ nhịp: còn đang stream thì việc nền vẫn phải nhường
                 if event == "done":
+                    _log_checkpoint_result(state, payload)
                     payload = {**payload, "session_id": session_id,
                                "current_checkpoint_index": state.current_checkpoint_index}
                 yield f"event: {event}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
@@ -581,14 +708,96 @@ def chat_stream(req: ChatMessageRequest):
 
 @app.get("/api/session/report")
 def get_report(session_id: str = "default_session"):
-    """Lấy báo cáo đánh giá tổng kết (% Mastery Report)."""
+    """Thẻ tổng kết cuối phiên: điểm từng checkpoint, chỗ cần học lại và thứ tự nên học lại."""
     state = sessions.get(session_id)
     if not state:
         raise HTTPException(status_code=404, detail="Chưa có phiên học nào được bắt đầu.")
 
-    eval_results = list(state.checkpoint_results.values())
-    report = generate_session_report(eval_results)
-    return report
+    lesson = get_lesson_by_id(state.lesson_id) or {}
+    checkpoints = lesson.get("checkpoints", [])
+    items = []
+    for idx, cp in enumerate(checkpoints):
+        res = state.checkpoint_results.get(cp["id"]) or {}
+        outcome = (res.get("status") or "").lower()
+        score = int(res.get("mastery_score", 0) or 0)
+        done = bool(res)
+        if not done:
+            status = "chua_hoc"
+        elif outcome == "pass" and score >= 80:
+            status = "dat"
+        else:
+            status = "can_hoc_lai"
+        items.append({
+            "index": idx,
+            "checkpoint_id": cp["id"],
+            "short": cp.get("short", f"CP{idx + 1}"),
+            "title": cp.get("title", ""),
+            "pdf_page": cp.get("pdf_page"),
+            "source_citation": cp.get("source_citation", ""),
+            "score": score,
+            "status": status,
+            "outcome": outcome,
+            "questions_used": res.get("questions_used", 0),
+            "trials": res.get("trials", 0),
+            "missing_points": [m.get("concept", "") for m in (res.get("missing_points") or [])],
+        })
+
+    scored = [i for i in items if i["status"] != "chua_hoc"]
+    overall = int(round(sum(i["score"] for i in scored) / len(scored))) if scored else 0
+
+    # Nên học lại phần nào trước: điểm thấp nhất trước, chưa học xếp cuối cùng vì còn nguyên cơ hội tự làm.
+    priority = sorted(
+        [i for i in items if i["status"] != "dat"],
+        key=lambda i: (0 if i["status"] == "can_hoc_lai" else 1, i["score"], i["index"]),
+    )
+
+    return {
+        "session_id": session_id,
+        "lesson_id": state.lesson_id,
+        "lesson_title": lesson.get("short_title") or lesson.get("topic", ""),
+        "pdf_file": lesson.get("pdf_file"),
+        "overall_score": overall,
+        "total_checkpoints": len(items),
+        "passed": sum(1 for i in items if i["status"] == "dat"),
+        "need_review": sum(1 for i in items if i["status"] == "can_hoc_lai"),
+        "items": items,
+        "recommended": [i["index"] for i in priority[:3]],
+        "completed": state.completed,
+    }
+
+
+class RestartCheckpointRequest(BaseModel):
+    session_id: str | None = "default_session"
+    lesson_id: str | None = None
+    checkpoint_index: int
+
+
+@app.post("/api/session/restart_checkpoint")
+def restart_checkpoint(req: RestartCheckpointRequest):
+    """Học lại đúng một checkpoint: xoá tiến trình cũ của nó và mở lại bằng câu hỏi dễ nhất."""
+    agent = get_or_create_agent()
+    session_id = req.session_id or "default_session"
+    state = _resolve_session(agent, session_id, req.lesson_id)
+
+    checkpoints = agent.get_lesson_checkpoints(state.lesson_id)
+    idx = req.checkpoint_index
+    if not (0 <= idx < len(checkpoints)):
+        raise HTTPException(status_code=400, detail=f"Checkpoint không hợp lệ: {idx}")
+
+    cp = checkpoints[idx]
+    state.current_checkpoint_index = idx
+    state.completed = False
+    state.checkpoint_results.pop(cp["id"], None)
+    _, opening = agent.start_checkpoint(state, cp)
+
+    return {
+        "session_id": session_id,
+        "lesson_id": state.lesson_id,
+        "checkpoint_index": idx,
+        "checkpoint_id": cp["id"],
+        "checkpoint_title": cp.get("title", ""),
+        "opening_message": opening,
+    }
 
 
 # Phục vụ file PDF slide gốc (dùng trực tiếp cho khung slide-stage bên FE)
@@ -602,6 +811,14 @@ if FE_DIR.exists():
     assets_dir = FE_DIR / "assets"
     if assets_dir.exists():
         app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+    @app.get("/teacher")
+    def serve_teacher_report():
+        """Trang báo cáo lớp cho giảng viên."""
+        page = FE_DIR / "teacher.html"
+        if page.exists():
+            return FileResponse(str(page))
+        raise HTTPException(status_code=404, detail="Chưa có trang báo cáo giảng viên.")
 
     @app.get("/")
     def serve_frontend():

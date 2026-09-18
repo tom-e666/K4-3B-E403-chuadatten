@@ -102,3 +102,6 @@ scratch*
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Nhat ky tien do hoc (sinh ra luc chay, khong commit)
+backend/data/progress/

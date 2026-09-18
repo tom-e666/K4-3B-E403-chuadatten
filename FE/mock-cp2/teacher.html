@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feynman AI — Báo cáo lớp</title>
+<style>
+  :root {
+    --text-primary: #0f172a; --text-secondary: #334155; --text-muted: #64748b; --text-subtle: #94a3b8;
+    --surface: #fff; --surface-subtle: #f8fafc; --border: #e2e8f0; --border-strong: #cbd5e1;
+    --ok: #16a34a; --warn: #d97706; --bad: #dc2626; --brand: #2563eb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, -apple-system, "Segoe UI", sans-serif; background: var(--surface-subtle);
+         color: var(--text-primary); padding: 28px 20px; }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; }
+  select, button { font: inherit; padding: 7px 11px; border-radius: 7px;
+                   border: 1px solid var(--border-strong); background: var(--surface); cursor: pointer; }
+  .cards { display: flex; gap: 12px; flex-wrap: wrap; margin: 18px 0; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+          padding: 14px 16px; min-width: 150px; }
+  .card .num { font-size: 24px; font-weight: 700; }
+  .card .lbl { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface);
+          border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  th, td { padding: 10px 12px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--border); }
+  th { background: var(--surface-subtle); font-size: 11.5px; text-transform: uppercase;
+       letter-spacing: 0.4px; color: var(--text-muted); }
+  tr:last-child td { border-bottom: none; }
+  .rate { font-weight: 700; }
+  .rate.ok { color: var(--ok); } .rate.mid { color: var(--warn); } .rate.bad { color: var(--bad); }
+  .muted { color: var(--text-subtle); }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 99px;
+         background: #fef2f2; color: var(--bad); border: 1px solid #fecaca; margin-left: 6px; }
+  .miss { font-size: 11.5px; color: var(--text-muted); }
+  .empty { padding: 26px; text-align: center; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Báo cáo lớp — Feynman AI</h1>
+  <div class="sub">Tổng hợp từ các phiên ôn tập đã hoàn tất. Checkpoint xếp cuối bảng là chỗ nhiều người hổng nhất, nên giảng lại.</div>
+
+  <div>
+    <select id="lessonPicker"></select>
+    <button onclick="load()">↻ Tải lại</button>
+  </div>
+
+  <div class="cards" id="cards"></div>
+  <div id="tableWrap"></div>
+</div>
+
+<script>
+async function loadLessons() {
+  const res = await fetch('/api/report/lessons');
+  const data = await res.json();
+  const picker = document.getElementById('lessonPicker');
+  picker.innerHTML = (data.lessons || []).map(l =>
+    `<option value="${l.lesson_id}">${l.title} — ${l.records} lượt</option>`).join('');
+  picker.onchange = load;
+  if ((data.lessons || []).length) load();
+  else document.getElementById('tableWrap').innerHTML = '<div class="empty">Chưa có bài học nào.</div>';
+}
+
+function rateClass(r) { return r === null ? 'muted' : (r >= 80 ? 'ok' : (r >= 50 ? 'mid' : 'bad')); }
+
+async function load() {
+  const lessonId = document.getElementById('lessonPicker').value;
+  if (!lessonId) return;
+  const data = await (await fetch(`/api/report/lesson/${lessonId}`)).json();
+
+  document.getElementById('cards').innerHTML = `
+    <div class="card"><div class="num">${data.learners}</div><div class="lbl">Người học</div></div>
+    <div class="card"><div class="num">${data.total_records}</div><div class="lbl">Lượt checkpoint đã xong</div></div>
+    <div class="card"><div class="num">${data.items.length}</div><div class="lbl">Checkpoint trong bài</div></div>
+  `;
+
+  const rows = data.items.map(i => `
+    <tr>
+      <td><b>${i.short}</b> · ${i.title}${data.weakest.includes(i.checkpoint_id) ? '<span class="tag">hổng nhiều</span>' : ''}
+        ${i.top_missing.length ? `<div class="miss">Hay thiếu: ${i.top_missing.map(m => `${m[0]} (${m[1]})`).join(' · ')}</div>` : ''}
+      </td>
+      <td>${i.pdf_page ? 'tr.' + i.pdf_page : '<span class="muted">—</span>'}</td>
+      <td>${i.learners}</td>
+      <td>${i.attempts}</td>
+      <td class="rate ${rateClass(i.pass_rate)}">${i.pass_rate === null ? '—' : i.pass_rate + '%'}</td>
+      <td>${i.attempts ? i.avg_score + '%' : '<span class="muted">—</span>'}</td>
+      <td>${i.gave_up || '<span class="muted">0</span>'}</td>
+    </tr>`).join('');
+
+  document.getElementById('tableWrap').innerHTML = data.total_records ? `
+    <table>
+      <thead><tr>
+        <th>Checkpoint</th><th>Slide</th><th>Người học</th><th>Lượt</th>
+        <th>Tỉ lệ đạt</th><th>Điểm TB</th><th>Bỏ cuộc</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>` : '<div class="empty">Bài này chưa có ai học xong checkpoint nào.</div>';
+}
+
+loadLessons();
+</script>
+</body>
+</html>

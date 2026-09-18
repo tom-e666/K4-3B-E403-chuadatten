@@ -96,6 +96,24 @@ Dùng bài **Từ LLM đến AI Agent**, checkpoint **CP1 — Phân biệt các 
 
 ---
 
+## D''. Chép slide, thẻ tổng kết, báo cáo lớp
+
+| # | Làm gì | KQ | ✅/❌ |
+|---|---|---|---|
+| P1 | Mở slide ở trang của checkpoint đang học, copy 3–4 dòng rồi dán vào ô trả lời | Giáo sư AI báo trùng bao nhiêu %, yêu cầu nói lại bằng lời mình. **Không** được tính đạt, timeline không tick | |
+| P2 | Dán tiếp lần 2, rồi lần 3 | Lần 2 vẫn nhắc, lần 3 chấm bình thường (không để người học kẹt) | |
+| P3 | Tự diễn đạt lại đúng ý đó bằng lời mình | Được chấm bình thường, không bị nhầm là chép | |
+| R1 | Học hết tất cả checkpoint | Hiện thẻ tổng kết: điểm tổng, từng CP có trạng thái + điểm + trang slide, ý còn hổng | |
+| R2 | Đọc dòng đề xuất trên thẻ | Gợi ý đúng các CP điểm thấp nhất, và dòng đó được gắn nhãn "nên học lại trước" | |
+| R3 | Bấm **↻ Học lại** ở một CP | Quay lại đúng CP đó với câu hỏi dễ nhất, slide lướt về trang của nó, ô nhập mở lại | |
+| R4 | Học lại xong CP đó rồi xem lại thẻ (luyện lại cả bài) | Điểm và trạng thái cập nhật theo lần học mới | |
+| T1 | Mở **http://localhost:8000/teacher** | Bảng theo checkpoint: người học, lượt, tỉ lệ đạt, điểm TB, số lần bỏ cuộc, ý hay thiếu | |
+| T2 | Học thêm vài checkpoint rồi bấm ↻ trên trang đó | Số liệu tăng theo; checkpoint gắn nhãn "hổng nhiều" là chỗ tỉ lệ đạt thấp nhất | |
+| T3 | Kéo thanh **Tiến trình bài học** ngang khi bài có ≥5 checkpoint | Kéo được, không bị bóp chữ; chuyển checkpoint thì thanh tự cuộn tới mốc đang học | |
+| S5 | Tắt server giữa phiên, bật lại, gõ tiếp vào tab cũ | Phiên mở lại **đúng bài đang học** (log server ghi "mở lại phiên"), không chấm nhầm sang bài khác | |
+
+---
+
 ## F. Lỗi vận hành (nên thử trước khi demo)
 
 | # | Làm gì | KQ | ✅/❌ |

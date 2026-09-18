@@ -8,6 +8,7 @@ from typing import Any
 
 from .providers.base import Provider
 from .tools._shared import load_lessons_data, get_lesson_by_id
+from .tools.copy_check import looks_copied
 
 # ============================================================================
 # Agent 3 — "Giáo sư AI": chấm điểm bằng so khớp NGỮ NGHĨA (không từ khóa cứng),
@@ -111,6 +112,7 @@ LEVELS = ("nhan_biet", "thong_hieu", "van_dung")
 LEVEL_LABEL = {"nhan_biet": "Nhận biết", "thong_hieu": "Thông hiểu", "van_dung": "Vận dụng"}
 MAX_QUESTIONS_PER_CP = 5        # hỏi tối đa bấy nhiêu câu cho 1 checkpoint rồi chốt điểm
 MAX_HINTS_BEFORE_REVEAL = 2     # né/không biết bấy nhiêu lần thì mới giải thích kiến thức
+MAX_COPY_WARNINGS = 2           # nhắc bấy nhiêu lần khi chép slide, sau đó vẫn chấm bình thường
 PERSONA_MAX_TOKENS = 300        # lời thoại bạn học chỉ cần ngắn -> sinh nhanh hơn
 
 
@@ -157,7 +159,8 @@ def _match_rubric_id(checkpoint: dict[str, Any], covered_point: dict[str, Any]) 
 
 
 def _new_progress() -> dict[str, Any]:
-    return {"covered": [], "asked": [], "current_question": None, "questions_used": 0, "hints_given": 0}
+    return {"covered": [], "asked": [], "current_question": None, "questions_used": 0,
+            "hints_given": 0, "copy_warnings": 0}
 
 
 def _pick_next_question(
@@ -398,6 +401,10 @@ class FeynmanAgent:
         state.messages.append({"role": "assistant", "content": starter_msg})
         return state, starter_msg
 
+    def start_checkpoint(self, state: SessionState, checkpoint: dict[str, Any]) -> tuple[dict[str, Any], str]:
+        """Mở lại một checkpoint từ đầu (dùng cho nút 'học lại' trong thẻ tổng kết)."""
+        return _start_checkpoint(state, checkpoint)
+
     def get_current_checkpoint(self, state: SessionState) -> dict[str, Any] | None:
         checkpoints = self.get_lesson_checkpoints(state.lesson_id)
         if 0 <= state.current_checkpoint_index < len(checkpoints):
@@ -550,6 +557,14 @@ class FeynmanAgent:
         asked_question = progress.get("current_question")
         covered_before = list(progress.get("covered") or [])
 
+        # Chép nguyên văn slide thì không tính là hiểu bài — bắt nói lại bằng lời mình.
+        # Kiểm trước khi gọi Evaluator: vừa đúng bản chất, vừa bỏ được một lượt gọi LLM.
+        lesson = get_lesson_by_id(state.lesson_id) or {}
+        copied, ratio = looks_copied(user_input, lesson.get("pdf_file"), current_cp.get("pdf_page"))
+        if copied and progress["copy_warnings"] < MAX_COPY_WARNINGS:
+            progress["copy_warnings"] += 1
+            return self._copied_turn_ctx(state, current_cp, progress, ratio, trials_used)
+
         verdict = self._run_evaluator(
             current_cp, user_input, trials_used,
             question=asked_question, covered_before=covered_before,
@@ -698,6 +713,71 @@ class FeynmanAgent:
             "trials_used": trials_used,
             "professor_message": professor_message,
             "buddy_line": buddy_line,
+        }
+
+    def _copied_turn_ctx(self, state, checkpoint, progress, ratio, trials_used) -> dict[str, Any]:
+        """Lượt học viên dán nguyên văn slide: không cộng ý, không đổi câu hỏi, Giáo sư AI nhắc nói lại."""
+        rubric_ids = _rubric_ids(checkpoint)
+        covered = list(progress.get("covered") or [])
+        missing_ids = [rid for rid in rubric_ids if rid not in covered]
+        by_id = {str(rp.get("id")): rp for rp in checkpoint.get("rubric_points", [])}
+        page = checkpoint.get("pdf_page")
+
+        verdict = {
+            "status": "COPIED",
+            "mastery_score": _mastery_from_covered(checkpoint, covered),
+            "covered_points": [],
+            "missing_points": [{"id": rid, "concept": by_id[rid].get("concept", ""), "why": ""}
+                               for rid in missing_ids if rid in by_id],
+            "reveal_answer": "",
+        }
+        professor_message = (
+            f"Đoạn cậu vừa gửi trùng gần như nguyên văn slide"
+            f"{f' trang {page}' if page else ''} (khoảng {round(ratio * 100)}% câu chữ giống hệt). "
+            f"Đọc lại slide thì ai cũng làm được — chỗ này tớ cần cậu **nói lại bằng lời của chính cậu**, "
+            f"ngắn cũng được, sai cũng không sao."
+        )
+        current_question = progress.get("current_question") or {}
+        has_bank = bool(checkpoint.get("question_bank"))
+
+        return {
+            "checkpoint": checkpoint,
+            "verdict": verdict,
+            "hint": None,
+            "next_question": None,
+            "advance_checkpoint": False,
+            "next_checkpoint_title": None,
+            "next_question_text": None,
+            "latest_evaluation": {
+                "checkpoint_id": checkpoint["id"],
+                "checkpoint_title": checkpoint["title"],
+                "status": "NEEDS_IMPROVEMENT",
+                "outcome": "copied",
+                "mastery_score": verdict["mastery_score"],
+                "threshold": 80,
+                "covered_points": [],
+                "missing_points": verdict["missing_points"],
+                "reveal_answer": "",
+                "source_citation": checkpoint.get("source_citation", ""),
+                "covered_count": len(covered),
+                "rubric_total": len(rubric_ids),
+                "hint": "",
+                "hints_given": progress.get("hints_given", 0),
+                "max_hints": MAX_HINTS_BEFORE_REVEAL,
+                "copy_ratio": round(ratio, 2),
+                "copy_warnings": progress["copy_warnings"],
+            },
+            "question_info": {
+                "id": current_question.get("id"),
+                "level": current_question.get("level"),
+                "level_label": LEVEL_LABEL.get(current_question.get("level", ""), ""),
+                "index": progress.get("questions_used") or trials_used,
+                "max": MAX_QUESTIONS_PER_CP if has_bank else 3,
+                "has_bank": has_bank,
+            },
+            "trials_used": trials_used,
+            "professor_message": professor_message,
+            "buddy_line": None,
         }
 
     @staticmethod

@@ -671,12 +671,28 @@
     color: var(--text-primary);
   }
 
+  /* Bài nhiều checkpoint thì các mốc bị bóp lại đến mức không đọc được tên -> cho kéo ngang.
+     Đường kẻ nền dùng width của nội dung (min-width: max-content) nên vẫn chạy hết cả vùng cuộn. */
   .timeline-track-wrap {
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    gap: 14px;
+    min-width: max-content;
+    padding: 0 2px 2px;
   }
+  .timeline-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  .timeline-scroll::-webkit-scrollbar { height: 6px; }
+  .timeline-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-strong); border-radius: var(--radius-full);
+  }
+  .timeline-scroll::-webkit-scrollbar-track { background: transparent; }
   .timeline-line-bg {
     position: absolute;
     top: 9px;
@@ -704,6 +720,8 @@
     align-items: center;
     gap: 4px;
     cursor: pointer;
+    flex: 0 0 auto;
+    min-width: 76px;
   }
   .timeline-node-circle {
     width: 20px;
@@ -788,6 +806,48 @@
   }
   .btn-analyze-slide:disabled { opacity: 0.5; cursor: progress; }
   /* Dải cho biết đang ở câu hỏi thứ mấy của checkpoint và ở mức độ nào */
+  /* Thẻ tổng kết cuối phiên + nút học lại từng checkpoint */
+  .report-card {
+    border: 1px solid var(--border); border-radius: var(--radius-lg);
+    background: var(--surface); overflow: hidden;
+  }
+  .report-card-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 13px 15px; background: var(--surface-subtle); border-bottom: 1px solid var(--border);
+  }
+  .report-card-title { font-size: 13.5px; font-weight: 700; }
+  .report-card-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .report-card-score { font-size: 22px; font-weight: 800; color: var(--vlearn-blue, #2563eb); }
+  .report-advice {
+    padding: 9px 15px; font-size: 12px; line-height: 1.6;
+    background: #fffbeb; color: #92400e; border-bottom: 1px solid var(--border);
+  }
+  .report-advice.ok { background: var(--success-soft); color: #166534; }
+  .report-rows { display: flex; flex-direction: column; }
+  .report-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 15px; border-bottom: 1px solid var(--border);
+    border-left: 3px solid transparent;
+  }
+  .report-row:last-child { border-bottom: none; }
+  .report-row.ok { border-left-color: var(--success); }
+  .report-row.warn { border-left-color: var(--warning); }
+  .report-row.muted { border-left-color: var(--border-strong); }
+  .report-row-main { flex: 1; min-width: 0; }
+  .report-row-title { font-size: 12.5px; }
+  .report-row-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.5; }
+  .report-rec-tag {
+    margin-left: 6px; font-size: 10px; padding: 1px 6px; border-radius: var(--radius-full);
+    background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa;
+  }
+  .report-redo-btn {
+    flex: none; cursor: pointer; font-size: 11.5px; font-weight: 600;
+    padding: 6px 10px; border-radius: var(--radius-md);
+    border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-secondary);
+  }
+  .report-redo-btn:hover { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+  .report-card-foot { padding: 10px 15px; display: flex; justify-content: flex-end; }
+
   /* Giáo sư AI — nhân vật khác hẳn bạn học: chỉ nhân vật này mới được giảng kiến thức */
   .msg-avatar-prof {
     width: 30px; height: 30px; flex: none; border-radius: 50%;
@@ -1288,6 +1348,11 @@
         </div>
         <div id="slideSourceList"></div>
         <div class="slide-gen-status" id="slideGenStatus"></div>
+        <div class="slide-gen-status">
+          <a href="/teacher" target="_blank" rel="noopener" style="color:#1d4ed8;text-decoration:none;">
+            📊 Báo cáo lớp cho giảng viên →
+          </a>
+        </div>
       </div>
     </div>
 
@@ -1418,8 +1483,10 @@
         <span class="timeline-header-title">TIẾN TRÌNH BÀI HỌC</span>
         <span class="timeline-count-badge" id="timelineCountText">3/3</span>
       </div>
-      <div class="timeline-track-wrap" id="checkpointTimelineTrack">
-        <!-- Rendered dynamically -->
+      <div class="timeline-scroll" id="checkpointTimelineScroll">
+        <div class="timeline-track-wrap" id="checkpointTimelineTrack">
+          <!-- Rendered dynamically -->
+        </div>
       </div>
       <div class="question-meta-strip" id="questionMetaStrip" hidden></div>
     </div>
@@ -2392,6 +2459,17 @@ function renderTimelineProgress() {
 
   // Timeline vừa bị dựng lại (mất hết class) -> áp lại "đang xem" theo trang PDF đã biết gần nhất.
   highlightCheckpointForPage(lastViewedPdfPage);
+  scrollTimelineToCurrent();
+}
+
+/* Bài dài thì mốc đang học có thể nằm ngoài vùng nhìn -> kéo nó vào giữa khung cuộn. */
+function scrollTimelineToCurrent() {
+  const box = document.getElementById('checkpointTimelineScroll');
+  if (!box) return;
+  const node = box.querySelectorAll('.timeline-node')[state.cpIdx];
+  if (!node) return;
+  const target = node.offsetLeft - (box.clientWidth / 2) + (node.offsetWidth / 2);
+  box.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
 }
 
 /* ---------------- Chat Experience & Flow ---------------- */
@@ -2631,7 +2709,8 @@ async function streamChatTurn(text, cp) {
   const res = await fetch('/api/chat/stream', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ session_id: `vlearn_${state.currentLessonId}`, message: text })
+    // Gửi kèm lesson_id: server vừa restart (phiên nằm trong RAM) vẫn mở lại đúng bài này.
+    body: JSON.stringify({ session_id: `vlearn_${state.currentLessonId}`, lesson_id: state.currentLessonId, message: text })
   });
   if (!res.ok || !res.body) return false;
 
@@ -2723,7 +2802,7 @@ async function processEvaluation(text) {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_id: `vlearn_${state.currentLessonId}`, message: text })
+      body: JSON.stringify({ session_id: `vlearn_${state.currentLessonId}`, lesson_id: state.currentLessonId, message: text })
     });
 
     if (res.ok) {
@@ -2824,43 +2903,135 @@ function advanceFlow(skipAiMessage = false, backendNextQuestion = null) {
   }
 }
 
-function showMasteryReport() {
-  const lsn = getCurrentLesson();
+async function showMasteryReport() {
+  let report = null;
+  try {
+    const res = await fetch(`/api/session/report?session_id=vlearn_${encodeURIComponent(state.currentLessonId)}`);
+    if (res.ok) report = await res.json();
+  } catch (err) {
+    console.warn('Không lấy được báo cáo từ server, dựng tại chỗ:', err.message);
+  }
+  renderReportCard(report || buildLocalReport());
+}
+
+/* Backend không sẵn (bản tĩnh) -> dựng thẻ tổng kết từ kết quả FE đang giữ. */
+function buildLocalReport() {
   const cps = getCurrentCheckpoints();
   const results = getCurrentResults();
-  const scores = results.map(r => r ? r.score : 0);
-  const overall = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  const items = cps.map((cp, i) => {
+    const r = results[i];
+    return {
+      index: i, short: cp.short, title: cp.title, pdf_page: cp.pdfPage,
+      score: r ? r.score : 0,
+      status: !r ? 'chua_hoc' : (r.status === 'pass' ? 'dat' : 'can_hoc_lai'),
+      missing_points: []
+    };
+  });
+  const scored = items.filter(i => i.status !== 'chua_hoc');
+  return {
+    lesson_title: getCurrentLesson().short_title,
+    overall_score: scored.length ? Math.round(scored.reduce((a, b) => a + b.score, 0) / scored.length) : 0,
+    total_checkpoints: items.length,
+    passed: items.filter(i => i.status === 'dat').length,
+    need_review: items.filter(i => i.status === 'can_hoc_lai').length,
+    items,
+    recommended: items.filter(i => i.status !== 'dat')
+                      .sort((a, b) => a.score - b.score).slice(0, 3).map(i => i.index)
+  };
+}
 
-  const rows = cps.map((cp, i) => {
-    const r = results[i] || { status: 'fail', score: 0 };
-    const label = r.status === 'pass' ? '✓ Đạt' : '⚠️ Cần xem lại';
+const REPORT_STATUS = {
+  dat: { label: '✓ Đạt', cls: 'ok' },
+  can_hoc_lai: { label: '⚠️ Cần học lại', cls: 'warn' },
+  chua_hoc: { label: '— Chưa học', cls: 'muted' }
+};
+
+function renderReportCard(rep) {
+  const recommended = rep.recommended || [];
+  const rows = (rep.items || []).map(item => {
+    const st = REPORT_STATUS[item.status] || REPORT_STATUS.chua_hoc;
+    const isRec = recommended.includes(item.index);
+    const missing = (item.missing_points || []).filter(Boolean);
     return `
-      <div class="report-compact-row">
-        <span><b>${cp.short}</b> · ${cp.title}</span>
-        <span class="report-status-tag">${r.score}% (${label})</span>
-      </div>
-    `;
+      <div class="report-row ${st.cls}">
+        <div class="report-row-main">
+          <div class="report-row-title">
+            <b>${item.short}</b> · ${item.title}
+            ${isRec ? '<span class="report-rec-tag">nên học lại trước</span>' : ''}
+          </div>
+          <div class="report-row-meta">
+            ${st.label} · ${item.score}%${item.pdf_page ? ` · slide trang ${item.pdf_page}` : ''}
+            ${missing.length ? `<br>Còn hổng: ${missing.join(', ')}` : ''}
+          </div>
+        </div>
+        <button class="report-redo-btn" onclick="relearnCheckpoint(${item.index})">↻ Học lại</button>
+      </div>`;
   }).join('');
 
-  const reportArea = document.createElement('div');
-  reportArea.className = 'msg-row ai-partner';
-  reportArea.innerHTML = `
-    <div class="msg-content-wrap" style="max-width: 95%;">
-      <div class="report-compact-card">
-        <div class="report-compact-header">
-          <span class="report-compact-title">📊 Kết Quả Ôn Tập — ${lsn.short_title}</span>
-          <span class="report-compact-score">${overall}%</span>
+  const recNames = recommended
+    .map(i => (rep.items.find(x => x.index === i) || {}).short)
+    .filter(Boolean);
+
+  const card = document.createElement('div');
+  card.className = 'msg-row ai-partner';
+  card.innerHTML = `
+    <div class="msg-content-wrap" style="max-width: 96%;">
+      <div class="report-card">
+        <div class="report-card-head">
+          <div>
+            <div class="report-card-title">📊 Kết quả ôn tập — ${rep.lesson_title || ''}</div>
+            <div class="report-card-sub">${rep.passed}/${rep.total_checkpoints} checkpoint đạt${rep.need_review ? ` · ${rep.need_review} cần học lại` : ''}</div>
+          </div>
+          <div class="report-card-score">${rep.overall_score}%</div>
         </div>
-        ${rows}
-        <div style="margin-top:12px; display:flex; justify-content:flex-end;">
-          <button class="ai-action-btn" onclick="startReview()">↻ Luyện tập lại</button>
+        ${recNames.length ? `<div class="report-advice">Nên học lại trước: <b>${recNames.join(', ')}</b> — bấm "Học lại" ở đúng dòng đó, slide sẽ tự lướt về trang tương ứng.</div>` : '<div class="report-advice ok">Bạn đã nắm hết các checkpoint của bài này. 🎉</div>'}
+        <div class="report-rows">${rows}</div>
+        <div class="report-card-foot">
+          <button class="ai-action-btn" onclick="startReview()">↻ Luyện lại cả bài</button>
         </div>
       </div>
-    </div>
-  `;
-  document.getElementById('chatArea').appendChild(reportArea);
-  document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+    </div>`;
+  const area = document.getElementById('chatArea');
+  area.appendChild(card);
+  area.scrollTop = area.scrollHeight;
   setInputEnabled(false);
+  renderQuestionMeta(null);
+}
+
+/* Học lại đúng một checkpoint từ thẻ tổng kết. */
+async function relearnCheckpoint(index) {
+  const cps = getCurrentCheckpoints();
+  if (!(index >= 0 && index < cps.length)) return;
+
+  state.cpIdx = index;
+  state.attempts = 0;
+  state.awaitingContinue = false;
+  getCurrentResults()[index] = null;
+
+  let opening = cps[index].botQuestion;
+  try {
+    const res = await fetch('/api/session/restart_checkpoint', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: `vlearn_${state.currentLessonId}`,
+        lesson_id: state.currentLessonId,
+        checkpoint_index: index
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.opening_message) opening = data.opening_message;
+    }
+  } catch (err) {
+    console.warn('Không gọi được restart_checkpoint, học lại ở phía giao diện:', err.message);
+  }
+
+  appendMessage('coach', `↻ Học lại <b>${cps[index].short} · ${cps[index].title}</b>.`);
+  appendMessage('ai', opening);
+  renderTimelineProgress();
+  scrollToSlide(index);
+  setInputEnabled(true);
 }
 
 async function startReview() {

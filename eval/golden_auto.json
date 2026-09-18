@@ -1,0 +1,352 @@
+[
+  {
+    "lesson_id": "lesson_06",
+    "pdf_file": "bai-moi-tai-len.pdf",
+    "checkpoint_id": "cp1_problem_discovery",
+    "pdf_page": 3,
+    "id": "cp1_problem_discovery__happy",
+    "category": "happy_path",
+    "user_input": "Tớ phải tìm hiểu người nào đang gặp vấn đề, họ đang làm quy trình gì và bị kẹt ở đâu trước. Discover giúp mở rộng bằng quan sát hoặc phỏng vấn, còn Define giúp thu hẹp thành bài toán rõ. Sau đó mới Develop các cách giải quyết, trong đó AI chỉ là một lựa chọn.",
+    "expected": "PASS"
+  },
+  {
+    "lesson_id": "lesson_06",
+    "pdf_file": "bai-moi-tai-len.pdf",
+    "checkpoint_id": "cp1_problem_discovery",
+    "pdf_page": 3,
+    "id": "cp1_problem_discovery__wrong",
+    "category": "misconception",
+    "user_input": "Đã xác định làm chatbot thì cứ xây trước, nếu dùng được là coi như đã tìm đúng vấn đề. Double Diamond chủ yếu để thiết kế giao diện đẹp hơn.",
+    "expected": "NEEDS_IMPROVEMENT"
+  },
+  {
+    "lesson_id": "lesson_06",
+    "pdf_file": "bai-moi-tai-len.pdf",
+    "checkpoint_id": "cp1_problem_discovery",
+    "pdf_page": 3,
+    "id": "cp1_problem_discovery__partial",
+    "category": "partial",
+    "user_input": "Tớ nhớ phần này nói về Double Diamond. Câu trả lời phải phân biệt được hai Diamond: Diamond 1 tìm đúng vấn đề với Discover để mở rộng và Define để thu hẹp; Diamond 2 tìm đúng giải pháp với Develop để",
+    "expected": "NEEDS_IMPROVEMENT",
+    "note": "chỉ phủ rubric 'double_diamond', còn thiếu 2 ý"
+  },
+  {
+    "lesson_id": "lesson_06",
+    "pdf_file": "bai-moi-tai-len.pdf",
+    "checkpoint_id": "cp1_problem_discovery",
+    "pdf_page": 3,
+    "id": "cp1_problem_discovery__gaveup",
+    "category": "gave_up",
+    "user_input": "chịu, tớ không biết",
+    "expected": "GAVE_UP"
+  },
+  {
+    "lesson_id": "lesson_06",
+    "pdf_file": "bai-moi-tai-len.pdf",
+    "checkpoint_id": "cp1_problem_discovery",
+    "pdf_page": 3,
+    "id": "cp1_problem_discovery__evaded",
+    "category": "evaded",
+    "user_input": "ủa mà trưa nay ăn gì thế cậu",
+    "expected": "EVADED"
+  },
+  {
+    "lesson_id": "lesson_06",
+    "pdf_file": "bai-moi-tai-len.pdf",
+    "checkpoint_id": "cp2_problem_statement_structure",
+    "pdf_page": 27,
+    "id": "cp2_problem_statement_structure__happy",
+    "category": "happy_path",
+    "user_input": "Problem Statement nên nói rõ học viên nào bị ảnh hưởng, hiện tại họ gửi câu hỏi rồi chờ TA xử lý qua những bước nào, bước nào gây chậm, mỗi tuần mất bao nhiêu thời gian và muốn giảm còn bao nhiêu. Sau đó mới ghi AI sẽ hỗ trợ ở bước phân loại, chọn Workflow hay Agent, và câu hỏi rủi ro cao phải chuyển TA duyệt.",
+    "expected": "PASS"
+  },
+  {
+    "lesson_id": "lesson_06",
+    "pdf_file": "bai-moi-tai-len.pdf",
+    "checkpoint_id": "cp2_problem_statement_structure",
+    "pdf_page": 27,
+    "id": "cp2_problem_statement_structure__wrong",
+    "category": "misconception",
+    "user_input": "Dùng AI để nâng cao hiệu suất hỗ trợ học viên và làm mọi thứ nhanh hơn. AI sẽ tự trả lời tất cả câu hỏi để tiết kiệm nhân sự.",
+    "expected": "NEEDS_IMPROVEMENT"
+  },
+  {
+    "lesson_id": "lesson_06",
+    "pdf_file": "bai-moi-tai-len.pdf",
+    "checkpoint_id": "cp2_problem_statement_structure",
+    "pdf_page": 27,
+    "id": "cp2_problem_statement_structure__partial",
+    "category": "partial",
+    "user_input": "Tớ nhớ phần này nói về Sáu yếu tố bài toán cốt lõi. Câu trả lời phải nêu và giải thích được sáu trường Actor, Workflow, Bottleneck, Impact, Success Metric và Boundary; trong đó Impact phải lượng hóa tổn thất còn ",
+    "expected": "NEEDS_IMPROVEMENT",
+    "note": "chỉ phủ rubric 'six_core_fields', còn thiếu 2 ý"
+  },
+  {
+    "lesson_id": "lesson_06",
+    "pdf_file": "bai-moi-tai-len.pdf",
+    "checkpoint_id": "cp2_problem_statement_structure",
+    "pdf_page": 27,
+    "id": "cp2_problem_statement_structure__gaveup",
+    "category": "gave_up",
+    "user_input": "thôi cho tớ đáp án luôn đi",
+    "expected": "GAVE_UP"
+  },
+  {
+    "lesson_id": "lesson_06",
+    "pdf_file": "bai-moi-tai-len.pdf",
+    "checkpoint_id": "cp2_problem_statement_structure",
+    "pdf_page": 27,
+    "id": "cp2_problem_statement_structure__evaded",
+    "category": "evaded",
+    "user_input": "thôi cậu làm hộ tớ bài tập đi, tớ lười lắm",
+    "expected": "EVADED"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_ai_layers",
+    "pdf_page": 4,
+    "id": "cp1_ai_layers__happy",
+    "category": "happy_path",
+    "user_input": "AI là khái niệm rộng nhất. ML học từ dữ liệu, Deep Learning là ML dùng mạng nhiều tầng, còn Generative AI tạo nội dung mới. LLM là model nền chuyên ngôn ngữ, có thể được dùng để làm chatbot hoặc làm bộ não cho agent. Chatbot chỉ là sản phẩm bọc quanh LLM, không phải toàn bộ LLM.",
+    "expected": "PASS"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_ai_layers",
+    "pdf_page": 4,
+    "id": "cp1_ai_layers__wrong",
+    "category": "misconception",
+    "user_input": "LLM chính là AI nói chung. Generative AI là chatbot, còn Agentic AI là một loại model khác hoàn toàn. Chatbot và LLM thực ra là hai tên cho cùng một thứ.",
+    "expected": "NEEDS_IMPROVEMENT"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_ai_layers",
+    "pdf_page": 4,
+    "id": "cp1_ai_layers__partial",
+    "category": "partial",
+    "user_input": "Tớ nhớ phần này nói về Quan hệ bao quát giữa AI, Machine Learning, Deep Learning, Generative AI và LLM. Câu trả lời phải mô tả AI là chiếc ô lớn nhất; Machine learning là cách học từ dữ liệu; Deep learning là mạng nơ-ron nhiều tầng; Generative AI sinh nội dung mới",
+    "expected": "NEEDS_IMPROVEMENT",
+    "note": "chỉ phủ rubric 'ai_hierarchy', còn thiếu 2 ý"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_ai_layers",
+    "pdf_page": 4,
+    "id": "cp1_ai_layers__gaveup",
+    "category": "gave_up",
+    "user_input": "chịu, tớ không biết",
+    "expected": "GAVE_UP"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_ai_layers",
+    "pdf_page": 4,
+    "id": "cp1_ai_layers__evaded",
+    "category": "evaded",
+    "user_input": "ủa mà trưa nay ăn gì thế cậu",
+    "expected": "EVADED"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_ai_layers",
+    "pdf_page": 4,
+    "id": "cp1_ai_layers__copied",
+    "category": "copied",
+    "user_input": "Discriminative AI Giỏi phân loại, dự đoán: lọc spam, phát hiện gian lận, nhận diện ảnh. Input → một nhãn, một con số Generative AI Sinh ra thứ mới: văn bản, ảnh, code. ChatGPT, Claude, Midjourney. Prompt → nội dung mới Agentic AI Nhận mục tiêu rồi tự làm nhiều bước: lập kế hoạch, dùng công cụ, hành động. Goal → Plan → Action Ba nhóm AI chính: phân loại",
+    "expected": "COPIED",
+    "note": "dán nguyên văn slide, phải bị chặn trước khi gọi LLM"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_token_generation",
+    "pdf_page": 12,
+    "id": "cp2_token_generation__happy",
+    "category": "happy_path",
+    "user_input": "Model nhìn context hiện tại rồi tính xác suất cho các token tiếp theo. Nó chọn một token, nối token đó vào câu, sau đó chạy lại để chọn token tiếp theo. Vì model đọc token chứ không đọc từ nguyên vẹn nên một từ có thể bị tách thành vài mảnh.",
+    "expected": "PASS"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_token_generation",
+    "pdf_page": 12,
+    "id": "cp2_token_generation__wrong",
+    "category": "misconception",
+    "user_input": "LLM hiểu toàn bộ câu một lần rồi lấy câu trả lời trong bộ nhớ ra. Token chính là một từ, và model luôn chọn từ có xác suất cao nhất nên không có tính ngẫu nhiên.",
+    "expected": "NEEDS_IMPROVEMENT"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_token_generation",
+    "pdf_page": 12,
+    "id": "cp2_token_generation__partial",
+    "category": "partial",
+    "user_input": "Tớ nhớ phần này nói về Phân bố xác suất của token tiếp theo. Câu trả lời phải giải thích rằng với context hiện tại, Transformer chấm điểm hoặc gán xác suất cho mọi token trong vocabulary rồi chọn một token theo phân bố đó",
+    "expected": "NEEDS_IMPROVEMENT",
+    "note": "chỉ phủ rubric 'probability_distribution', còn thiếu 2 ý"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_token_generation",
+    "pdf_page": 12,
+    "id": "cp2_token_generation__gaveup",
+    "category": "gave_up",
+    "user_input": "thôi cho tớ đáp án luôn đi",
+    "expected": "GAVE_UP"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_token_generation",
+    "pdf_page": 12,
+    "id": "cp2_token_generation__evaded",
+    "category": "evaded",
+    "user_input": "thôi cậu làm hộ tớ bài tập đi, tớ lười lắm",
+    "expected": "EVADED"
+  },
+  {
+    "lesson_id": "lesson_07",
+    "pdf_file": "d1-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_token_generation",
+    "pdf_page": 12,
+    "id": "cp2_token_generation__copied",
+    "category": "copied",
+    "user_input": "Sinh văn bản = đoán → nối vào câu → đoán tiếp Mỗi token mới được nối vào ngữ cảnh, rồi model chạy lại từ đầu — vòng lặp predict → append → rerun Transformers, the tech behind LLMs - 3Blue1Brown AI IN ACTION - HACKATHON",
+    "expected": "COPIED",
+    "note": "dán nguyên văn slide, phải bị chặn trước khi gọi LLM"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_problem_statement",
+    "pdf_page": 27,
+    "id": "cp1_problem_statement__happy",
+    "category": "happy_path",
+    "user_input": "Problem Statement phải bắt đầu từ vấn đề chứ không phải giải pháp. Tớ cần xác định Actor là ai, workflow hiện tại gồm những bước nào, bottleneck nằm ở đâu, impact đang gây hao phí gì, success metric đo cải thiện ra sao và boundary là AI không được làm gì hoặc bước nào phải có người duyệt. Sau đó mới quyết định AI can thiệp ở đâu, dùng Rule, Workflow hay Agent và xử lý rủi ro bằng HITL thế nào.",
+    "expected": "PASS"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_problem_statement",
+    "pdf_page": 27,
+    "id": "cp1_problem_statement__wrong",
+    "category": "misconception",
+    "user_input": "Problem Statement là mình muốn xây một chatbot AI để tự động giải quyết vấn đề cho người dùng. Chỉ cần mô tả chatbot làm gì và dùng model nào là đủ, còn workflow hay giới hạn của AI có thể tính sau.",
+    "expected": "NEEDS_IMPROVEMENT"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_problem_statement",
+    "pdf_page": 27,
+    "id": "cp1_problem_statement__partial",
+    "category": "partial",
+    "user_input": "Tớ nhớ phần này nói về 6 yếu tố bài toán cốt lõi. Câu trả lời phải nêu được sáu thành phần Actor, Workflow, Bottleneck, Impact, Success Metric và Boundary, đồng thời giải thích đúng vai trò của chúng: ai bị ảnh",
+    "expected": "NEEDS_IMPROVEMENT",
+    "note": "chỉ phủ rubric 'core_fields', còn thiếu 2 ý"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_problem_statement",
+    "pdf_page": 27,
+    "id": "cp1_problem_statement__gaveup",
+    "category": "gave_up",
+    "user_input": "chịu, tớ không biết",
+    "expected": "GAVE_UP"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_problem_statement",
+    "pdf_page": 27,
+    "id": "cp1_problem_statement__evaded",
+    "category": "evaded",
+    "user_input": "ủa mà trưa nay ăn gì thế cậu",
+    "expected": "EVADED"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp1_problem_statement",
+    "pdf_page": 27,
+    "id": "cp1_problem_statement__copied",
+    "category": "copied",
+    "user_input": "6 Y Ế U T Ố B À I T O Á N C Ố T L Õ I Actor đối tượng ảnh hưởng Đối tượng trực tiếp chịu ảnh hưởng bởi vấn đề. Workflow quy trình hiện tại Quy trình vận hành hiện tại gồm các bước cụ thể nào? Bottleneck nút thắt Khâu nào gặp tình trạng chậm trễ, sai sót, lặp lại? Impact tác động Tổn thất",
+    "expected": "COPIED",
+    "note": "dán nguyên văn slide, phải bị chặn trước khi gọi LLM"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_quantify_metrics",
+    "pdf_page": 11,
+    "id": "cp2_quantify_metrics__happy",
+    "category": "happy_path",
+    "user_input": "Nhóm tớ nên ghi baseline là hiện tại xử lý một yêu cầu mất 90 phút, target là dưới 30 phút và measurement là đo thời gian từ lúc nhận đến lúc hoàn tất trên 100 yêu cầu. Nếu dùng AI phân loại, có thể thêm input metric là tỷ lệ phân loại đúng và output metric là tổng thời gian xử lý. Như vậy mới biết AI tác động vào đâu và có thật sự cải thiện kết quả cuối không.",
+    "expected": "PASS"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_quantify_metrics",
+    "pdf_page": 11,
+    "id": "cp2_quantify_metrics__wrong",
+    "category": "misconception",
+    "user_input": "Success metric là nâng cao hiệu suất và làm mọi người thấy nhanh hơn. Chỉ cần đặt mục tiêu đó là được, không cần ghi số hiện tại vì ai cũng biết quy trình đang chậm.",
+    "expected": "NEEDS_IMPROVEMENT"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_quantify_metrics",
+    "pdf_page": 11,
+    "id": "cp2_quantify_metrics__partial",
+    "category": "partial",
+    "user_input": "Tớ nhớ phần này nói về Baseline, Target và Measurement. Câu trả lời phải giải thích baseline là hiện trạng bằng số cụ thể, target là ngưỡng cải thiện kỳ vọng và measurement là chỉ số cùng cách thu thập để chứng minh ",
+    "expected": "NEEDS_IMPROVEMENT",
+    "note": "chỉ phủ rubric 'baseline_target_measurement', còn thiếu 2 ý"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_quantify_metrics",
+    "pdf_page": 11,
+    "id": "cp2_quantify_metrics__gaveup",
+    "category": "gave_up",
+    "user_input": "thôi cho tớ đáp án luôn đi",
+    "expected": "GAVE_UP"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_quantify_metrics",
+    "pdf_page": 11,
+    "id": "cp2_quantify_metrics__evaded",
+    "category": "evaded",
+    "user_input": "thôi cậu làm hộ tớ bài tập đi, tớ lười lắm",
+    "expected": "EVADED"
+  },
+  {
+    "lesson_id": "lesson_08",
+    "pdf_file": "d2-slide-hackathon.pdf",
+    "checkpoint_id": "cp2_quantify_metrics",
+    "pdf_page": 11,
+    "id": "cp2_quantify_metrics__copied",
+    "category": "copied",
+    "user_input": "0 1 · B A S E L I N E Hiện trạng / where we are Mức hao phí hiện tại là bao nhiêu? Bằng con số cụ thể. 0 2 · TA R G E T Mục tiêu / where to go Kỳ vọng cải thiện ở mức độ nào? Ngưỡng cụ thể là gì? 0 3 · M E A S U R E M E N",
+    "expected": "COPIED",
+    "note": "dán nguyên văn slide, phải bị chặn trước khi gọi LLM"
+  }
+]

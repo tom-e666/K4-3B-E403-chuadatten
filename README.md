@@ -370,6 +370,36 @@ biết", "cho đáp án"). Với hai kiểu sau, hệ thống **không đưa đ�
 Lượt nào do Giáo sư AI nói thì backend **không gọi LLM cho bạn học** — vừa đúng vai, vừa bớt một lượt gọi ở
 đúng những lượt hay chậm nhất.
 
+### Chống chép slide, thẻ tổng kết và báo cáo lớp
+
+**Chống chép nguyên văn** (`backend/tools/copy_check.py`): câu trả lời được so với text của đúng trang slide
+mà checkpoint trỏ tới (đọc bằng pypdf, cache theo trang). Trùng ≥45% số cụm 6 từ thì coi là chép: **không tính
+đạt, không tốn lượt gọi LLM**, Giáo sư AI yêu cầu nói lại bằng lời của mình. Nhắc tối đa 2 lần rồi mới chấm
+bình thường để người học không bị kẹt. Câu dưới 25 từ được bỏ qua vì không đủ cơ sở kết luận.
+
+**Thẻ tổng kết cuối phiên**: học hết các checkpoint là hiện thẻ có điểm tổng, trạng thái từng checkpoint
+(đạt / cần học lại / chưa học), ý còn hổng, số trang slide, **đề xuất nên học lại checkpoint nào trước**
+(điểm thấp nhất trước) và nút **↻ Học lại** cho từng checkpoint — bấm là mở lại đúng checkpoint đó từ câu hỏi
+dễ nhất, slide tự lướt về trang tương ứng.
+
+**Báo cáo lớp cho giảng viên**: mỗi checkpoint hoàn tất được ghi một dòng vào
+`backend/data/progress/<lesson_id>.jsonl`. Mở **http://localhost:8000/teacher** để xem tỉ lệ đạt, điểm trung
+bình, số lần bỏ cuộc và những ý học viên hay thiếu nhất của từng checkpoint — checkpoint xếp cuối bảng là chỗ
+cần giảng lại. (Thư mục `progress/` là dữ liệu chạy, đã cho vào `.gitignore`.)
+
+**Không mất phiên khi restart**: FE gửi kèm `lesson_id` mỗi lượt chat; server mất phiên (RAM) hoặc lệch bài thì
+mở lại đúng bài đó thay vì rơi về lesson mặc định rồi chấm nhầm checkpoint của bài khác.
+
+**Kiểm thử cho checkpoint sinh tự động**:
+
+```bash
+python eval/build_auto_dataset.py    # dựng case từ chính file checkpoint (thêm --all cho toàn bộ)
+python eval/run_eval_auto.py         # chấm bằng Evaluator thật, mặc định 24 case; --dry-run để xem trước
+```
+
+Sáu nhóm case: `happy_path`, `misconception`, `partial`, `gave_up`, `evaded`, `copied`. Kết quả ghi vào
+`eval/eval_report_auto.json`. Bộ cũ `run_eval.py` vẫn giữ nguyên cho bài Transformer viết tay.
+
 ### API liên quan
 
 | Endpoint | Việc |
