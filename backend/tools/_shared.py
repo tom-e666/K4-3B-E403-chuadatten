@@ -62,8 +62,24 @@ def _load_raw_store() -> dict[str, Any]:
     raise FileNotFoundError(f"Missing lessons file at: {LESSONS_MULTI_FILE} or {LESSONS_SINGLE_FILE}")
 
 
+CHECKPOINTS_D1_FILE = DATA_DIR / "checkpoints_d1.json"
+CHECKPOINTS_D2_FILE = DATA_DIR / "checkpoints_d2.json"
+
+
+def load_generated_checkpoints(lesson_id: str) -> list[dict[str, Any]]:
+    """Tải danh sách checkpoints sinh ra từ Agent AI tương ứng với từng bài học."""
+    cp_file = CHECKPOINTS_D2_FILE if lesson_id in ["lesson_02", "lesson_03"] else CHECKPOINTS_D1_FILE
+    if cp_file.exists():
+        try:
+            with open(cp_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as err:
+            print(f"⚠️ Lỗi đọc file checkpoint {cp_file}: {err}")
+    return []
+
+
 def get_all_lessons() -> list[dict[str, Any]]:
-    """Trả về danh sách tất cả các bài học (slides lấy từ vlearn-pack PDF)."""
+    """Trả về danh sách tất cả các bài học (slides & checkpoints sinh từ PDF)."""
     store = _load_raw_store()
     lessons = store.get("lessons", [])
     result = []
@@ -71,6 +87,7 @@ def get_all_lessons() -> list[dict[str, Any]]:
         lesson_id = lsn.get("id", "lesson_default")
         pdf_file = "d2-slide-hackathon.pdf" if lesson_id in ["lesson_02", "lesson_03"] else "d1-slide-hackathon.pdf"
         pdf_slides = load_slides_from_pdf(pdf_file)
+        gen_cps = load_generated_checkpoints(lesson_id)
         result.append({
             "id": lesson_id,
             "topic": lsn.get("topic", "Chủ đề bài học"),
@@ -81,22 +98,25 @@ def get_all_lessons() -> list[dict[str, Any]]:
             "pdf_url": f"/slides/{pdf_file}",
             "slides_count": len(pdf_slides) if pdf_slides else len(lsn.get("slides", [])),
             "summary": lsn.get("summary", ""),
-            "checkpoints_count": len(lsn.get("checkpoints", []))
+            "checkpoints_count": len(gen_cps) if gen_cps else len(lsn.get("checkpoints", []))
         })
     return result
 
 
 def get_lesson_by_id(lesson_id: str) -> dict[str, Any] | None:
-    """Lấy toàn bộ chi tiết của một bài học (với slides được lấy từ vlearn-pack PDF)."""
+    """Lấy toàn bộ chi tiết của một bài học (với slides và checkpoints sinh từ PDF)."""
     store = _load_raw_store()
     for lsn in store.get("lessons", []):
         if lsn.get("id") == lesson_id:
             lesson_copy = dict(lsn)
             pdf_file = "d2-slide-hackathon.pdf" if lesson_id in ["lesson_02", "lesson_03"] else "d1-slide-hackathon.pdf"
             pdf_slides = load_slides_from_pdf(pdf_file)
+            gen_cps = load_generated_checkpoints(lesson_id)
             lesson_copy["pdf_url"] = f"/slides/{pdf_file}"
             if pdf_slides:
                 lesson_copy["slides"] = pdf_slides
+            if gen_cps:
+                lesson_copy["checkpoints"] = gen_cps
             return lesson_copy
     return None
 
@@ -117,7 +137,6 @@ def load_lessons_data(lesson_id: str | None = None) -> dict[str, Any]:
         if target:
             return target
 
-    # Mặc định lấy bài Transformer (lesson_02) hoặc bài đầu tiên
     for lsn in lessons:
         if lsn.get("id") == "lesson_02":
             return get_lesson_by_id("lesson_02") or lsn
@@ -126,6 +145,12 @@ def load_lessons_data(lesson_id: str | None = None) -> dict[str, Any]:
 
 def get_checkpoint_by_id(checkpoint_id: str) -> dict[str, Any] | None:
     """Tra cứu checkpoint theo id trên toàn bộ các bài học trong kho dữ liệu."""
+    for lid in ["lesson_01", "lesson_02", "lesson_03"]:
+        cps = load_generated_checkpoints(lid)
+        for cp in cps:
+            if cp.get("id") == checkpoint_id:
+                return cp
+
     store = _load_raw_store()
     for lsn in store.get("lessons", []):
         for cp in lsn.get("checkpoints", []):

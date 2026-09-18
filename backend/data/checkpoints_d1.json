@@ -1,0 +1,101 @@
+[
+  {
+    "id": "cp1_ai_foundation",
+    "order": 1,
+    "title": "Cơ sở của AI và LLM",
+    "student_starter_message": "Tớ không hiểu tại sao AI lại có nhiều loại như Machine Learning, Deep Learning, và LLM. Chúng khác nhau như thế nào nhỉ?",
+    "misconceptions": [
+      "Tất cả các loại AI đều giống nhau.",
+      "Machine Learning là một phần của AI nhưng không có sự khác biệt giữa các loại.",
+      "Deep Learning và LLM là những thuật ngữ đồng nghĩa."
+    ],
+    "rubric_points": [
+      {
+        "id": "tieu_chi_1",
+        "concept": "Khái niệm AI",
+        "criteria": "Giải thích rõ ràng về AI và các loại của nó.",
+        "weight": 40
+      },
+      {
+        "id": "tieu_chi_2",
+        "concept": "Khái niệm Machine Learning và Deep Learning",
+        "criteria": "Phân biệt rõ ràng giữa Machine Learning và Deep Learning.",
+        "weight": 30
+      },
+      {
+        "id": "tieu_chi_3",
+        "concept": "Khái niệm LLM",
+        "criteria": "Giải thích LLM và vai trò của nó trong AI.",
+        "weight": 30
+      }
+    ],
+    "source_citation": "Slide [Tr.3]",
+    "summary_for_passed": "Tuyệt vời! Bạn đã giải thích rất rõ ràng về các khái niệm AI và LLM. Tiếp tục phát huy nhé!"
+  },
+  {
+    "id": "cp2_transformer_mechanism",
+    "order": 2,
+    "title": "Cơ chế hoạt động của Transformer",
+    "student_starter_message": "Tớ không hiểu tại sao Transformer lại quan trọng trong AI. Nó hoạt động như thế nào nhỉ?",
+    "misconceptions": [
+      "Transformer chỉ là một loại mô hình AI đơn giản.",
+      "Tất cả các mô hình AI đều sử dụng Transformer.",
+      "Transformer không có gì đặc biệt so với các mô hình trước đó."
+    ],
+    "rubric_points": [
+      {
+        "id": "tieu_chi_1",
+        "concept": "Khái niệm Transformer",
+        "criteria": "Giải thích rõ ràng về Transformer và vai trò của nó trong AI.",
+        "weight": 40
+      },
+      {
+        "id": "tieu_chi_2",
+        "concept": "Cơ chế Attention",
+        "criteria": "Mô tả cơ chế Attention và cách nó giúp mô hình hiểu ngữ cảnh.",
+        "weight": 30
+      },
+      {
+        "id": "tieu_chi_3",
+        "concept": "Ứng dụng của Transformer",
+        "criteria": "Nêu rõ ứng dụng của Transformer trong các mô hình hiện đại.",
+        "weight": 30
+      }
+    ],
+    "source_citation": "Slide [Tr.8-15]",
+    "summary_for_passed": "Xuất sắc! Bạn đã giải thích rất tốt về Transformer và cơ chế hoạt động của nó. Tiếp tục như vậy nhé!"
+  },
+  {
+    "id": "cp3_llm_training_process",
+    "order": 3,
+    "title": "Quá trình đào tạo LLM",
+    "student_starter_message": "Tớ không hiểu tại sao LLM cần nhiều bước đào tạo như vậy. Tại sao không chỉ cần một bước thôi?",
+    "misconceptions": [
+      "LLM chỉ cần một bước đào tạo duy nhất.",
+      "Quá trình đào tạo không quan trọng đối với hiệu suất của LLM.",
+      "Tất cả các bước đào tạo đều giống nhau."
+    ],
+    "rubric_points": [
+      {
+        "id": "tieu_chi_1",
+        "concept": "Các bước đào tạo LLM",
+        "criteria": "Giải thích rõ ràng các bước trong quá trình đào tạo LLM.",
+        "weight": 40
+      },
+      {
+        "id": "tieu_chi_2",
+        "concept": "Vai trò của từng bước",
+        "criteria": "Nêu rõ vai trò của từng bước trong việc cải thiện hiệu suất của LLM.",
+        "weight": 30
+      },
+      {
+        "id": "tieu_chi_3",
+        "concept": "Kết quả cuối cùng",
+        "criteria": "Giải thích cách mà các bước đào tạo ảnh hưởng đến kết quả cuối cùng của LLM.",
+        "weight": 30
+      }
+    ],
+    "source_citation": "Slide [Tr.18-19]",
+    "summary_for_passed": "Rất tốt! Bạn đã giải thích chi tiết về quá trình đào tạo LLM và tầm quan trọng của từng bước. Tiếp tục phát huy nhé!"
+  }
+]

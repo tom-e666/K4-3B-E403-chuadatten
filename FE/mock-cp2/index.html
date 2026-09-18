@@ -1431,8 +1431,6 @@ const MOCK_LESSONS = [
     slides: Array.from({length: 29}, (_, i) => ({
       slide: i + 1,
       eyebrow: `Trang ${i + 1}`,
-      title: `Day 1 Slide Page ${i + 1}`,
-      subtitle: "Nội dung bài giảng AI & LLM Foundation",
       metaBrand: "VLearn AI20k",
       metaPhase: "Day 1 · AI & LLM Foundation",
       bullets: [
@@ -1443,40 +1441,40 @@ const MOCK_LESSONS = [
     })),
     checkpoints: [
       {
-        id: "cp1_next_token_hallucination",
+        id: "cp1_ai_foundation",
         short: "CP1",
-        label: "Next-Token & Ảo giác",
-        title: "Next-Token Prediction & Ảo giác",
-        slide: 2,
-        botQuestion: "Chào bạn! Tại sao ChatGPT trả lời câu cú rất mượt mà nhưng thỉnh thoảng lại tự tin nói sai sự thật (ảo giác - hallucination) vậy cậu?",
-        hints: ["Gợi ý: LLM chọn từ tiếp theo dựa trên cái gì? Phân phối xác suất hay sự thật khách quan?"],
-        correction: "LLM chỉ là cỗ máy dự đoán token tiếp theo theo xác suất thống kê. Vì chỉ tối ưu tính trôi chảy ngôn ngữ nên có thể tự tin sinh ra thông tin ảo giác.",
-        sampleCorrect: "LLM bản chất là cỗ máy dự đoán next-token dựa trên phân phối xác suất thống kê. Nó không có ý thức mà chỉ chọn từ thuận tai nhất nên có thể sinh ra ảo giác dù hành văn rất trôi chảy.",
-        sampleWrong: "Do ChatGPT bị lỗi bộ nhớ RAM tạm thời nên nó cố tình nói dối trêu người dùng."
-      },
-      {
-        id: "cp2_context_window_rot",
-        short: "CP2",
-        label: "Context Window",
-        title: "Context Window & Context Rot",
+        label: "Cơ sở AI & LLM",
+        title: "Cơ sở của AI và LLM",
         slide: 3,
-        botQuestion: "Context Window 1 triệu token có phải càng nhồi nhiều sách vào là AI càng trả lời thông minh không?",
-        hints: ["Gợi ý: Nhắc đến hiện tượng Context Rot và attention bị phân tán chú ý sai chỗ."],
-        correction: "Khi nhồi quá nhiều token, mô hình gặp hiện tượng Context Rot (phân tán chú ý, dễ quên). Cần quản lý context tinh gọn, chất lượng.",
-        sampleCorrect: "Không đúng, nhồi quá nhiều dữ liệu sẽ gây hiện tượng Context Rot khiến attention bị phân tán, chú ý sai chỗ và quên thông tin. Cần quản lý context tinh gọn và chắt lọc.",
-        sampleWrong: "Đúng rồi, cứ nhồi càng nhiều triệu token thì AI càng học thuộc lòng và trả lời chuẩn xác 100%."
+        botQuestion: "Tớ không hiểu tại sao AI lại có nhiều loại như Machine Learning, Deep Learning, và LLM. Chúng khác nhau như thế nào nhỉ?",
+        hints: ["Gợi ý: AI là tập lớn nhất, Machine Learning học quy luật từ dữ liệu, Deep Learning dùng mạng nơ-ron sâu, LLM là mô hình ngôn ngữ lớn."],
+        correction: "AI bao gồm Machine Learning (học từ dữ liệu) và Deep Learning (mạng nơ-ron). LLM là tập con của Deep Learning chuyên xử lý ngôn ngữ.",
+        sampleCorrect: "AI là trí tuệ nhân tạo nói chung. Machine Learning dạy máy học từ dữ liệu. Deep Learning dùng mạng nơ-ron sâu tự trích xuất đặc trưng. Còn LLM là mô hình ngôn ngữ lớn chuyên về văn bản.",
+        sampleWrong: "Tất cả các loại AI đều giống nhau hoàn toàn."
       },
       {
-        id: "cp3_attention_vs_rnn",
+        id: "cp2_transformer_mechanism",
+        short: "CP2",
+        label: "Cơ chế Transformer",
+        title: "Cơ chế hoạt động của Transformer",
+        slide: 8,
+        botQuestion: "Tớ không hiểu tại sao Transformer lại quan trọng trong AI. Nó hoạt động như thế nào nhỉ?",
+        hints: ["Gợi ý: Transformer dùng cơ chế Attention cho phép mô hình hiểu ngữ cảnh toàn câu và tính toán song song trên GPU."],
+        correction: "Transformer tạo đột phá nhờ cơ chế Self-Attention giúp mô hình đánh giá độ liên quan giữa các từ và xử lý song song thay vì đọc tuần tự.",
+        sampleCorrect: "Transformer đột phá nhờ cơ chế Attention giúp mô hình nhìn toàn bộ câu cùng lúc và xử lý song song trên GPU thay vì đọc tuần tự từng chữ như RNN.",
+        sampleWrong: "Transformer chỉ là mô hình AI đơn giản không có gì đặc biệt."
+      },
+      {
+        id: "cp3_llm_training_process",
         short: "CP3",
-        label: "Attention vs RNN",
-        title: "Attention song song vs Bottleneck RNN",
-        slide: 4,
-        botQuestion: "Tại sao cơ chế Attention trong Transformer lại vượt trội hoàn toàn so với mạng RNN tuần tự ngày xưa?",
-        hints: ["Gợi ý: RNN đọc tuần tự từng chữ bị nghẽn câu dài. Transformer nhìn toàn câu và chạy song song trên GPU."],
-        correction: "RNN đọc tuần tự từng chữ nên bị nghẽn cổ chai và quên ngữ cảnh câu dài. Transformer dùng Attention nhìn toàn bộ câu cùng lúc và xử lý song song trên GPU.",
-        sampleCorrect: "RNN đọc tuần tự từng chữ nên câu dài sẽ quên thông tin phía trước và không song song hóa được. Transformer dùng Attention cho phép nhìn toàn bộ câu cùng lúc và tận dụng tính toán song song trên GPU.",
-        sampleWrong: "Do Transformer có tên nghe hiện đại hơn thôi chứ bản chất toán học không khác gì RNN."
+        label: "Quá trình đào tạo LLM",
+        title: "Quá trình đào tạo LLM",
+        slide: 18,
+        botQuestion: "Tớ không hiểu tại sao LLM cần nhiều bước đào tạo như vậy. Tại sao không chỉ cần một bước thôi?",
+        hints: ["Gợi ý: Đào tạo LLM gồm Pre-training (học tri thức diện rộng) và Fine-tuning/RLHF (căn chỉnh theo chỉ thị người dùng)."],
+        correction: "LLM cần Pre-training để tích lũy tri thức ngôn ngữ diện rộng, sau đó cần Fine-tuning và RLHF để học cách tuân thủ chỉ thị người dùng an toàn.",
+        sampleCorrect: "Vì bước Pre-training chỉ giúp mô hình học tri thức và dự đoán từ tiếp theo. Cần thêm các bước Fine-tuning và RLHF để mô hình biết trả lời câu hỏi và tuân thủ chỉ thị một cách an toàn.",
+        sampleWrong: "LLM chỉ cần một bước đào tạo duy nhất là xong."
       }
     ]
   },
@@ -1504,40 +1502,40 @@ const MOCK_LESSONS = [
     })),
     checkpoints: [
       {
-        id: "cp1_jumping_to_solution",
+        id: "cp1_problem_statement",
         short: "CP1",
-        label: "Jumping to Solution",
-        title: "Tránh bẫy Jumping to Solution",
-        slide: 1,
-        botQuestion: "Sếp bảo công ty phải làm ngay một AI Chatbot support, tớ định code luôn bằng LangChain. Cậu thấy đã chuẩn chưa?",
-        hints: ["Gợi ý: Chatbot chỉ là giải pháp bề mặt. Cần lùi lại dùng 5 Whys tìm pain point thực sự."],
-        correction: "Vội vàng làm chatbot là bẫy Jumping to Solution. Cần lùi lại tìm pain point thực sự qua 5 Whys và xem xét giải pháp đơn giản trước.",
-        sampleCorrect: "Bạn đang mắc bẫy Jumping to Solution rồi, chatbot chỉ là giải pháp. Cần dừng lại hỏi 5 Whys tìm pain point thực sự và xem có giải pháp quy trình đơn giản nào trước khi build AI.",
-        sampleWrong: "Chuẩn rồi, sếp bảo làm chatbot thì cứ dựng vector database code ngay cho kịp tiến độ."
+        label: "Problem Statement",
+        title: "Xác định Problem Statement trong AI",
+        slide: 9,
+        botQuestion: "Tớ không hiểu tại sao phải có Problem Statement rõ ràng trước khi làm AI. Nó có quan trọng không?",
+        hints: ["Gợi ý: Problem Statement định hình rõ Actor, Workflow, Bottleneck, Impact và Success Metric trước khi chọn công nghệ."],
+        correction: "Problem Statement giúp làm rõ nỗi đau thật, đối tượng ảnh hưởng và chỉ số đo lường thành công để tránh làm sai bài toán.",
+        sampleCorrect: "Problem Statement cực kỳ quan trọng để xác định rõ Actor, Workflow, điểm nghẽn và Success Metric trước khi tốn nguồn lực làm AI.",
+        sampleWrong: "Chỉ cần có ý tưởng là code luôn, không cần định hình vấn đề."
       },
       {
-        id: "cp2_product_vs_project_mindset",
+        id: "cp2_anti_patterns",
         short: "CP2",
-        label: "Product vs Project",
-        title: "Product vs Project Mindset",
-        slide: 2,
-        botQuestion: "Làm Product Manager với Project Manager trong dự án AI có giống nhau không cậu?",
-        hints: ["Gợi ý: Project Manager quản lý tiến độ/ngân sách. Product Manager lấy người dùng làm trung tâm và tìm bài toán đáng làm."],
-        correction: "Project Manager tập trung vào tiến độ, ngân sách theo spec. Product Manager tập trung vào người dùng, thị trường và cải tiến liên tục.",
-        sampleCorrect: "Khác nhau nhiều. Project Manager tập trung tiến độ và ngân sách spec có sẵn. Còn Product Manager phải lấy người dùng làm trung tâm, tự tìm bài toán đáng làm và liên tục đo lường cải tiến.",
-        sampleWrong: "Hai vị trí này hoàn toàn là một, chỉ khác tên gọi tiếng Anh thôi."
+        label: "Anti-patterns trong AI",
+        title: "Nhận biết Anti-patterns trong dự án AI",
+        slide: 23,
+        botQuestion: "Tại sao lại có những sai lầm thường gặp khi làm AI? Tớ không hiểu rõ về Anti-patterns.",
+        hints: ["Gợi ý: Anti-patterns bao gồm Solution-first (vội làm AI), No baseline (không đo lường), No evaluation (không kiểm thử)."],
+        correction: "Anti-patterns là các bẫy như nhảy thẳng vào giải pháp trước khi hiểu nỗi đau, thiếu điểm đo lường cơ sở (baseline) hoặc không đánh giá kiểm thử.",
+        sampleCorrect: "Anti-patterns là các sai lầm phổ biến như Solution-first (chưa hiểu đau đã làm AI), thiếu baseline để so sánh, và không đánh giá kiểm thử chất lượng.",
+        sampleWrong: "Công nghệ tốt thì không bao giờ mắc sai lầm."
       },
       {
-        id: "cp3_dogfooding_strategy",
+        id: "cp3_reward_function",
         short: "CP3",
-        label: "Dogfooding",
-        title: "Chiến lược Dogfooding",
-        slide: 3,
-        botQuestion: "Tự mình dùng sản phẩm của mình (Dogfooding) có tác dụng gì đâu khi mình có thể phỏng vấn user ngoài?",
-        hints: ["Gợi ý: Dogfooding giúp team là tester đầu tiên, cảm nhận nỗi đau thật và tối ưu feedback loop cực nhanh."],
-        correction: "Dogfooding giúp chính đội ngũ là tester đầu tiên, cảm nhận trực tiếp nỗi đau và rút ngắn vòng phản hồi (như Jira build Jira, Claude Code).",
-        sampleCorrect: "Dogfooding là chính đội ngũ tự dùng sản phẩm hàng ngày như user thật. Điều này giúp cảm nhận trực tiếp nỗi đau thực tế và tối ưu feedback loop cực nhanh như Jira hay Claude Code.",
-        sampleWrong: "Dogfooding là mang sản phẩm cho người khác dùng thử miễn phí để lấy tiếng tăm."
+        label: "Reward Function",
+        title: "Thiết kế Reward Function & Đánh đổi",
+        slide: 57,
+        botQuestion: "Tớ không hiểu Reward Function là gì và tại sao nó lại quan trọng trong AI.",
+        hints: ["Gợi ý: Reward Function định nghĩa mục tiêu thưởng/phạt cho AI, phải cân bằng giữa Precision và Recall."],
+        correction: "Reward Function định hướng hành vi mô hình AI, giúp tối ưu hóa mục tiêu kinh doanh và cân bằng đánh đổi Precision vs Recall.",
+        sampleCorrect: "Reward Function định nghĩa cơ chế thưởng phạt để định hướng hành vi mô hình AI theo đúng mục tiêu sản phẩm và cân bằng giữa Precision và Recall.",
+        sampleWrong: "Reward Function chỉ đơn giản là đúng hoặc sai."
       }
     ]
   }

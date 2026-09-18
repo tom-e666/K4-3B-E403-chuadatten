@@ -127,17 +127,16 @@ def main():
     parser.add_argument("--out", type=str, default=None, help="Đường dẫn file JSON để lưu kết quả")
     args = parser.parse_args()
 
-    print(f"🤖 Đang khởi chạy Checkpoint Generator Agent cho file: {args.pdf}...")
+    print(f"[+] Dang khoi chay Checkpoint Generator Agent cho file: {args.pdf}...")
     agent = CheckpointGeneratorAgent()
     checkpoints = agent.generate_checkpoints_from_pdf(args.pdf)
 
-    print(f"\n✅ Đã sinh thành công {len(checkpoints)} Checkpoints:")
-    print(json.dumps(checkpoints, ensure_ascii=False, indent=2))
+    print(f"\n[+] Da sinh thanh cong {len(checkpoints)} Checkpoints.")
 
     if args.out:
         with open(args.out, "w", encoding="utf-8") as f:
             json.dump(checkpoints, f, ensure_ascii=False, indent=2)
-        print(f"💾 Đã lưu danh sách Checkpoints vào: {args.out}")
+        print(f"[+] Da luu danh sach Checkpoints vao: {args.out}")
 
 
 if __name__ == "__main__":
