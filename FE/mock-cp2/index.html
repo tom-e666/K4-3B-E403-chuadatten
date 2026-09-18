@@ -3,703 +3,2264 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Feynman AI — Mock CP2</title>
+<title>VLearn — Feynman AI Study Partner</title>
+<!-- Google Fonts: Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --primary:#3461eb;
-    --primary-dark:#2748b8;
-    --bg:#f5f6f8;
-    --panel-bg:#ffffff;
-    --border:#e3e5ea;
-    --text:#1c1f26;
-    --text-mute:#6b7280;
-    --green:#1f9d55;
-    --green-bg:#e8f7ee;
-    --orange:#e08b1f;
-    --orange-bg:#fdf2e2;
-    --red:#e5484d;
-    --red-bg:#fdecec;
+  :root {
+    --vlearn-blue: #1d4ed8;
+    --vlearn-blue-hover: #1e40af;
+    --vlearn-blue-soft: #eff6ff;
+    --vlearn-blue-border: #bfdbfe;
+    
+    --vlearn-red: #dc2626;
+    --vlearn-red-soft: #fef2f2;
+    
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --text-subtle: #94a3b8;
+    
+    --surface: #ffffff;
+    --surface-subtle: #f8fafc;
+    --surface-hover: #f1f5f9;
+    
+    --border: #e2e8f0;
+    --border-strong: #cbd5e1;
+    
+    --success: #16a34a;
+    --success-soft: #f0fdf4;
+    --success-border: #bbf7d0;
+    
+    --warning: #d97706;
+    --warning-soft: #fffbeb;
+    
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+    --radius-full: 9999px;
+    
+    --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
   }
-  *{box-sizing:border-box;}
-  body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);}
-  .topbar{
-    height:56px;display:flex;align-items:center;gap:16px;
-    padding:0 16px;background:#fff;border-bottom:1px solid var(--border);
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100vh;
+    max-height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background-color: var(--surface-subtle);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
-  .topbar .back{font-size:18px;color:var(--text-mute);cursor:pointer;}
-  .topbar .crumb{font-weight:600;font-size:15px;}
-  .topbar .spacer{flex:1;}
-  .topbar .progress-wrap{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mute);}
-  .topbar .progress-bar{width:120px;height:6px;background:#eceef2;border-radius:99px;overflow:hidden;}
-  .topbar .progress-bar > div{height:100%;background:var(--primary);width:0%;}
-  .pill-btn{
-    display:flex;align-items:center;gap:6px;background:linear-gradient(90deg,#eef3ff,#f5eeff);
-    color:var(--primary);border:1px solid #d7e0ff;border-radius:999px;padding:7px 14px;
-    font-size:13px;font-weight:600;cursor:pointer;
+
+  /* Custom subtle scrollbars */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: var(--radius-full); }
+  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+  /* ==========================================================================
+     1. TOPBAR (Fixed Header: 64px)
+     ========================================================================== */
+  .vlearn-header {
+    height: 64px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex: 0 0 64px;
+    z-index: 30;
   }
-  .outline-btn{
-    border:1px solid var(--border);background:#fff;border-radius:8px;padding:7px 14px;
-    font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
   }
-  .avatar-round{width:32px;height:32px;border-radius:50%;background:#dbe4ff;color:var(--primary-dark);
-    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;}
 
-  .app{display:grid;grid-template-columns:250px 1fr 460px;height:calc(100vh - 56px);}
-  @media (max-width:1300px){ .app{grid-template-columns:0 1fr 420px;} .sidebar{display:none;} }
+  .menu-toggle-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease;
+  }
+  .menu-toggle-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
 
-  /* ---------- Sidebar ---------- */
-  .sidebar{background:#fff;border-right:1px solid var(--border);overflow-y:auto;padding:14px 10px;}
-  .sidebar-header{display:flex;justify-content:space-between;align-items:center;
-    font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--text-mute);padding:4px 8px 10px;}
-  .sidebar-header span.x{cursor:pointer;color:var(--text-mute);font-size:14px;}
-  .sec-title{display:flex;align-items:center;justify-content:space-between;padding:8px 8px;
-    font-weight:600;font-size:13px;cursor:pointer;color:var(--text);}
-  .sec-title .chev{transition:transform .15s;color:var(--text-mute);}
-  .sec-title.collapsed .chev{transform:rotate(-90deg);}
-  .sec-list{padding-left:4px;}
-  .sec-list.collapsed{display:none;}
-  .nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;
-    font-size:13px;cursor:pointer;color:var(--text);}
-  .nav-item:hover{background:#f2f4f8;}
-  .nav-item.active{background:#eef3ff;color:var(--primary-dark);font-weight:600;}
-  .nav-item .tag{margin-left:auto;font-size:11px;color:var(--primary);background:#eef3ff;
-    padding:2px 7px;border-radius:99px;}
-  .nav-item.inert{opacity:.5;cursor:not-allowed;}
+  .brand-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-logo-img {
+    height: 26px;
+    width: auto;
+    object-fit: contain;
+    vertical-align: middle;
+  }
 
-  /* ---------- Main panel ---------- */
-  .main{padding:18px;overflow-y:auto;}
-  .card{background:var(--panel-bg);border:1px solid var(--border);border-radius:12px;}
+  .header-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+  }
 
-  .slide-toolbar{display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid var(--border);
-    color:var(--text-mute);font-size:16px;}
-  .slide-toolbar .g{display:flex;gap:10px;padding-right:14px;border-right:1px solid var(--border);}
-  .slide-toolbar .spacer{flex:1;}
-  .slide-toolbar .nav{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);}
-  .slide-scroll{height:480px;overflow-y:auto;scroll-behavior:smooth;scroll-snap-type:y proximity;}
-  .slide-page{padding:40px 50px;min-height:480px;box-sizing:border-box;scroll-snap-align:start;
-    border-top:1px solid var(--border);}
-  .slide-page:first-child{border-top:none;}
-  .slide-page .page-flag{font-size:11px;font-weight:700;color:#fff;background:var(--primary);
-    display:inline-block;padding:3px 10px;border-radius:99px;margin-bottom:14px;}
-  .slide-page h2{margin-top:0;color:var(--primary-dark);}
-  .slide-page .kicker{font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--text-mute);}
-  .slide-page ul{line-height:1.9;font-size:15px;}
-  .slide-footer{display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);
-    font-size:12px;color:var(--text-mute);}
-  .reactions{display:flex;gap:10px;padding:12px 14px;}
-  .reactions button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 12px;
-    font-size:13px;cursor:pointer;display:flex;gap:6px;align-items:center;}
-  .bottom-nav{display:flex;justify-content:space-between;margin-top:14px;}
-  .bottom-nav button{border:1px solid var(--border);background:#fff;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;}
-  .bottom-nav button.primary{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .header-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
+  }
+  .bc-item { color: var(--text-muted); font-weight: 500; }
+  .bc-sep { color: var(--text-subtle); font-size: 11px; }
+  .bc-active { color: var(--text-primary); font-weight: 700; }
 
-  .video-screen{position:relative;background:linear-gradient(135deg,#20263a,#3a4568);border-radius:12px 12px 0 0;
-    aspect-ratio:16/8;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;}
-  .video-screen .badge{position:absolute;top:14px;left:14px;font-size:12px;background:rgba(0,0,0,.35);
-    padding:5px 10px;border-radius:8px;}
-  .video-screen .play-big{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.15);
-    border:1px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;
-    font-size:26px;cursor:pointer;}
-  .video-controls{padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
-  .video-controls button{border:none;background:#f2f4f8;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:14px;}
-  .video-controls input[type=range]{flex:1;accent-color:var(--primary);}
-  .video-controls .time{font-size:12px;color:var(--text-mute);min-width:80px;text-align:right;}
-  .video-note{font-size:11px;color:var(--text-mute);padding:6px 14px 0;}
+  .header-center {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-progress-text {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  .header-progress-bar {
+    width: 90px;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: var(--radius-full);
+    overflow: hidden;
+  }
+  .header-progress-fill {
+    height: 100%;
+    width: 100%;
+    background: var(--vlearn-blue);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+  }
 
-  /* ---------- Right AI panel ---------- */
-  .ai-panel{background:#fff;border-left:1px solid var(--border);display:flex;flex-direction:column;height:100%;}
-  .ai-header{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border);}
-  .ai-header .title{font-weight:700;flex:1;font-size:14px;}
-  .ai-header button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;}
-  .ai-header .icon{cursor:pointer;color:var(--text-mute);font-size:15px;}
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-btn {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+  }
+  .header-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+  .header-btn.primary {
+    border-color: var(--vlearn-blue-border);
+    color: var(--vlearn-blue);
+    background: #ffffff;
+  }
+  .header-btn.primary:hover {
+    background: var(--vlearn-blue-soft);
+  }
 
-  .checkpoint-bar{padding:8px 0 6px;border-bottom:1px solid var(--border);background:#fafbfd;}
-  .checkpoint-bar .cb-label{font-size:10px;font-weight:700;color:var(--text-mute);letter-spacing:.04em;margin-bottom:6px;padding:0 14px;}
-  .cb-track{display:flex;align-items:flex-start;padding:0 16px;}
-  .cb-node{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;cursor:default;}
-  .cb-dot-row{height:16px;display:flex;align-items:center;justify-content:center;}
-  .cb-dot{width:12px;height:12px;border-radius:50%;background:#b9c6f0;transition:.15s;}
-  .cb-caption{margin-top:4px;font-size:10px;font-weight:600;color:var(--text-mute);white-space:nowrap;}
-  .cb-node.viewing .cb-dot{background:var(--primary);box-shadow:0 0 0 4px #dde6ff;}
-  .cb-node.viewing .cb-caption{color:var(--primary-dark);font-weight:700;}
-  .cb-node.pass .cb-dot{background:var(--green);}
-  .cb-node.fail .cb-dot{background:var(--orange);}
-  .cb-connector{flex:1 1 20px;height:16px;display:flex;align-items:center;}
-  .cb-connector i{display:block;height:3px;width:100%;background:#1c1f26;border-radius:2px;}
-  .cb-connector.done i{background:var(--green);}
-  .cb-connector.final{flex:0 0 30px;}
-  .cb-arrow{width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;
-    border-left:8px solid #1c1f26;margin-left:-2px;flex:none;}
+  .notif-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-full);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s;
+  }
+  .notif-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+  .notif-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 6px;
+    height: 6px;
+    background: var(--vlearn-red);
+    border-radius: var(--radius-full);
+  }
 
-  .chat-area{flex:1;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;}
-  .msg{display:flex;gap:10px;max-width:100%;}
-  .msg .av{width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;}
-  .msg.system .av{background:#eef1f6;}
-  .msg.peer .av{background:#fef4d8;}
-  .msg.user .av{background:#dbe4ff;}
-  .msg.evaluator .av{background:#eef1f6;}
-  .msg.coach .av{background:#e6f4ea;}
-  .msg .bubble{background:#f4f5f8;border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.55;}
-  .msg.user{flex-direction:row-reverse;}
-  .msg.user .bubble{background:var(--primary);color:#fff;}
-  .msg .name{font-size:11px;font-weight:700;color:var(--text-mute);margin-bottom:3px;}
-  .msg.user .name{text-align:right;color:#c9d6ff;}
-  .msg.evaluator .bubble{font-style:italic;color:var(--text-mute);background:#fff;border:1px dashed var(--border);}
-  .msg.coach .bubble{background:var(--green-bg);border:1px solid #cdeedb;}
-  .msg.coach.hint .bubble{background:var(--orange-bg);border:1px solid #f4dfb8;}
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    background: #e0f2fe;
+    color: var(--vlearn-blue);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #bae6fd;
+    cursor: pointer;
+  }
 
-  .start-card{margin:0 16px 12px;padding:14px;border:1px solid var(--border);border-radius:12px;background:#fafbfd;text-align:center;}
-  .start-card p{font-size:12.5px;color:var(--text-mute);margin:0 0 10px;}
-  .start-btn{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:13.5px;
-    font-weight:700;cursor:pointer;width:100%;}
-  .start-btn:disabled{opacity:.5;cursor:not-allowed;}
-  .mock-note{font-size:10.5px;color:var(--text-mute);text-align:center;padding:4px 16px 0;}
+  /* ==========================================================================
+     2. GLOBAL APP VIEWPORT (Fixed 100vh - 64px)
+     ========================================================================== */
+  .app-viewport {
+    height: calc(100vh - 64px);
+    width: 100vw;
+    display: flex;
+    overflow: hidden;
+  }
 
-  .report-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff;}
-  .report-card h4{margin:0 0 8px;font-size:13.5px;}
-  .report-card table{width:100%;border-collapse:collapse;font-size:12px;}
-  .report-card td,.report-card th{padding:6px 4px;border-bottom:1px solid var(--border);text-align:left;}
-  .report-score{font-size:26px;font-weight:800;color:var(--primary);text-align:center;margin:4px 0;}
+  /* ==========================================================================
+     3. LEFT LESSON SIDEBAR (256px)
+     ========================================================================== */
+  .lesson-sidebar {
+    width: 256px;
+    flex: 0 0 256px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    z-index: 20;
+  }
 
-  .attempt-tag{display:inline-block;font-size:11px;color:var(--text-mute);background:#eee;padding:2px 8px;border-radius:99px;margin-bottom:6px;}
+  .sidebar-header {
+    height: 48px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .sidebar-close-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-subtle);
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+  }
+  .sidebar-close-btn:hover { color: var(--text-primary); }
 
-  .quick-test-bar{display:flex;gap:8px;padding:0 14px 8px;}
-  .quick-test-bar button{flex:1;font-size:11px;font-weight:600;padding:7px 8px;border-radius:8px;
-    border:1px solid var(--border);background:#fff;cursor:pointer;}
-  .quick-test-bar button.correct{color:var(--green);border-color:#bfe6cf;}
-  .quick-test-bar button.wrong{color:var(--orange);border-color:#f3ddb0;}
-  .quick-test-bar button:disabled{opacity:.4;cursor:not-allowed;}
+  .sidebar-group {
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .group-header {
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+  }
+  .group-header:hover { color: var(--vlearn-blue); }
+  .group-header .chev { font-size: 11px; color: var(--text-muted); transition: transform 0.15s ease; }
+  .group-header.collapsed .chev { transform: rotate(-90deg); }
 
-  .chat-input-bar{border-top:1px solid var(--border);padding:10px 14px;display:flex;gap:8px;align-items:center;}
-  .chat-input-bar input{flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;}
-  .chat-input-bar input:disabled{background:#f2f4f8;color:#9aa0ab;}
-  .chat-input-bar button{border:none;background:var(--primary);color:#fff;width:36px;height:36px;border-radius:10px;
-    cursor:pointer;font-size:15px;}
-  .chat-input-bar button:disabled{background:#c7d1f0;cursor:not-allowed;}
-  .chat-hint{font-size:10.5px;color:var(--text-mute);padding:0 14px 8px;}
+  .nav-item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 8px;
+  }
+  .group-header.collapsed + .nav-item-list { display: none; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 10px;
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: var(--surface-hover); color: var(--text-primary); }
+  .nav-item .left-part {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nav-item svg { flex-shrink: 0; color: var(--text-muted); }
+
+  .nav-item.active {
+    background: var(--vlearn-blue-soft);
+    color: var(--vlearn-blue);
+    font-weight: 600;
+    border-left-color: var(--vlearn-blue);
+  }
+  .nav-item.active svg { color: var(--vlearn-blue); }
+
+  .nav-tag-badge {
+    font-size: 10px;
+    font-weight: 600;
+    background: #dbeafe;
+    color: var(--vlearn-blue);
+    padding: 1px 7px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+  }
+  .nav-time-badge {
+    font-size: 10.5px;
+    color: var(--text-subtle);
+    font-weight: 500;
+  }
+
+  .nav-item.muted {
+    color: var(--text-muted);
+  }
+
+  /* Quick Lesson Selector in Sidebar */
+  .sidebar-module-selector {
+    padding: 10px 14px;
+    margin: 8px;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .selector-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .lesson-select-dropdown {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* ==========================================================================
+     4. CENTER LEARNING VIEWER (Primary Surface: flex: 1)
+     ========================================================================== */
+  .learning-viewer {
+    flex: 1 1 0%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 20px;
+    background: var(--surface-subtle);
+    overflow: hidden;
+    gap: 12px;
+  }
+
+  .viewer-card {
+    flex: 1 1 0%;
+    min-height: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Viewer Toolbar */
+  .viewer-toolbar {
+    height: 48px;
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    flex: 0 0 48px;
+  }
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tool-icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .tool-icon-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+  .tool-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+  .zoom-indicator {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: var(--radius-sm);
+  }
+  .zoom-indicator:hover { background: var(--surface-hover); }
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .slide-counter-badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .slide-arrow-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+  .slide-arrow-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+  /* Slide Stage Area (Scrolls independently if slide is tall) */
+  .slide-stage-area {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-y: auto;
+    background: #ffffff;
+    padding: 36px 44px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .slide-grid-container {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 32px;
+    align-items: center;
+    min-height: 100%;
+  }
+
+  .slide-left-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .slide-eyebrow {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--vlearn-blue);
+  }
+  .slide-main-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #0b192c;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .slide-subtitle {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+  .slide-sub-points {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .slide-sub-points li {
+    font-size: 13.5px;
+    color: #334155;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .slide-sub-points li::before {
+    content: "•";
+    color: var(--vlearn-blue);
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .slide-meta-badge {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 16px;
+  }
+  .meta-brand {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--vlearn-blue);
+  }
+  .meta-brand span { color: var(--vlearn-red); }
+  .meta-phase {
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+
+  /* Slide Diagram Canvas (SVG/HTML Box on Right) */
+  .slide-diagram-canvas {
+    background: #fdfdfd;
+    border: 1px solid #f1f5f9;
+    border-radius: var(--radius-md);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  }
+
+  /* Slide Footer */
+  .viewer-footer {
+    height: 44px;
+    padding: 0 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--surface);
+    flex: 0 0 44px;
+  }
+  .footer-lecturer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Bottom Lesson Navigation Bar */
+  .bottom-nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 0 0 auto;
+  }
+  .btn-lesson-nav {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-primary);
+    transition: all 0.15s ease;
+  }
+  .btn-lesson-nav:hover:not(:disabled) { background: var(--surface-hover); }
+  .btn-lesson-nav:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-lesson-nav.primary {
+    background: var(--vlearn-blue);
+    color: #ffffff;
+    border-color: var(--vlearn-blue);
+  }
+  .btn-lesson-nav.primary:hover:not(:disabled) { background: var(--vlearn-blue-hover); }
+
+  /* ==========================================================================
+     5. RIGHT FEYNMAN AI PANEL (450px)
+     ========================================================================== */
+  .feynman-ai-panel {
+    width: 450px;
+    flex: 0 0 450px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* AI Header */
+  .ai-panel-header {
+    height: 60px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    flex: 0 0 60px;
+  }
+  .ai-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ai-avatar-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-md);
+    background: var(--vlearn-blue-soft);
+    color: var(--vlearn-blue);
+    border: 1px solid var(--vlearn-blue-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ai-title-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+  .ai-title-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .ai-subtitle-text {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .ai-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ai-action-btn {
+    height: 30px;
+    padding: 0 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+  }
+  .ai-action-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+  /* Checkpoint Timeline Progress Component (~75px) */
+  .checkpoint-timeline-box {
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    background: #ffffff;
+    flex: 0 0 auto;
+  }
+  .timeline-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .timeline-header-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .timeline-count-badge {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .timeline-track-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .timeline-line-bg {
+    position: absolute;
+    top: 9px;
+    left: 12px;
+    right: 12px;
+    height: 2px;
+    background: #e2e8f0;
+    z-index: 1;
+  }
+  .timeline-line-active {
+    position: absolute;
+    top: 9px;
+    left: 12px;
+    height: 2px;
+    background: var(--success);
+    z-index: 2;
+    transition: width 0.3s ease;
+  }
+
+  .timeline-node {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+  .timeline-node-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-full);
+    background: #ffffff;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+  }
+  .timeline-node.done .timeline-node-circle {
+    background: var(--success);
+    border-color: var(--success);
+    color: #ffffff;
+  }
+  .timeline-node.current .timeline-node-circle {
+    background: var(--vlearn-blue);
+    border-color: var(--vlearn-blue);
+    color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
+  }
+  .timeline-node-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    max-width: 100px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .timeline-node.current .timeline-node-label { color: var(--vlearn-blue); font-weight: 700; }
+  .timeline-node.done .timeline-node-label { color: var(--success); }
+
+  /* Chat Messages (ONLY THIS AREA SCROLLS) */
+  .chat-messages-area {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #ffffff;
+  }
+
+  .msg-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+  }
+
+  /* Bot / Feynman AI Row */
+  .msg-row.ai-partner {
+    align-items: flex-start;
+  }
+  .msg-avatar-ai {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
+    background: var(--vlearn-blue-soft);
+    color: var(--vlearn-blue);
+    border: 1px solid var(--vlearn-blue-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .msg-content-wrap {
+    display: flex;
+    flex-direction: column;
+    max-width: 86%;
+  }
+  .msg-header-meta {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .msg-header-meta .time { font-weight: 400; color: var(--text-subtle); }
+
+  .msg-bubble-ai {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+    border-radius: 12px 12px 12px 2px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  }
+  .msg-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .bubble-action-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-subtle);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 4px;
+    border-radius: var(--radius-sm);
+  }
+  .bubble-action-btn:hover { color: var(--text-primary); background: var(--surface-hover); }
+
+  /* User Row */
+  .msg-row.user {
+    justify-content: flex-end;
+  }
+  .msg-row.user .msg-content-wrap {
+    align-items: flex-end;
+    max-width: 82%;
+  }
+  .msg-bubble-user {
+    background: var(--vlearn-blue);
+    color: #ffffff;
+    border-radius: 12px 12px 2px 12px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    box-shadow: 0 1px 2px rgba(29, 78, 216, 0.15);
+    word-break: break-word;
+  }
+  .user-avatar-tag {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
+    background: #e0f2fe;
+    color: var(--vlearn-blue);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #bae6fd;
+    margin-top: 2px;
+  }
+
+  /* Coach / Feedback hint row */
+  .msg-bubble-coach {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .msg-bubble-coach.hint {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+  }
+
+  /* System Evaluator Status (NOT a chat bubble) */
+  .eval-status-container {
+    display: flex;
+    justify-content: center;
+    margin: 4px 0;
+  }
+  .eval-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 14px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-subtle);
+  }
+  .eval-status-pill.success {
+    background: var(--success-soft);
+    color: #166534;
+    border-color: var(--success-border);
+  }
+
+  /* Compact Mastery Report Card */
+  .report-compact-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    box-shadow: var(--shadow-card);
+    width: 100%;
+  }
+  .report-compact-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .report-compact-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .report-compact-score { font-size: 16px; font-weight: 800; color: var(--vlearn-blue); }
+  .report-compact-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    padding: 5px 0;
+    border-bottom: 1px solid #f8fafc;
+  }
+  .report-compact-row:last-child { border-bottom: none; }
+  .report-status-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--success);
+  }
+
+  /* Chat Composer (Permanently Fixed at Bottom: flex-shrink: 0) */
+  .chat-composer-box {
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    background: #ffffff;
+    padding: 10px 14px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .composer-input-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 8px 12px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .composer-input-card:focus-within {
+    border-color: var(--vlearn-blue);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.08);
+  }
+  .composer-textarea {
+    width: 100%;
+    min-height: 40px;
+    max-height: 100px;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    resize: none;
+    background: transparent;
+  }
+  .composer-textarea::placeholder { color: var(--text-subtle); }
+
+  .composer-card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .composer-attachments {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .attach-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px;
+    border-radius: var(--radius-sm);
+  }
+  .attach-btn:hover { color: var(--text-primary); }
+
+  .btn-send-msg {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--vlearn-blue);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn-send-msg:hover:not(:disabled) { background: var(--vlearn-blue-hover); }
+  .btn-send-msg:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+  .composer-caption {
+    font-size: 11px;
+    color: var(--text-subtle);
+    text-align: right;
+  }
+
+  /* Collapsible Demo Testing Tools Drawer */
+  .demo-tools-drawer {
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    background: #f8fafc;
+  }
+  .demo-tools-header {
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .demo-tools-header:hover { color: var(--text-primary); }
+  .demo-tools-body {
+    display: none;
+    padding: 0 14px 10px;
+    gap: 8px;
+  }
+  .demo-tools-body.open { display: flex; }
+  .quick-demo-btn {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.15s;
+  }
+  .quick-demo-btn.pass { color: var(--success); border-color: var(--success-border); }
+  .quick-demo-btn.pass:hover:not(:disabled) { background: var(--success-soft); }
+  .quick-demo-btn.fail { color: var(--warning); border-color: #fde68a; }
+  .quick-demo-btn.fail:hover:not(:disabled) { background: var(--warning-soft); }
+  .quick-demo-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Responsive styling */
+  @media (max-width: 1280px) {
+    .lesson-sidebar { width: 220px; flex: 0 0 220px; }
+    .feynman-ai-panel { width: 400px; flex: 0 0 400px; }
+    .slide-grid-container { grid-template-columns: 1fr; gap: 20px; }
+  }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="back">←</div>
-  <div class="crumb">Bài 2 · DAY02 — Transformer Architecture</div>
-  <div class="spacer"></div>
-  <div class="progress-wrap">0/25 bài <div class="progress-bar"><div id="courseProgress"></div></div></div>
-  <div class="pill-btn" onclick="document.querySelector('.chat-input-bar input')?.focus()">✨ Đặt câu hỏi với AI</div>
-  <div class="outline-btn">📩 Gửi yêu cầu</div>
-  <div class="avatar-round">HV</div>
-</div>
-
-<div class="app">
-  <!-- ===================== SIDEBAR ===================== -->
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">NỘI DUNG BÀI HỌC <span class="x" onclick="toggleSidebar()">✕</span></div>
-
-    <div class="sec-title" onclick="toggleSection('slidesList')">Slides <span class="chev">▾</span></div>
-    <div class="sec-list" id="slidesList">
-      <div class="nav-item active" onclick="openSlideFile()">📄 4-day02-lecture-slides <span class="tag">Đang học</span></div>
-      <div class="nav-item inert" title="Chưa cần cho mock CP2">📄 b2</div>
-      <div class="nav-item inert" title="Chưa cần cho mock CP2">📄 Day 02_ AI Product Lab</div>
+<!-- ==========================================================================
+     1. VLEARN TOPBAR
+     ========================================================================== -->
+<header class="vlearn-header">
+  <div class="header-left">
+    <button class="menu-toggle-btn" onclick="toggleSidebar()" title="Ẩn/Hiện Sidebar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </button>
+    <div class="brand-wrap">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGEAAAAZCAYAAAAhd0APAAALgklEQVR4nO1aeXRU1R3+7n3vTWbLZCEJIQESiMgWooBwcAELshQqqChYK7Vij3WlFdTWFalUEClarUVEUTmlLVWLiogsIspSDKsgASkSzEoSss1kmZm3/XruHchCQoCaPyryvTNZZu67y+/7Ld+9b0BECJeVUuHzL5D4uz1fhwor6b6/bGz3fuk8e3EA4KoDlStXI//xmYR2Ql5ZgG5/6gMUlla3V5fnLSQJRDaIc1S8sQzFf3j2OxNRWFFHNz+9CtlHKmEYRovPq2uCVFJR026EnxckMMZgin+iXChd9CaK5i34nw10vCZMk2Z9iD1HKsE1wLJbdqUbhJBufcepn2ckgHPYXIEwl6JoKHlxEcpeXnTORFTXh+n+P63HviPl0BwcnEdep8IWl223zwrOAzRYiDECZwQwG5rHidL5L6Ji+TtnTcTxQIimPLMOH2/Ph8PpgMI4uKKAqUorrQkWXchGJ6HKHzExjIFIYQSbASbnYIMuAw25Eqs3HaRxw3oztIGyQJDumLsGn+wthqKpIJlpOJgggrckQdi/NQ70shIqfvhJwRHQOQXpc37fYtzC2c8RKyhFbX0dUp96GIXciUdf24wQ15DZOQbz7x3Z5lz/b0kw/X6CZYLBgkocekwcOs16Ar9blo33dhRhfp1Ovxx7SauLq6gJ051zVmJt9lGoLidswwATKYhxkG2C7Ja5X2QikpZuDkdSMgsfryDrSCFCO/ch8ZZbyNOvV8O4RnEx1a9YCaXeQH2XLnAkdECgOIANXxYiqDrgDwTwPVZHBOgmuKohGJ+AfmvexUMr/4Pl2WVQPNGYsWQLlm442MJqFbVhmjjzX/j4i1yoLgVkhwEyYFthwAoBlg7LakmCUGNopWALeEYNRbC+DmZNHfw7dqMp6rbvBhefWTo6TroOjrhYRowDiihrBFX93gVBYySAMTCVo1aLQsorL2Pq4l34cHsZuMuJessCU9144NWtIFOn28c0RsSMFzcgO6cUqtcDsgyZfhhsMOnlwt1lCW4xqG0T7FYiQcB39XDk//lNOIihas0nSLnjZ/J9o7qajr32FlTdBPl8SJgwVr5vytwWGZPRmUlY+P5O2pJTiqAeRo9O0bhlzKXo3y2x2Y1Hiyto6Zp92JZTjJAeRsdYN24ddxmuu/yihnZF5QF6a91+BPxhTBmXhS27v8UXB4qxYNooJPicbO7fs6mmpg7XDEiHbVt4e/MRhEJhXJmVirsnXMZakgAGw+tE15kLMHd3Fd7bkgvudcubGZhM4KJWTF/0GThjdNvoLPbrl9bTP7d8C9XrhW2aYFwFSAjdiFE4WfIeeX8LnNgltgLfgEuZb3B/snZ/hWBODur35ZA7qy8LHjmKwK69cEdFwdmvLxydEmTHgkqR8hqIPw1KKmpp6ryPsPlIDYg4NCuIVTsL8G52EV6fPppGZKXI/krKqujGR1dgb4EfZJhgdhhMBdZty8O8B0bRXdcOkO0KymrwzDv7YYUNbPj6GA58XQyyCI/fPlSQgDnLtyNUXYtV2w7jeEUNyi0HmMLx7hd5qAva9ODNgxsMI22hxfhY5qLFmLufYfFHh6VhYZtQQVBsYdDIarnmwvTFWzDhyfdpyfrDcHgcQkzJ4itfigOcO2RagxoZVCquU8EA3obTxo//MXRmg+khlK5cLd+r3LgJUQ4O09bhG3EV9Go/nUylTEaDJWPwdJi5ZBN25YcQFaXhkckD8fbsGzAsMxWBEMPk2atQVFEn+0tOimOJKcnoEBeNufePxNPTxiA+zgfL48Vzb25tdCPbhkNh0JyE/YcL0CfViYlDukJVGKr8QRKiUPFqyC0uwaDMZNw3thfcUQxOrxsL3t+NsqrIeE0iAahSvfggOx9RHjcMOyQ9WJ5rRFxNRoMpdtbE8MneIigqh23octmyLSMwwam0rgqDTAzsmYqFv4mkjaZQuQKdn36zFjNkMHI1jmimIJCdDaOqigKffwaPy4mQz4eYkSPgiI1hJzeagucTxa3V/vx1YdqUUyI/HpQWi6EXx8A0dPxkSHfsyt0JBQy7vylFaofusv3S3w7Hjq9LYFgEB2fo3ysFW/aXooqAouO1lJroZZYQHGYQpmGgf3osls+cjGiXU+gR6IaITBNQFfTt2glLH5uIuGg384eJ3tmaC9MKoaAsgKQ4T3MSUjvGsD/eO5SmL/wUAZvD1E1ZPMXFBAknQ50AVaxaSpymWlMUSEGEyEGEnskevD5jLNITo1u4p6IwqMrpEhLgychgrl49SDlwGHphAYJ79iB4KBcOy0L0yBFwdu3c0KemcChysyn2JQz+uhDFeJzNxvTXh1Fdp8NiNrbuy8PYPXlgXAGzCarbAcMG8kr8De1nL/03/rbpKMI65Jg2t0GqClsRJwAR5xH7HMs0pBqcOLQP0pLjWGUgRKLeiRor1igUQ1K8TxIg7klP8kSOcSwLwbDZ6JRNJ3vTFd2YRxtBN81cAXjcUmLaJ6NBeLrs/8T6RBqQ+T9SZIW8ZRaDRUCXDlFYMesGdO8Ue5r8wKC0lY8AdJowHuW75sKlmyh6ZCY8hoEgcSRPGN+cUM6haBp0rsKhqTiVADlV4RpCDNgmbhqWgeH906DbhDivC8RV1NQGMTQzVbZ9aOGntGxjLpwehllTL0fvzjFYu/0bLP7oEMSZQqMCi+RUkXLjvS75TrwvMnZlTYg0TcSXAhJnNw0TsWGLumkZMJucGDQjQWDsoG5s2RPX0t0L1qLOFoUpwiyIg04SIOcgk5Cci8jJ4jIs4OKUGPz1sQltEBDJWMppS3MEccOuwjGvF2p9GPaxSrmjt1M6wp2RjqbgUqKqUBUFuSW1mL5wLYkoE14qovPWMf3RrVMsuqXG4quCMmw7kI/xQzKQlhKL7QeK8fmXeZjyo964KCVOzndfXrnIl9AYx9C+qfC6VOTk+cE1FSq35DgCmqrIv0VEaKdIY7E+sVcScxYO0AiStUQ4c9MztRYkCNxwZU9WE9Rp2gur5QJFiDERkkImSOOzRg9jlvxtM0KcBiyccS2yunds081lDJ1BTbrS05k7qw/Zm3fB4goMy4J31HA4kiKqqGHBogw5NKgODaWBEF5dtU8ulCsEPaBjYO80ZKTE4t7r++Gel9agKGDjxtkroXGSUe7SVHyenYs9WRmUHOdkV/RJRPahclQaUbhxznrYtoGKKguaJwpO6EiK9cjxnXJMJ2zo4llAi/kzRQgV+0RaOmFsRYHqkHIHxJS2SRC4bWQ/5tA0mvrsGigOJVKcxWDC85qkJCkObRuJTuDt2ZMxuGfyGcX6yYcZZ0LMyBEo3nEAzOMEXG50mTSpRRuxyBSvAkO4nxoFxqJkVIqZ2a4gnA6GWHcUm3JNJhLjvfT8ih345kgpgqEQ3FEqRg/phSd+PhSCANHfrF8MZ5V1Fn24Ix/QgxjSIwFT7uqDZ/+xHdGas2Fcn8eB7olOGELknJJaRYZIi9XQQSekRjeaOMalITXaCcUSEdWYCdiZjLFkTQ49/voWhJgIIeH5SiMH4mIWUtwci6ePxtWXpJ3VlvVYeS0ZpoGuyZEU0Bbq84sIQuoqCpzJSa22LygPyLzIxXnVSYOIWkU2Oie0FAYH88upNmQizuvARSnxrfZ5sKCSRMrITOsgP6+uDVGst3m9qfDXyaeGCbHeFn0c99cLLQmNMcT7IoVZPEcRIoFzhi6JEXV3ViQILF69lx58ZSMUrw+2JSIhUpAZs6EaQayb91MM7NF819kWisoCZBom0lJbN8APDW1XxxP41bhL2Jw7hwkBDEWxQGTKcO/sU7Bx/s3nRIAASel7wf7nRILAtAkD2D0TeoPbIaiqiY5uwsL7r0FWRuspoi3Ic6MzSNQfFM71mwFPvvEpdbh+Hm3dX3zhWxTUPt+2OKua0BTl/no6VFCOKzO7XnDldsI5k3ABaHf8F4WIOBe9O4NAAAAAAElFTkSuQmCC" alt="VLearn Logo" class="brand-logo-img" id="vlearnLogo">
     </div>
-
-    <div class="sec-title" onclick="toggleSection('videoList')">Videos <span class="chev">▾</span></div>
-    <div class="sec-list" id="videoList">
-      <div class="nav-item" onclick="selectVideo()">🎬 Transformer Architecture <span class="tag">3:00</span></div>
-    </div>
-
-    <div class="sec-title" onclick="toggleSection('labsList')">Day02-AI-Product-Labs <span class="chev">▾</span></div>
-    <div class="sec-list" id="labsList">
-      <div class="nav-item inert" title="Chưa cần cho mock CP2">1 · Xác định bài toán AI</div>
-      <div class="nav-item inert" title="Chưa cần cho mock CP2">2 · Deep-dive & Go/No-go</div>
+    <div class="header-divider"></div>
+    <div class="header-breadcrumb">
+      <span class="bc-item">Khóa học AI20k</span>
+      <span class="bc-sep">></span>
+      <span class="bc-item">L3-L4 - Khóa 4 Phase 1</span>
+      <span class="bc-sep">></span>
+      <span class="bc-active" id="topbarLessonTitle">Bài 2: Transformer Architecture</span>
     </div>
   </div>
 
-  <!-- ===================== MAIN PANEL ===================== -->
-  <div class="main">
+  <div class="header-center">
+    <div class="header-progress-wrap">
+      <span class="header-progress-text" id="progressText">3/3 hoàn thành</span>
+      <div class="header-progress-bar">
+        <div class="header-progress-fill" id="courseProgress" style="width: 100%;"></div>
+      </div>
+    </div>
+  </div>
 
-    <!-- SLIDE VIEW -->
-    <div id="slideView" class="card">
-      <div class="slide-toolbar">
-        <div class="g">▶ ✏️ ⬜ ◯</div>
-        <div class="g">🔍 100%</div>
-        <div class="spacer"></div>
-        <div class="nav">
-          <span onclick="prevSlide()" style="cursor:pointer">‹</span>
-          Slide <b id="slideNum">1</b>/3
-          <span onclick="nextSlide()" style="cursor:pointer">›</span>
+  <div class="header-right">
+    <button class="header-btn primary" onclick="document.getElementById('chatInput')?.focus()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+      <span>Đặt câu hỏi AI</span>
+    </button>
+    <button class="header-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Gửi phản hồi</span>
+    </button>
+    <button class="notif-btn" title="Thông báo">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      <span class="notif-badge"></span>
+    </button>
+    <div class="user-avatar" title="Học viên: Hoàng Vũ">HV</div>
+  </div>
+</header>
+
+<!-- ==========================================================================
+     2. GLOBAL VIEWPORT
+     ========================================================================== -->
+<div class="app-viewport">
+
+  <!-- ===================== LEFT LESSON SIDEBAR ===================== -->
+  <aside class="lesson-sidebar" id="lessonSidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">NỘI DUNG BÀI HỌC</span>
+      <button class="sidebar-close-btn" onclick="toggleSidebar()" title="Đóng">✕</button>
+    </div>
+
+    <!-- Quick Switcher to support all 3 mock lessons from vlearn-pack -->
+    <div class="sidebar-module-selector">
+      <div class="selector-label">
+        <span>Chọn bài giảng</span>
+        <span style="color:var(--vlearn-blue)">3 bài</span>
+      </div>
+      <select class="lesson-select-dropdown" id="lessonDropdown" onchange="switchLesson(this.value)">
+        <option value="lesson_02">Bài 2: Transformer Architecture</option>
+        <option value="lesson_01">Bài 1: Foundation & LLM Context</option>
+        <option value="lesson_03">Bài 3: Bài toán kinh doanh AI</option>
+      </select>
+    </div>
+
+    <!-- Section 1: Slides Bài Giảng -->
+    <div class="sidebar-group">
+      <div class="group-header" onclick="toggleSection('slidesSection', this)">
+        <span>Slides Bài Giảng</span>
+        <span class="chev">▾</span>
+      </div>
+      <div class="nav-item-list" id="slidesSection">
+        <div class="nav-item active" onclick="scrollToSlide(1)">
+          <div class="left-part">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span id="activeSlideFileName">4-day02-lecture-slides</span>
+          </div>
+          <span class="nav-tag-badge">Đang học</span>
+        </div>
+        <div class="nav-item muted" onclick="scrollToSlide(2)">
+          <div class="left-part">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>b2</span>
+          </div>
+        </div>
+        <div class="nav-item muted" onclick="scrollToSlide(3)">
+          <div class="left-part">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>Day 02_ AI Product Lab</span>
+          </div>
         </div>
       </div>
-      <div class="slide-scroll" id="slideScroll"></div>
-      <div class="reactions">
-        <button>👍 Thích</button>
-        <button>👎 Không thích</button>
-      </div>
-      <div class="slide-footer">
-        <span>Giảng viên: [Tên giảng viên]</span>
-        <span>AI in Action · Day 02</span>
-      </div>
     </div>
 
-    <!-- VIDEO VIEW -->
-    <div id="videoView" class="card" style="display:none;">
-      <div class="video-screen">
-        <div class="badge">Transformer Architecture · Day 02</div>
-        <div class="play-big" id="playBtnBig" onclick="toggleVideoPlay()">▶</div>
+    <!-- Section 2: Video Bài Giảng -->
+    <div class="sidebar-group">
+      <div class="group-header" onclick="toggleSection('videoSection', this)">
+        <span>Video Bài Giảng</span>
+        <span class="chev">▾</span>
       </div>
-      <div class="video-controls">
-        <button onclick="toggleVideoPlay()" id="playBtnSmall">▶</button>
-        <input type="range" id="videoScrubber" min="0" max="180" value="0" oninput="onScrub(this.value)">
-        <div class="time"><span id="timeNow">0:00</span> / 3:00</div>
-      </div>
-      <div class="video-note">⏱️ Bản mock: video chạy nhanh hơn thực tế (~12x) để tiện thao tác demo.</div>
-      <div class="reactions">
-        <button>👍 Thích · 0</button>
-        <button>👎 Không thích · 0</button>
+      <div class="nav-item-list" id="videoSection">
+        <div class="nav-item" onclick="showVideoModal()">
+          <div class="left-part">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span id="sidebarVideoTitle">Transformer Architecture</span>
+          </div>
+          <span class="nav-time-badge">3:00</span>
+        </div>
       </div>
     </div>
 
-    <div class="bottom-nav">
-      <button>‹ Bài trước</button>
-      <button class="primary">Đi tới bài tiếp theo ›</button>
+    <!-- Section 3: Bài Tập Thực Hành -->
+    <div class="sidebar-group">
+      <div class="group-header" onclick="toggleSection('exerciseSection', this)">
+        <span>Bài Tập Thực Hành</span>
+        <span class="chev">▾</span>
+      </div>
+      <div class="nav-item-list" id="exerciseSection">
+        <div class="nav-item muted">
+          <div class="left-part">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            <span>1 · Xác định bài toán AI</span>
+          </div>
+        </div>
+        <div class="nav-item muted">
+          <div class="left-part">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+            <span>2 · Deep-dive & Go/No-go</span>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </aside>
 
-  <!-- ===================== AI PANEL ===================== -->
-  <div class="ai-panel">
-    <div class="ai-header">
-      <span>✨</span>
-      <div class="title">Trợ giảng AI — Feynman Review</div>
-      <button onclick="location.reload()">＋ Chat mới</button>
-      <span class="icon">🕘</span>
-      <span class="icon">⧉</span>
-      <span class="icon">✕</span>
+  <!-- ===================== CENTER LEARNING VIEWER ===================== -->
+  <main class="learning-viewer">
+    <div class="viewer-card">
+      <!-- Toolbar -->
+      <div class="viewer-toolbar">
+        <div class="toolbar-left">
+          <button class="tool-icon-btn" title="Chọn đối tượng">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+          </button>
+          <button class="tool-icon-btn" title="Vẽ bút chì">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+          </button>
+          <button class="tool-icon-btn" title="Hình chữ nhật">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+          </button>
+          <button class="tool-icon-btn" title="Hình elip">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+          </button>
+          <div class="tool-divider"></div>
+          <div class="zoom-indicator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>100%</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+
+        <div class="toolbar-right">
+          <button class="slide-arrow-btn" onclick="prevSlide()" title="Slide trước">‹</button>
+          <span class="slide-counter-badge">Slide <span id="slideCurrentNum">1</span>/<span id="slideTotalNum">3</span></span>
+          <button class="slide-arrow-btn" onclick="nextSlide()" title="Slide sau">›</button>
+        </div>
+      </div>
+
+      <!-- Slide Main Stage -->
+      <div class="slide-stage-area" id="slideStage">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Footer Info -->
+      <div class="viewer-footer">
+        <div class="footer-lecturer">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Giảng viên: AI20k Core Team</span>
+        </div>
+        <div id="footerModuleTag">Module Deep Learning</div>
+      </div>
     </div>
 
-    <div class="checkpoint-bar">
-      <div class="cb-label">LESSON CHECKPOINTS</div>
-      <div class="cb-track" id="cbTrack"></div>
+    <!-- Bottom Lesson Navigation Controls -->
+    <div class="bottom-nav-bar">
+      <button class="btn-lesson-nav" id="btnPrevLesson" onclick="goToPrevLesson()">‹ Bài trước</button>
+      <button class="btn-lesson-nav primary" id="btnNextLesson" onclick="goToNextLesson()">Đi tới bài tiếp theo ›</button>
+    </div>
+  </main>
+
+  <!-- ===================== RIGHT FEYNMAN AI PANEL ===================== -->
+  <aside class="feynman-ai-panel">
+    <!-- AI Header -->
+    <div class="ai-panel-header">
+      <div class="ai-header-brand">
+        <div class="ai-avatar-icon">
+          <!-- Robot Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg>
+        </div>
+        <div class="ai-title-wrap">
+          <div class="ai-title-text">Feynman AI</div>
+          <div class="ai-subtitle-text">Bạn học & Trợ giảng phản biện</div>
+        </div>
+      </div>
+
+      <div class="ai-header-actions">
+        <button class="ai-action-btn" onclick="startReview()" title="Bắt đầu hội thoại mới">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Chat mới</span>
+        </button>
+        <button class="tool-icon-btn" title="Tùy chọn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      </div>
     </div>
 
-    <div class="chat-area" id="chatArea"></div>
-
-    <div id="startCardWrap"></div>
-
-    <div class="quick-test-bar">
-      <button class="correct" id="btnQuickCorrect" onclick="quickFill('correct')" disabled>✅ Điền câu trả lời đúng (test)</button>
-      <button class="wrong" id="btnQuickWrong" onclick="quickFill('wrong')" disabled>❌ Điền câu trả lời sai (test)</button>
+    <!-- Checkpoint Progress (~75px) -->
+    <div class="checkpoint-timeline-box">
+      <div class="timeline-top-row">
+        <span class="timeline-header-title">TIẾN TRÌNH BÀI HỌC</span>
+        <span class="timeline-count-badge" id="timelineCountText">3/3</span>
+      </div>
+      <div class="timeline-track-wrap" id="checkpointTimelineTrack">
+        <!-- Rendered dynamically -->
+      </div>
     </div>
 
-    <div class="chat-input-bar">
-      <input id="chatInput" type="text" placeholder="Bấm 'Bắt đầu ôn lại bài học' để luyện tập..." disabled
-             onkeydown="if(event.key==='Enter') handleSubmit();">
-      <button id="sendBtn" onclick="handleSubmit()" disabled>➤</button>
+    <!-- Chat Messages History (ONLY THIS AREA SCROLLS) -->
+    <div class="chat-messages-area" id="chatArea">
+      <!-- Chat bubbles inserted here -->
     </div>
-    <div class="chat-hint">Bản mock CP2 — chấm điểm bằng khớp từ khoá, sẽ thay bằng AI thật ở CP3.</div>
-  </div>
+
+    <!-- Chat Composer (Fixed at Bottom: flex-shrink: 0) -->
+    <div class="chat-composer-box">
+      <div class="composer-input-card">
+        <textarea class="composer-textarea" id="chatInput" placeholder="Giải thích theo cách hiểu của bạn..." rows="1" onkeydown="handleInputKeydown(event)"></textarea>
+        <div class="composer-card-bottom">
+          <div class="composer-attachments">
+            <button class="attach-btn" title="Đính kèm tệp">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <button class="attach-btn" title="Soạn công thức/code">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+            </button>
+            <button class="attach-btn" title="Đoạn trích">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </button>
+          </div>
+          <button class="btn-send-msg" id="sendBtn" onclick="handleSubmit()" title="Gửi lời giải thích">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="composer-caption">
+        Nhấn Enter để gửi · Shift + Enter để xuống dòng
+      </div>
+    </div>
+
+    <!-- Collapsible Demo Testing Controls Drawer -->
+    <div class="demo-tools-drawer">
+      <div class="demo-tools-header" onclick="toggleDemoDrawer()">
+        <span>&lt;/&gt; Demo tools (Dành cho testing)</span>
+        <span id="demoDrawerArrow">▾</span>
+      </div>
+      <div class="demo-tools-body" id="demoDrawerBody">
+        <button class="quick-demo-btn pass" id="btnQuickCorrect" onclick="quickFill('correct')" title="Tự động điền câu giải thích chuẩn và gửi">
+          <span>✓</span> Thử trả lời đúng (Pass)
+        </button>
+        <button class="quick-demo-btn fail" id="btnQuickWrong" onclick="quickFill('wrong')" title="Tự động điền câu giải thích sai và gửi">
+          <span>⚠️</span> Thử trả lời sai (Fail)
+        </button>
+      </div>
+    </div>
+  </aside>
+
 </div>
 
+<!-- ==========================================================================
+     3. CLIENT-SIDE LOGIC & REAL MOCKED LESSON DATA (vlearn-pack)
+     ========================================================================== -->
 <script>
-/* ---------------- Data ---------------- */
-const CHECKPOINTS = [
+const MOCK_LESSONS = [
   {
-    id:'cp1', title:'Self-Attention', short:'CP1',
-    desc:'Mỗi từ tính điểm liên quan với các từ khác qua Query, Key, Value.',
-    slide:1,
-    videoRange:[0,60],
-    slideTitle:'Self-Attention',
-    slideKicker:'KHÁI NIỆM · QUERY, KEY, VALUE',
-    slideBullets:[
-      'Mỗi từ trong câu được biểu diễn bằng 3 vector: Query (Q), Key (K), Value (V).',
-      'Điểm attention = độ tương đồng giữa Query của từ này với Key của các từ khác.',
-      'Kết quả là tổng có trọng số của các Value — giúp mỗi từ "hiểu" ngữ cảnh xung quanh.'
+    id: "lesson_02",
+    short_title: "Bài 2: Transformer Architecture",
+    topic: "Day 1 (Chiều) — Transformer Architecture & Attention Mechanism",
+    course: "AI20k Khóa 4 - Module Deep Learning",
+    duration: "55 phút",
+    lecture_file: "4-day02-lecture-slides",
+    video_title: "Transformer Architecture",
+    slides: [
+      {
+        slide: 1,
+        eyebrow: "Bài 2",
+        title: "Transformer Architecture",
+        subtitle: "From Self-Attention to Large Language Models",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L3-L4 - Khóa 4 Phase 1 · AI in Action · Module Deep Learning",
+        diagramType: "transformer_block",
+        bullets: [
+          "Cơ chế Self-Attention: Cho phép mỗi từ chú ý đến toàn bộ các từ khác trong câu cùng lúc.",
+          "Bộ ba Query, Key, Value: Q (từ đang tìm kiếm gì), K (nhãn so khớp độ liên quan), V (nội dung thông tin lấy về).",
+          "Tích vô hướng tỉ lệ: Chia cho căn bậc hai d_k để tránh triệt tiêu gradient khi số chiều lớn."
+        ]
+      },
+      {
+        slide: 2,
+        eyebrow: "Bài 2 · Checkpoint 2",
+        title: "Multi-Head Attention",
+        subtitle: "Chiếu đa không gian biểu diễn (Subspace Projections)",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L3-L4 - Khóa 4 Phase 1 · AI in Action · Module Deep Learning",
+        diagramType: "multi_head",
+        bullets: [
+          "Tránh hiện tượng trung bình hóa: 1 Head duy nhất sẽ làm lu mờ các mối quan hệ cú pháp và đại từ.",
+          "8 Heads song song: Mỗi head tập trung vào một khía cạnh (ngữ pháp, đại từ chỉ định, liên hệ từ xa).",
+          "Ghép nối Concat + W_O: Ghép các head lại và nhân ma trận tuyến tính để giữ nguyên số chiều d_model."
+        ]
+      },
+      {
+        slide: 3,
+        eyebrow: "Bài 2 · Checkpoint 3",
+        title: "Positional Encoding",
+        subtitle: "Bổ sung thông tin vị trí cho dữ liệu chuỗi trong xử lý song song",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L3-L4 - Khóa 4 Phase 1 · AI in Action · Module Deep Learning",
+        diagramType: "positional_encoding",
+        bullets: [
+          "Bất biến hoán vị: Self-Attention xử lý tất cả token cùng lúc, không tự biết từ nào đứng trước hay sau.",
+          "Cộng trực tiếp vào Embedding: Vector vị trí được cộng trực tiếp vào word embedding vector.",
+          "Sóng hình sin/cosin: Tần số bước sóng khác nhau giúp mô hình học khoảng cách tương đối giữa các từ."
+        ]
+      }
     ],
-    botQuestion:'Tớ nghĩ Self-Attention là mô hình tự nhìn lại chính nó để chép y nguyên câu đầu vào thôi, đúng không nhỉ?',
-    conceptGroups:[
-      ['query'],
-      ['key'],
-      ['value'],
-      ['trọng số','weight'],
-      ['liên quan','mức độ liên quan','ngữ cảnh','context']
-    ],
-    hints:[
-      'Gợi ý: Query dùng để hỏi, Key dùng để so khớp, Value là phần nội dung được lấy ra. Ba thứ này phối hợp thế nào để ra một con số "liên quan"?',
-      'Gợi ý thêm: điểm attention = độ tương đồng giữa Query của từ này với Key của từ khác, dùng điểm đó làm trọng số để cộng gộp các Value lại.'
-    ],
-    correction:'Self-Attention giúp mỗi từ "nhìn" sang tất cả từ khác trong câu để tính mức độ liên quan qua Query–Key, rồi lấy tổng có trọng số của Value để hiểu ngữ cảnh — không phải chỉ chép lại câu.',
-    sampleCorrect:'Self-attention dùng Query so khớp với Key để tính điểm liên quan, rồi lấy trọng số nhân với Value để hiểu ngữ cảnh của câu.',
-    sampleWrong:'Nó kiểu như model tự nhìn lại câu để hiểu thôi, không có gì đặc biệt đâu.',
-    deepDive:'Cụ thể hơn: với câu "The cat sat", từ "sat" tạo Query rồi so với Key của "cat" và "The" để tính điểm tương đồng (tích vô hướng, chia căn bậc hai của d_k), sau đó Softmax các điểm đó thành trọng số để cộng gộp Value tương ứng — kết quả "sat" giờ mang thông tin ngữ cảnh từ cả câu, không chỉ bản thân nó.'
+    checkpoints: [
+      {
+        id: "cp1_self_attention",
+        short: "CP1",
+        label: "Self-Attention",
+        title: "Self-Attention & Bộ ba Q, K, V",
+        slide: 1,
+        botQuestion: "Chào bạn! Chúng ta đang ở checkpoint **CP1 - Self-Attention**.\n\nTheo bạn, Self-Attention là gì? Hãy giải thích bằng cách hiểu của bạn nhé!",
+        hints: [
+          "Gợi ý: Query nhân với Key chỉ mới tạo ra 'Attention Score'. Vậy điểm số này được chuẩn hoá qua hàm gì và nhân với vector nào để lấy nội dung?",
+          "Gợi ý thêm: Cần nhắc đến: (1) Query tìm kiếm, Key khớp độ liên quan, (2) Softmax tạo trọng số, (3) Nhân với Value."
+        ],
+        correction: "Query nhân Key cho ra Attention Score (độ liên quan), sau đó qua Softmax thành trọng số xác suất, rồi mới nhân với Value để lấy ra tổng hợp thông tin ngữ cảnh.",
+        sampleCorrect: "Tôi nghĩ Self-Attention là cơ chế giúp mô hình tự tập trung vào các từ quan trọng trong câu, bằng cách tính độ tương quan giữa các từ với nhau qua Query và Key, rồi qua Softmax nhân với Value để lấy thông tin.",
+        sampleWrong: "Nó chỉ là hàm tìm kiếm từ khóa trên Google thôi chứ không có phép tính toán ma trận gì phức tạp cả."
+      },
+      {
+        id: "cp2_multi_head_attention",
+        short: "CP2",
+        label: "Multi-Head Attention",
+        title: "Multi-Head Attention",
+        slide: 2,
+        botQuestion: "Ý tưởng của bạn khá tốt! 👍\n\nVậy theo bạn, làm thế nào mô hình biết từ nào quan trọng hơn các từ khác? Và tại sao cần chia nhỏ thành nhiều Head (Multi-Head) thay vì 1 Head to?",
+        hints: [
+          "Gợi ý: Nếu một từ vừa có quan hệ ngữ pháp vừa có quan hệ đại từ ('nó' trỏ về ai), 1 Head có thể bị trung bình hóa.",
+          "Gợi ý thêm: Nhiều Head cho phép chiếu vector vào các không gian con (subspaces) khác nhau."
+        ],
+        correction: "1 Head sẽ làm các mối quan hệ ngữ nghĩa bị trung bình hóa. Multi-Head chia thành nhiều không gian con (subspaces) để học song song nhiều khía cạnh (ngữ pháp, đại từ, ngữ cảnh xa).",
+        sampleCorrect: "Vì nếu dùng 1 head thì các mối quan hệ khác nhau sẽ bị tính trung bình và triệt tiêu nhau. Multi-Head cho phép chiếu vào nhiều subspaces khác nhau để cùng lúc nhìn được nhiều góc độ như ngữ pháp, đại từ, rồi ghép lại bằng concat.",
+        sampleWrong: "Chia nhiều head chỉ để chạy nhanh hơn trên nhiều máy tính thôi chứ ý nghĩa toán học hoàn toàn giống hệt 1 head."
+      },
+      {
+        id: "cp3_positional_encoding",
+        short: "CP3",
+        label: "Positional Encoding",
+        title: "Positional Encoding",
+        slide: 3,
+        botQuestion: "Chính xác! Câu hỏi cuối cùng: Tại sao Transformer lại cần Positional Encoding cộng vào embedding, trong khi RNN ngày xưa không cần?",
+        hints: [
+          "Gợi ý: Transformer xử lý tất cả từ CÙNG LÚC (song song), không đọc tuần tự như RNN.",
+          "Gợi ý thêm: Positional Encoding cộng thêm vector sin/cos vào embedding để mã hóa tọa độ vị trí."
+        ],
+        correction: "Vì Transformer xử lý các từ song song nên tự nó không biết thứ tự (bất biến hoán vị). Positional Encoding cộng thêm thông tin vị trí vào embedding của từng từ để mô hình phân biệt thứ tự ngữ pháp.",
+        sampleCorrect: "Vì Transformer xử lý song song tất cả các từ cùng lúc nên bất biến hoán vị, không tự biết thứ tự trước sau như RNN. Do đó cần cộng thêm vector Positional Encoding vào word embedding để mã hóa vị trí và khoảng cách bằng hàm sin cos.",
+        sampleWrong: "Transformer đọc từ trái sang phải như người nên nó đã biết vị trí rồi, cộng thêm chỉ để cho đẹp công thức."
+      }
+    ]
   },
   {
-    id:'cp2', title:'Multi-Head Attention', short:'CP2',
-    desc:'Nhiều Head học nhiều góc nhìn quan hệ khác nhau, chạy song song rồi ghép lại.',
-    slide:2,
-    videoRange:[60,120],
-    slideTitle:'Multi-Head Attention',
-    slideKicker:'VÌ SAO CẦN NHIỀU HEAD',
-    slideBullets:[
-      'Mỗi Head học một "góc nhìn" khác nhau về quan hệ giữa các từ (ngữ pháp, ngữ nghĩa, đại từ...).',
-      'Các Head chạy song song trên các không gian con (subspace) khác nhau.',
-      'Kết quả các Head được ghép (concat) lại rồi chiếu tuyến tính để ra kết quả cuối.'
+    id: "lesson_01",
+    short_title: "Bài 1: Foundation & LLM Context",
+    topic: "Day 1 — Foundation: Cách LLM hoạt động & Quản lý Context",
+    course: "AI20k Khóa 4 - Module Foundation",
+    duration: "45 phút",
+    lecture_file: "4-day01-lecture-slides",
+    video_title: "Foundation & LLM Context",
+    slides: [
+      {
+        slide: 1,
+        eyebrow: "Bài 1",
+        title: "AI & Large Language Models",
+        subtitle: "Bức tranh tổng quan AI, Machine Learning & GenAI",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L1-L2 - Khóa 4 Phase 1 · Foundation Module",
+        diagramType: "ai_hierarchy",
+        bullets: [
+          "AI (1956) là tập cha lớn nhất mô phỏng trí thông minh con người.",
+          "Machine Learning: Học quy luật từ dữ liệu thay vì viết luật bằng tay.",
+          "Deep Learning & LLM: Mạng nơ-ron sâu sinh văn bản theo xác suất token."
+        ]
+      },
+      {
+        slide: 2,
+        eyebrow: "Bài 1 · Checkpoint 2",
+        title: "Next-Token Prediction",
+        subtitle: "Bản chất cỗ máy xác suất & Hiện tượng ảo giác (Hallucination)",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L1-L2 - Khóa 4 Phase 1 · Foundation Module",
+        diagramType: "next_token",
+        bullets: [
+          "Vòng lặp tự hồi quy (Autoregressive): Dự đoán token tiếp theo có xác suất cao nhất.",
+          "Nguồn gốc Ảo giác: Mô hình ưu tiên ghép từ thuận tai, không có ý thức kiểm chứng sự thật."
+        ]
+      },
+      {
+        slide: 3,
+        eyebrow: "Bài 1 · Checkpoint 3",
+        title: "Context Window & Context Rot",
+        subtitle: "Quản lý cửa sổ ngữ cảnh và hiện tượng phân tán attention",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "L1-L2 - Khóa 4 Phase 1 · Foundation Module",
+        diagramType: "context_rot",
+        bullets: [
+          "Context Window là 'bàn làm việc': Càng nhồi nhét quá tải thì càng dễ gặp Context Rot.",
+          "Nguyên tắc Less is More: Chọn lọc dữ liệu tinh gọn, ghi log/plan từng bước."
+        ]
+      }
     ],
-    botQuestion:'Nếu 1 Head đã tính được attention rồi thì cần gì phải chia thành 8 Head cho phức tạp, làm 1 Head thật kỹ không tốt hơn à?',
-    conceptGroups:[
-      ['nhiều góc nhìn','góc nhìn khác','nhiều khía cạnh','khía cạnh khác'],
-      ['không gian con','subspace'],
-      ['song song','parallel'],
-      ['ghép','concat','nối'],
-      ['đa dạng','nhiều loại quan hệ','nhiều mối quan hệ']
-    ],
-    hints:[
-      'Gợi ý: mỗi Head có thể học một "góc nhìn" khác nhau về quan hệ giữa các từ — thử nghĩ ví dụ quan hệ ngữ pháp khác quan hệ ngữ nghĩa.',
-      'Gợi ý thêm: giống nhiều chuyên gia cùng soi một bức tranh, mỗi người chú ý một góc độ riêng (không gian con), rồi ghép (concat) lại mới đầy đủ.'
-    ],
-    correction:'Multi-Head cho phép mô hình học nhiều loại quan hệ khác nhau song song — mỗi Head là một không gian con (subspace) riêng — sau đó ghép lại (concat) và chiếu tuyến tính. Một Head đơn không đủ đa dạng góc nhìn này.',
-    sampleCorrect:'Multi-head chia thành nhiều không gian con chạy song song, mỗi head học một góc nhìn khác để bắt đa dạng mối quan hệ, rồi ghép lại.',
-    sampleWrong:'Chia nhiều Head chỉ để cho model trông phức tạp hơn thôi, chứ không có tác dụng gì khác.',
-    deepDive:'Cụ thể hơn: nếu chỉ 1 Head, mô hình phải nén mọi loại quan hệ (ngữ pháp, đối tượng, đại từ...) vào cùng một phép chiếu Q/K/V — dễ bị "trung bình hoá" mất chi tiết. Multi-Head chia d_model thành h phần nhỏ d_k = d_model/h, mỗi phần học riêng một loại quan hệ, cuối cùng nối (concat) rồi chiếu tuyến tính để tổng hợp lại đầy đủ.'
+    checkpoints: [
+      {
+        id: "cp1_next_token_hallucination",
+        short: "CP1",
+        label: "Next-Token & Ảo giác",
+        title: "Next-Token Prediction & Ảo giác",
+        slide: 2,
+        botQuestion: "Chào bạn! Tại sao ChatGPT trả lời câu cú rất mượt mà nhưng thỉnh thoảng lại tự tin nói sai sự thật (ảo giác - hallucination) vậy cậu?",
+        hints: ["Gợi ý: LLM chọn từ tiếp theo dựa trên cái gì? Phân phối xác suất hay sự thật khách quan?"],
+        correction: "LLM chỉ là cỗ máy dự đoán token tiếp theo theo xác suất thống kê. Vì chỉ tối ưu tính trôi chảy ngôn ngữ nên có thể tự tin sinh ra thông tin ảo giác.",
+        sampleCorrect: "LLM bản chất là cỗ máy dự đoán next-token dựa trên phân phối xác suất thống kê. Nó không có ý thức mà chỉ chọn từ thuận tai nhất nên có thể sinh ra ảo giác dù hành văn rất trôi chảy.",
+        sampleWrong: "Do ChatGPT bị lỗi bộ nhớ RAM tạm thời nên nó cố tình nói dối trêu người dùng."
+      },
+      {
+        id: "cp2_context_window_rot",
+        short: "CP2",
+        label: "Context Window",
+        title: "Context Window & Context Rot",
+        slide: 3,
+        botQuestion: "Context Window 1 triệu token có phải càng nhồi nhiều sách vào là AI càng trả lời thông minh không?",
+        hints: ["Gợi ý: Nhắc đến hiện tượng Context Rot và attention bị phân tán chú ý sai chỗ."],
+        correction: "Khi nhồi quá nhiều token, mô hình gặp hiện tượng Context Rot (phân tán chú ý, dễ quên). Cần quản lý context tinh gọn, chất lượng.",
+        sampleCorrect: "Không đúng, nhồi quá nhiều dữ liệu sẽ gây hiện tượng Context Rot khiến attention bị phân tán, chú ý sai chỗ và quên thông tin. Cần quản lý context tinh gọn và chắt lọc.",
+        sampleWrong: "Đúng rồi, cứ nhồi càng nhiều triệu token thì AI càng học thuộc lòng và trả lời chuẩn xác 100%."
+      },
+      {
+        id: "cp3_attention_vs_rnn",
+        short: "CP3",
+        label: "Attention vs RNN",
+        title: "Attention song song vs Bottleneck RNN",
+        slide: 3,
+        botQuestion: "Tại sao cơ chế Attention trong Transformer lại vượt trội hoàn toàn so với mạng RNN tuần tự ngày xưa?",
+        hints: ["Gợi ý: RNN đọc tuần tự từng chữ bị nghẽn câu dài. Transformer nhìn toàn câu và chạy song song trên GPU."],
+        correction: "RNN đọc tuần tự từng chữ nên bị nghẽn cổ chai và quên ngữ cảnh câu dài. Transformer dùng Attention nhìn toàn bộ câu cùng lúc và xử lý song song trên GPU.",
+        sampleCorrect: "RNN đọc tuần tự từng chữ nên câu dài sẽ quên thông tin phía trước và không song song hóa được. Transformer dùng Attention cho phép nhìn toàn bộ câu cùng lúc và tận dụng tính toán song song trên GPU.",
+        sampleWrong: "Do Transformer có tên nghe hiện đại hơn thôi chứ bản chất toán học không khác gì RNN."
+      }
+    ]
   },
   {
-    id:'cp3', title:'Positional Encoding', short:'CP3',
-    desc:'Cộng thêm vector vị trí vào embedding vì Transformer xử lý các từ song song.',
-    slide:3,
-    videoRange:[120,180],
-    slideTitle:'Positional Encoding',
-    slideKicker:'VAI TRÒ TRONG DỮ LIỆU CHUỖI',
-    slideBullets:[
-      'Transformer xử lý tất cả các từ song song — khác với RNN đọc tuần tự.',
-      'Vì vậy bản thân mô hình không biết thứ tự các từ trong câu.',
-      'Positional Encoding là vector cộng thêm vào embedding để mã hoá vị trí của từng từ.'
+    id: "lesson_03",
+    short_title: "Bài 3: Bài toán kinh doanh AI",
+    topic: "Day 2 (Sáng) — Xác định bài toán kinh doanh cho AI (Problem Definition)",
+    course: "AI20k Khóa 4 - Module AI Product & Business",
+    duration: "40 phút",
+    lecture_file: "4-day03-ai-product",
+    video_title: "AI Product & Business Problem",
+    slides: [
+      {
+        slide: 1,
+        eyebrow: "Bài 3",
+        title: "Xác Định Bài Toán AI",
+        subtitle: "Tránh bẫy Jumping to Solution trong doanh nghiệp",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "Day 2 Sáng · AI Product Lab",
+        diagramType: "five_whys",
+        bullets: [
+          "Bẫy phổ biến: Nhảy thẳng vào làm AI Chatbot trước khi hiểu rõ nỗi đau thực tế.",
+          "70% thành bại của dự án AI đến từ con người và quy trình vận hành.",
+          "Kỹ thuật 5 Whys: Đào sâu tìm nguyên nhân gốc rễ trước khi chọn công nghệ."
+        ]
+      },
+      {
+        slide: 2,
+        eyebrow: "Bài 3 · Checkpoint 2",
+        title: "Product vs Project Mindset",
+        subtitle: "Tư duy sản phẩm lấy người dùng làm trung tâm (User-centered)",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "Day 2 Sáng · AI Product Lab",
+        diagramType: "pm_matrix",
+        bullets: [
+          "Project Manager: Hoàn thành đúng hạn và ngân sách theo spec có sẵn.",
+          "Product Manager: Tự tìm bài toán đáng làm, thấu hiểu khách hàng.",
+          "Đặc thù AI: Tính xác suất, kỳ vọng đổi nhanh, đòi hỏi đo lường liên tục."
+        ]
+      },
+      {
+        slide: 3,
+        eyebrow: "Bài 3 · Checkpoint 3",
+        title: "Chiến Lược Dogfooding",
+        subtitle: "Tự dùng chính sản phẩm để cảm nhận nỗi đau thực tế",
+        metaBrand: "VLearn AI20k",
+        metaPhase: "Day 2 Sáng · AI Product Lab",
+        diagramType: "dogfooding",
+        bullets: [
+          "Dogfooding: Team phát triển tự là user đầu tiên sử dụng sản phẩm hàng ngày.",
+          "Rút ngắn feedback loop: Cảm nhận nỗi đau trực tiếp, phát hiện lỗi nhanh chóng."
+        ]
+      }
     ],
-    botQuestion:'Transformer đọc câu song song hết một lượt, không tuần tự như RNN — vậy chắc không cần quan tâm gì đến vị trí từ đâu nhỉ?',
-    conceptGroups:[
-      ['thứ tự','vị trí'],
-      ['song song','không tuần tự'],
-      ['cộng vào embedding','cộng thêm vào','thêm vào vector','thêm vào embedding'],
-      ['mã hoá vị trí','position encoding','positional encoding'],
-      ['trước sau','đứng trước','trình tự']
-    ],
-    hints:[
-      'Gợi ý: Transformer xử lý tất cả từ CÙNG LÚC (song song), không đọc tuần tự như RNN — vậy làm sao mô hình biết từ nào đứng trước, từ nào đứng sau?',
-      'Gợi ý thêm: Positional Encoding là một vector được cộng thêm vào embedding của mỗi từ, để mã hoá vị trí của từ đó trong câu.'
-    ],
-    correction:'Vì Transformer xử lý các từ song song nên tự nó không biết thứ tự. Positional Encoding cộng thêm thông tin vị trí vào embedding của từng từ, để mô hình biết từ nào đứng trước/sau.',
-    sampleCorrect:'Vì Transformer xử lý song song nên không biết thứ tự, phải cộng thêm vào embedding một vector mã hoá vị trí để biết từ nào đứng trước.',
-    sampleWrong:'Nó giúp mô hình chạy nhanh hơn thôi, không liên quan gì đến thứ tự cả.',
-    deepDive:'Cụ thể hơn: Positional Encoding thường dùng hàm sin/cos ở các tần số khác nhau theo từng chiều của vector, để mỗi vị trí có một "dấu vân tay" riêng và mô hình suy ra được khoảng cách tương đối giữa hai vị trí chỉ từ phép cộng vector — nếu bỏ bước này, câu "A đánh B" và "B đánh A" sẽ giống hệt nhau với mô hình.'
+    checkpoints: [
+      {
+        id: "cp1_jumping_to_solution",
+        short: "CP1",
+        label: "Jumping to Solution",
+        title: "Tránh bẫy Jumping to Solution",
+        slide: 1,
+        botQuestion: "Sếp bảo công ty phải làm ngay một AI Chatbot support, tớ định code luôn bằng LangChain. Cậu thấy đã chuẩn chưa?",
+        hints: ["Gợi ý: Chatbot chỉ là giải pháp bề mặt. Cần lùi lại dùng 5 Whys tìm pain point thực sự."],
+        correction: "Vội vàng làm chatbot là bẫy Jumping to Solution. Cần lùi lại tìm pain point thực sự qua 5 Whys và xem xét giải pháp đơn giản trước.",
+        sampleCorrect: "Bạn đang mắc bẫy Jumping to Solution rồi, chatbot chỉ là giải pháp. Cần dừng lại hỏi 5 Whys tìm pain point thực sự và xem có giải pháp quy trình đơn giản nào trước khi build AI.",
+        sampleWrong: "Chuẩn rồi, sếp bảo làm chatbot thì cứ dựng vector database code ngay cho kịp tiến độ."
+      },
+      {
+        id: "cp2_product_vs_project_mindset",
+        short: "CP2",
+        label: "Product vs Project",
+        title: "Product vs Project Mindset",
+        slide: 2,
+        botQuestion: "Làm Product Manager với Project Manager trong dự án AI có giống nhau không cậu?",
+        hints: ["Gợi ý: Project Manager quản lý tiến độ/ngân sách. Product Manager lấy người dùng làm trung tâm và tìm bài toán đáng làm."],
+        correction: "Project Manager tập trung vào tiến độ, ngân sách theo spec. Product Manager tập trung vào người dùng, thị trường và cải tiến liên tục.",
+        sampleCorrect: "Khác nhau nhiều. Project Manager tập trung tiến độ và ngân sách spec có sẵn. Còn Product Manager phải lấy người dùng làm trung tâm, tự tìm bài toán đáng làm và liên tục đo lường cải tiến.",
+        sampleWrong: "Hai vị trí này hoàn toàn là một, chỉ khác tên gọi tiếng Anh thôi."
+      },
+      {
+        id: "cp3_dogfooding_strategy",
+        short: "CP3",
+        label: "Dogfooding",
+        title: "Chiến lược Dogfooding",
+        slide: 3,
+        botQuestion: "Tự mình dùng sản phẩm của mình (Dogfooding) có tác dụng gì đâu khi mình có thể phỏng vấn user ngoài?",
+        hints: ["Gợi ý: Dogfooding giúp team là tester đầu tiên, cảm nhận nỗi đau thật và tối ưu feedback loop cực nhanh."],
+        correction: "Dogfooding giúp chính đội ngũ là tester đầu tiên, cảm nhận trực tiếp nỗi đau và rút ngắn vòng phản hồi (như Jira build Jira, Claude Code).",
+        sampleCorrect: "Dogfooding là chính đội ngũ tự dùng sản phẩm hàng ngày như user thật. Điều này giúp cảm nhận trực tiếp nỗi đau thực tế và tối ưu feedback loop cực nhanh như Jira hay Claude Code.",
+        sampleWrong: "Dogfooding là mang sản phẩm cho người khác dùng thử miễn phí để lấy tiếng tăm."
+      }
+    ]
   }
 ];
-const PASS_THRESHOLD = 80;
-const MAX_TRIALS = 3;
 
-/* ---------------- State ---------------- */
+/* ---------------- Global State ---------------- */
 const state = {
-  mode:'slide',
-  currentSlide:1,
-  videoTime:0,
-  videoPlaying:false,
-  videoTimer:null,
-  reviewActive:false,
-  awaitingContinue:false,
-  cpIdx:0,
-  attempts:0,
-  results:[null,null,null]
+  currentLessonId: "lesson_02",
+  currentSlide: 1,
+  cpIdx: 0,
+  attempts: 0,
+  awaitingContinue: false,
+  resultsMap: {
+    lesson_01: [{status: 'pass', score: 100}, {status: 'pass', score: 100}, {status: 'pass', score: 100}],
+    lesson_02: [{status: 'pass', score: 100}, {status: 'pass', score: 100}, {status: 'pass', score: 100}],
+    lesson_03: [{status: 'pass', score: 100}, {status: 'pass', score: 100}, {status: 'pass', score: 100}]
+  }
 };
 
-/* ---------------- Sidebar ---------------- */
-function toggleSidebar(){
-  const sb = document.getElementById('sidebar');
-  sb.style.display = (sb.style.display==='none')?'block':'none';
+function getCurrentLesson() {
+  return MOCK_LESSONS.find(l => l.id === state.currentLessonId) || MOCK_LESSONS[0];
 }
-function toggleSection(id){
+function getCurrentCheckpoints() {
+  return getCurrentLesson().checkpoints || [];
+}
+function getCurrentResults() {
+  if (!state.resultsMap[state.currentLessonId]) {
+    state.resultsMap[state.currentLessonId] = [null, null, null];
+  }
+  return state.resultsMap[state.currentLessonId];
+}
+
+/* ---------------- Sidebar Navigation & Switcher ---------------- */
+function toggleSidebar() {
+  const sb = document.getElementById('lessonSidebar');
+  sb.style.display = (sb.style.display === 'none') ? 'flex' : 'none';
+}
+function toggleSection(id, headerEl) {
   const el = document.getElementById(id);
   el.classList.toggle('collapsed');
-  el.previousElementSibling.classList.toggle('collapsed');
+  if (headerEl) headerEl.classList.toggle('collapsed');
 }
-function openSlideFile(){
-  state.mode='slide';
-  document.getElementById('slideView').style.display='block';
-  document.getElementById('videoView').style.display='none';
-  renderCheckpointBar();
-}
-function scrollToSlide(n){
-  n = Math.max(1, Math.min(3, n));
-  const el = document.querySelector(`.slide-page[data-slide="${n}"]`);
-  const container = document.getElementById('slideScroll');
-  if(el) container.scrollTo({top: el.offsetTop, behavior:'smooth'});
-}
-function prevSlide(){ scrollToSlide(state.currentSlide-1); }
-function nextSlide(){ scrollToSlide(state.currentSlide+1); }
-function selectVideo(){
-  state.mode='video';
-  document.getElementById('slideView').style.display='none';
-  document.getElementById('videoView').style.display='block';
-  renderCheckpointBar();
+function toggleDemoDrawer() {
+  const body = document.getElementById('demoDrawerBody');
+  const arrow = document.getElementById('demoDrawerArrow');
+  body.classList.toggle('open');
+  arrow.textContent = body.classList.contains('open') ? '▴' : '▾';
 }
 
-/* ---------------- Slide render (cuộn dọc trong 1 file) ---------------- */
-function renderAllSlides(){
-  const container = document.getElementById('slideScroll');
-  container.innerHTML = CHECKPOINTS.map(cp => `
-    <div class="slide-page" data-slide="${cp.slide}">
-      <div class="page-flag">Slide ${cp.slide}/3</div>
-      <div class="kicker">${cp.slideKicker}</div>
-      <h2>${cp.slideTitle}</h2>
-      <ul>${cp.slideBullets.map(b=>`<li>${b}</li>`).join('')}</ul>
-    </div>
-  `).join('');
-  container.addEventListener('scroll', onSlideScroll);
-}
-function onSlideScroll(){
-  const container = document.getElementById('slideScroll');
-  const pages = container.querySelectorAll('.slide-page');
-  let closest = 1, minDist = Infinity;
-  pages.forEach(p=>{
-    const dist = Math.abs(p.offsetTop - container.scrollTop);
-    if(dist < minDist){ minDist = dist; closest = parseInt(p.dataset.slide,10); }
-  });
-  if(closest !== state.currentSlide){
-    state.currentSlide = closest;
-    renderCheckpointBar();
-  }
-  document.getElementById('slideNum').textContent = state.currentSlide;
-}
-
-/* ---------------- Video playback (mock) ---------------- */
-function toggleVideoPlay(){
-  state.videoPlaying = !state.videoPlaying;
-  document.getElementById('playBtnBig').textContent = state.videoPlaying?'❚❚':'▶';
-  document.getElementById('playBtnSmall').textContent = state.videoPlaying?'❚❚':'▶';
-  if(state.videoPlaying){
-    state.videoTimer = setInterval(()=>{
-      state.videoTime = Math.min(180, state.videoTime + 5);
-      document.getElementById('videoScrubber').value = state.videoTime;
-      updateVideoTimeLabel();
-      renderCheckpointBar();
-      if(state.videoTime>=180){ clearInterval(state.videoTimer); state.videoPlaying=false;
-        document.getElementById('playBtnBig').textContent='▶'; document.getElementById('playBtnSmall').textContent='▶'; }
-    },250);
-  } else {
-    clearInterval(state.videoTimer);
-  }
-}
-function onScrub(v){
-  state.videoTime = parseInt(v,10);
-  updateVideoTimeLabel();
-  renderCheckpointBar();
-}
-function updateVideoTimeLabel(){
-  const m = Math.floor(state.videoTime/60), s = String(state.videoTime%60).padStart(2,'0');
-  document.getElementById('timeNow').textContent = `${m}:${s}`;
-}
-
-/* ---------------- Checkpoint bar ---------------- */
-function currentViewingIdx(){
-  if(state.mode==='slide') return state.currentSlide-1;
-  for(let i=0;i<CHECKPOINTS.length;i++){
-    const [a,b]=CHECKPOINTS[i].videoRange;
-    if(state.videoTime>=a && state.videoTime<b) return i;
-  }
-  return CHECKPOINTS.length-1;
-}
-function renderCheckpointBar(){
-  const viewingIdx = currentViewingIdx();
-  const track = document.getElementById('cbTrack');
-  let html = '';
-  CHECKPOINTS.forEach((cp,i)=>{
-    const r = state.results[i];
-    let cls = '';
-    if(i===viewingIdx) cls += ' viewing';
-    if(r && r.status==='pass') cls += ' pass';
-    if(r && r.status==='fail') cls += ' fail';
-    html += `
-      <div class="cb-node${cls}" title="${cp.short} · ${cp.title}: ${cp.desc}">
-        <div class="cb-dot-row"><div class="cb-dot"></div></div>
-        <div class="cb-caption">${cp.short}</div>
-      </div>`;
-    const isLast = i === CHECKPOINTS.length-1;
-    const doneCls = (r && r.status==='pass') ? ' done' : '';
-    if(!isLast){
-      html += `<div class="cb-connector${doneCls}"><i></i></div>`;
-    } else {
-      html += `<div class="cb-connector final${doneCls}"><i></i><span class="cb-arrow"></span></div>`;
-    }
-  });
-  track.innerHTML = html;
-  const doneCount = state.results.filter(r=>r).length;
-  document.getElementById('courseProgress').style.width = Math.round(doneCount/3*100)+'%';
-}
-
-/* ---------------- Chat helpers ---------------- */
-function appendMsg(role, name, avatar, html, extraClass){
-  const area = document.getElementById('chatArea');
-  const div = document.createElement('div');
-  div.className = 'msg ' + role + (extraClass? ' '+extraClass : '');
-  div.innerHTML = `<div class="av">${avatar}</div><div><div class="name">${name}</div><div class="bubble">${html}</div></div>`;
-  area.appendChild(div);
-  area.scrollTop = area.scrollHeight;
-}
-function setInputEnabled(on){
-  document.getElementById('chatInput').disabled = !on;
-  document.getElementById('sendBtn').disabled = !on;
-  if(on) document.getElementById('chatInput').focus();
-}
-function setQuickTestEnabled(on){
-  document.getElementById('btnQuickCorrect').disabled = !on;
-  document.getElementById('btnQuickWrong').disabled = !on;
-}
-function quickFill(type){
-  if(document.getElementById('chatInput').disabled || state.awaitingContinue) return;
-  const cp = CHECKPOINTS[state.cpIdx];
-  document.getElementById('chatInput').value = (type==='correct') ? cp.sampleCorrect : cp.sampleWrong;
-  submitAnswer();
-}
-function handleSubmit(){
-  if(state.awaitingContinue){ submitFollowup(); } else { submitAnswer(); }
-}
-
-/* ---------------- Review flow ---------------- */
-function renderStartCard(){
-  document.getElementById('startCardWrap').innerHTML = `
-    <div class="start-card" id="startCard">
-      <p>Sẵn sàng kiểm tra mức độ hiểu bài Transformer chưa? Bạn sẽ đóng vai người dạy lại cho "Bot Ngu".</p>
-      <button class="start-btn" onclick="startReview()">🎯 Bắt đầu ôn lại bài học</button>
-    </div>`;
-}
-function startReview(){
-  document.getElementById('chatArea').innerHTML='';
-  state.reviewActive = true;
-  state.awaitingContinue = false;
+function switchLesson(lessonId) {
+  state.currentLessonId = lessonId;
+  state.currentSlide = 1;
   state.cpIdx = 0;
   state.attempts = 0;
-  state.results = [null,null,null];
-  document.getElementById('startCardWrap').innerHTML = '';
-  document.getElementById('chatInput').placeholder = "Gõ câu trả lời của bạn...";
-  appendMsg('system','⚙️ Hệ thống VLearn','⚙️',
-    'Chào mừng bạn đến với Thử thách dạy học! Bạn cùng lớp "Bot Ngu" đang gặp khúc mắc về bài giảng Transformer. Hãy giúp bạn ấy hiểu đúng nhé!');
-  askCheckpoint(0);
-  renderCheckpointBar();
-}
-function askCheckpoint(idx){
-  state.cpIdx = idx;
-  state.attempts = 0;
-  const cp = CHECKPOINTS[idx];
-  if(idx > 0){
-    appendMsg('system','⚙️ Hệ thống VLearn','⚙️', `➡️ Chuyển sang checkpoint tiếp theo — <b>${cp.short} · ${cp.title}</b>`);
-  }
-  appendMsg('peer','🧑‍🎓 Bot Ngu (Bạn học)','🧑‍🎓', `<b>[${cp.short} · ${cp.title}]</b><br>${cp.botQuestion}`);
-  setInputEnabled(true);
-  setQuickTestEnabled(true);
-}
-function submitAnswer(){
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if(!text) return;
-  appendMsg('user','🎓 Bạn (Học viên)','🎓', text);
-  input.value='';
-  setInputEnabled(false);
-  appendMsg('evaluator','🔍 System Evaluator (Chạy ngầm)','🔍', 'Đang phân tích câu trả lời với nội dung bài giảng...');
-  setTimeout(()=>evaluate(text), 700);
-}
-function evaluate(text){
-  const cp = CHECKPOINTS[state.cpIdx];
-  const lower = text.toLowerCase();
-  const matched = cp.conceptGroups.filter(group => group.some(alt => lower.includes(alt)));
-  const score = Math.round(matched.length / cp.conceptGroups.length * 100);
-  const attemptTag = `<span class="attempt-tag">Lần ${state.attempts+1}/${MAX_TRIALS} · Khớp ${matched.length}/${cp.conceptGroups.length} ý · ${score}%</span><br>`;
-
-  if(score >= PASS_THRESHOLD){
-    appendMsg('coach','👩‍🏫 Giáo sư AI (Trợ giảng)','👩‍🏫',
-      attemptTag + `Xuất sắc! Lời giải thích của bạn khớp với nội dung bài giảng (${score}%). Bạn đã vượt qua ${cp.short} thành công! 🎉`);
-    state.results[state.cpIdx] = {status:'pass', score};
-    renderCheckpointBar();
-    offerContinue();
-    return;
-  }
-
-  state.attempts++;
-  if(state.attempts < MAX_TRIALS){
-    appendMsg('coach','👩‍🏫 Giáo sư AI (Trợ giảng)','👩‍🏫',
-      attemptTag + cp.hints[Math.min(state.attempts-1, cp.hints.length-1)], 'hint');
-    setInputEnabled(true);
-  } else {
-    appendMsg('coach','👩‍🏫 Giáo sư AI (Trợ giảng)','👩‍🏫',
-      attemptTag + `Bạn đã thử đủ ${MAX_TRIALS} lần, để tôi đính chính lại kiến thức chuẩn: ${cp.correction}`, 'hint');
-    state.results[state.cpIdx] = {status:'fail', score};
-    renderCheckpointBar();
-    offerContinue();
-  }
-}
-function offerContinue(){
-  const cp = CHECKPOINTS[state.cpIdx];
-  state.awaitingContinue = true;
-  setQuickTestEnabled(false);
-  setInputEnabled(true);
-  document.getElementById('chatInput').placeholder = 'Chưa hiểu? Hỏi thêm ở đây, hoặc bấm "Đã hiểu" để tiếp tục...';
-  document.getElementById('startCardWrap').innerHTML = `
-    <div class="start-card">
-      <p>Bạn đã hiểu phần <b>${cp.short} · ${cp.title}</b> chưa?</p>
-      <button class="start-btn" onclick="confirmUnderstood()">✅ Đã hiểu, tiếp tục</button>
-    </div>`;
-}
-function submitFollowup(){
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if(!text) return;
-  appendMsg('user','🎓 Bạn (Học viên)','🎓', text);
-  input.value='';
-  setInputEnabled(false);
-  const cp = CHECKPOINTS[state.cpIdx];
-  setTimeout(()=>{
-    appendMsg('coach','👩‍🏫 Giáo sư AI (Trợ giảng)','👩‍🏫',
-      cp.deepDive + '<br><br><i>(Bản mock: Giáo sư trả lời sâu hơn cho câu hỏi tiếp theo; ở CP3 sẽ nối AI thật để trả lời đúng câu bạn hỏi.)</i>');
-    setInputEnabled(true);
-  }, 700);
-}
-function confirmUnderstood(){
   state.awaitingContinue = false;
-  document.getElementById('startCardWrap').innerHTML = '';
-  document.getElementById('chatInput').placeholder = "Gõ câu trả lời của bạn...";
-  setInputEnabled(false);
-  advance();
-}
-function advance(){
-  if(state.cpIdx+1 < CHECKPOINTS.length){
-    setTimeout(()=>askCheckpoint(state.cpIdx+1), 400);
-  } else {
-    setInputEnabled(false);
-    setTimeout(showMasteryReport, 400);
-  }
-}
-function showMasteryReport(){
-  const scores = state.results.map(r=>r.score);
-  const overall = Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
-  const rows = CHECKPOINTS.map((cp,i)=>{
-    const r = state.results[i];
-    const label = r.status==='pass' ? '✅ Đạt' : '⚠️ Cần học lại';
-    return `<tr><td>${cp.short} · ${cp.title}</td><td>${r.score}%</td><td>${label}</td></tr>`;
-  }).join('');
-  appendMsg('coach','👩‍🏫 Giáo sư AI (Trợ giảng)','👩‍🏫', `
-    <div class="report-card">
-      <h4>📊 Báo cáo Mastery — Transformer Architecture</h4>
-      <div class="report-score">${overall}%</div>
-      <table>
-        <tr><th>Checkpoint</th><th>Điểm</th><th>Kết quả</th></tr>
-        ${rows}
-      </table>
-    </div>`);
-  document.getElementById('startCardWrap').innerHTML = `
-    <div class="start-card">
-      <p>Muốn luyện lại từ đầu để cải thiện các phần "Cần học lại"?</p>
-      <button class="start-btn" onclick="startReview()">🔁 Ôn lại từ đầu</button>
-    </div>`;
+
+  const dropdown = document.getElementById('lessonDropdown');
+  if (dropdown) dropdown.value = lessonId;
+
+  const lsn = getCurrentLesson();
+  document.getElementById('topbarLessonTitle').textContent = lsn.short_title;
+  document.getElementById('activeSlideFileName').textContent = lsn.lecture_file;
+  document.getElementById('sidebarVideoTitle').textContent = lsn.video_title;
+
+  renderCurrentSlide();
+  renderTimelineProgress();
+  startReview();
+  updateLessonNavButtons();
 }
 
-/* ---------------- Init ---------------- */
-renderAllSlides();
-renderCheckpointBar();
-renderStartCard();
+function goToPrevLesson() {
+  const curIdx = MOCK_LESSONS.findIndex(l => l.id === state.currentLessonId);
+  if (curIdx > 0) switchLesson(MOCK_LESSONS[curIdx - 1].id);
+}
+function goToNextLesson() {
+  const curIdx = MOCK_LESSONS.findIndex(l => l.id === state.currentLessonId);
+  if (curIdx < MOCK_LESSONS.length - 1) switchLesson(MOCK_LESSONS[curIdx + 1].id);
+}
+function updateLessonNavButtons() {
+  const curIdx = MOCK_LESSONS.findIndex(l => l.id === state.currentLessonId);
+  const prevBtn = document.getElementById('btnPrevLesson');
+  const nextBtn = document.getElementById('btnNextLesson');
+  if (prevBtn) prevBtn.disabled = (curIdx === 0);
+  if (nextBtn) {
+    if (curIdx === MOCK_LESSONS.length - 1) {
+      nextBtn.textContent = '🎉 Đã hoàn thành khóa học';
+      nextBtn.disabled = true;
+    } else {
+      nextBtn.textContent = 'Đi tới bài tiếp theo ›';
+      nextBtn.disabled = false;
+    }
+  }
+}
+
+/* ---------------- Center Slide Viewer Rendering ---------------- */
+function renderCurrentSlide() {
+  const lsn = getCurrentLesson();
+  const slide = lsn.slides[state.currentSlide - 1] || lsn.slides[0];
+  const stage = document.getElementById('slideStage');
+  document.getElementById('slideCurrentNum').textContent = state.currentSlide;
+  document.getElementById('slideTotalNum').textContent = lsn.slides.length;
+
+  let diagramHtml = '';
+  if (slide.diagramType === 'transformer_block') {
+    diagramHtml = `
+      <div class="slide-diagram-canvas">
+        <svg width="250" height="310" viewBox="0 0 250 310" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Output (Next Token) -->
+          <text x="125" y="16" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0f172a">Output (Next Token)</text>
+          <line x1="125" y1="22" x2="125" y2="40" stroke="#0f172a" stroke-width="1.5" marker-end="url(#arrow)"/>
+          
+          <!-- Feed Forward Network -->
+          <rect x="50" y="42" width="150" height="38" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.2"/>
+          <text x="125" y="65" text-anchor="middle" font-size="11.5" font-weight="600" fill="#166534">Feed Forward Network</text>
+          
+          <!-- Arrow -->
+          <line x1="125" y1="80" x2="125" y2="96" stroke="#64748b" stroke-width="1.5"/>
+          
+          <!-- Add & Norm -->
+          <rect x="50" y="98" width="150" height="32" rx="8" fill="#ffedd5" stroke="#fed7aa" stroke-width="1.2"/>
+          <text x="125" y="118" text-anchor="middle" font-size="11" font-weight="600" fill="#9a3412">Add & Norm</text>
+          
+          <!-- Arrow -->
+          <line x1="125" y1="130" x2="125" y2="146" stroke="#64748b" stroke-width="1.5"/>
+          
+          <!-- Multi-Head Attention -->
+          <rect x="44" y="152" width="150" height="42" rx="8" fill="#e0f2fe" stroke="#93c5fd" stroke-width="1.5"/>
+          <rect x="50" y="148" width="150" height="42" rx="8" fill="#dbeafe" stroke="#bfdbfe" stroke-width="1.5"/>
+          <text x="125" y="173" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8">Multi-Head Attention</text>
+          
+          <!-- Arrow -->
+          <line x1="125" y1="190" x2="125" y2="206" stroke="#64748b" stroke-width="1.5"/>
+          
+          <!-- Add & Norm -->
+          <rect x="50" y="208" width="150" height="32" rx="8" fill="#ffedd5" stroke="#fed7aa" stroke-width="1.2"/>
+          <text x="125" y="228" text-anchor="middle" font-size="11" font-weight="600" fill="#9a3412">Positional Encoding</text>
+          
+          <!-- Input Tokens -->
+          <line x1="85" y1="240" x2="85" y2="264" stroke="#64748b" stroke-width="1.5"/>
+          <line x1="125" y1="240" x2="125" y2="264" stroke="#64748b" stroke-width="1.5"/>
+          <line x1="165" y1="240" x2="165" y2="264" stroke="#64748b" stroke-width="1.5"/>
+          
+          <rect x="75" y="266" width="20" height="14" rx="3" fill="#e2e8f0"/>
+          <rect x="115" y="266" width="20" height="14" rx="3" fill="#e2e8f0"/>
+          <rect x="155" y="266" width="20" height="14" rx="3" fill="#e2e8f0"/>
+          <text x="125" y="296" text-anchor="middle" font-size="10.5" font-weight="500" fill="#64748b">Input Tokens</text>
+          
+          <!-- Stack Bracket Nx -->
+          <path d="M 210 44 Q 218 44 218 140 Q 224 140 218 140 Q 218 238 210 238" fill="none" stroke="#64748b" stroke-width="1.2"/>
+          <text x="228" y="145" font-size="13" font-weight="700" fill="#0f172a">Nx</text>
+        </svg>
+      </div>
+    `;
+  } else if (slide.diagramType === 'multi_head') {
+    diagramHtml = `
+      <div class="slide-diagram-canvas">
+        <svg width="240" height="280" viewBox="0 0 240 280" fill="none">
+          <rect x="20" y="20" width="200" height="36" rx="6" fill="#1d4ed8"/>
+          <text x="120" y="43" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">Linear (Concat + W_O)</text>
+          
+          <line x1="120" y1="56" x2="120" y2="78" stroke="#94a3b8" stroke-width="1.5"/>
+          
+          <!-- 3 Parallel Heads Shown -->
+          <g transform="translate(10, 80)">
+            <rect x="0" y="0" width="65" height="110" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+            <text x="32" y="24" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1d4ed8">Head 1</text>
+            <text x="32" y="44" text-anchor="middle" font-size="9" fill="#64748b">Cú pháp</text>
+            <rect x="8" y="60" width="49" height="36" rx="4" fill="#ffffff" stroke="#e2e8f0"/>
+            <text x="32" y="82" text-anchor="middle" font-size="8.5" font-weight="600" fill="#3b82f6">Q · K · V</text>
+          </g>
+          
+          <g transform="translate(87, 80)">
+            <rect x="0" y="0" width="65" height="110" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+            <text x="32" y="24" text-anchor="middle" font-size="10.5" font-weight="700" fill="#16a34a">Head 2</text>
+            <text x="32" y="44" text-anchor="middle" font-size="9" fill="#64748b">Đại từ</text>
+            <rect x="8" y="60" width="49" height="36" rx="4" fill="#ffffff" stroke="#e2e8f0"/>
+            <text x="32" y="82" text-anchor="middle" font-size="8.5" font-weight="600" fill="#16a34a">Q · K · V</text>
+          </g>
+          
+          <g transform="translate(165, 80)">
+            <rect x="0" y="0" width="65" height="110" rx="6" fill="#fef3c7" stroke="#fde68a"/>
+            <text x="32" y="24" text-anchor="middle" font-size="10.5" font-weight="700" fill="#b45309">Head h</text>
+            <text x="32" y="44" text-anchor="middle" font-size="9" fill="#64748b">Từ xa</text>
+            <rect x="8" y="60" width="49" height="36" rx="4" fill="#ffffff" stroke="#e2e8f0"/>
+            <text x="32" y="82" text-anchor="middle" font-size="8.5" font-weight="600" fill="#b45309">Q · K · V</text>
+          </g>
+          
+          <text x="120" y="225" text-anchor="middle" font-size="11" font-weight="600" fill="#334155">8 Subspace Projections song song</text>
+        </svg>
+      </div>
+    `;
+  } else {
+    diagramHtml = `
+      <div class="slide-diagram-canvas">
+        <svg width="240" height="240" viewBox="0 0 240 240" fill="none">
+          <rect x="25" y="30" width="190" height="42" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+          <text x="120" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8">Word Embedding Vector</text>
+          
+          <circle cx="120" cy="100" r="14" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+          <text x="120" y="105" text-anchor="middle" font-size="16" font-weight="800" fill="#2563eb">+</text>
+          
+          <rect x="25" y="130" width="190" height="42" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+          <text x="120" y="155" text-anchor="middle" font-size="12" font-weight="700" fill="#dc2626">Positional Encoding (Sin/Cos)</text>
+          
+          <line x1="120" y1="172" x2="120" y2="195" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="25" y="196" width="190" height="32" rx="6" fill="#1e293b"/>
+          <text x="120" y="217" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">= Input Vector hoàn chỉnh</text>
+        </svg>
+      </div>
+    `;
+  }
+
+  stage.innerHTML = `
+    <div class="slide-grid-container">
+      <div class="slide-left-content">
+        <div class="slide-eyebrow">${slide.eyebrow}</div>
+        <h1 class="slide-main-title">${slide.title}</h1>
+        <div class="slide-subtitle">${slide.subtitle}</div>
+        <ul class="slide-sub-points">
+          ${slide.bullets.map(b => `<li>${b}</li>`).join('')}
+        </ul>
+        <div class="slide-meta-badge">
+          <div class="meta-brand">${slide.metaBrand.split(' ')[0]} <span>${slide.metaBrand.split(' ')[1] || ''}</span></div>
+          <div class="meta-phase">${slide.metaPhase}</div>
+        </div>
+      </div>
+      ${diagramHtml}
+    </div>
+  `;
+}
+
+function scrollToSlide(n) {
+  const lsn = getCurrentLesson();
+  state.currentSlide = Math.max(1, Math.min(lsn.slides.length, n));
+  renderCurrentSlide();
+}
+function prevSlide() { scrollToSlide(state.currentSlide - 1); }
+function nextSlide() { scrollToSlide(state.currentSlide + 1); }
+
+/* ---------------- Checkpoint Timeline Progress Rendering (~75px) ---------------- */
+function renderTimelineProgress() {
+  const cps = getCurrentCheckpoints();
+  const results = getCurrentResults();
+  const track = document.getElementById('checkpointTimelineTrack');
+  
+  const doneCount = results.filter(r => r && r.status === 'pass').length;
+  document.getElementById('timelineCountText').textContent = `${doneCount}/${cps.length}`;
+  document.getElementById('progressText').textContent = `${doneCount}/${cps.length} hoàn thành`;
+  document.getElementById('courseProgress').style.width = Math.round((doneCount / cps.length) * 100) + '%';
+
+  const activePct = (doneCount > 0) ? ((doneCount - 1) / (cps.length - 1)) * 100 : 0;
+
+  let nodesHtml = '';
+  cps.forEach((cp, idx) => {
+    const isDone = results[idx] && results[idx].status === 'pass';
+    const isCur = (idx === state.cpIdx);
+    let stateClass = '';
+    let iconContent = `${idx + 1}`;
+
+    if (isDone) {
+      stateClass = 'done';
+      iconContent = '✓';
+    } else if (isCur) {
+      stateClass = 'current';
+      iconContent = '●';
+    }
+
+    nodesHtml += `
+      <div class="timeline-node ${stateClass}" onclick="scrollToSlide(${cp.slide})" title="${cp.short}: ${cp.title}">
+        <div class="timeline-node-circle">${iconContent}</div>
+        <div class="timeline-node-label">${cp.short} ${cp.label || ''}</div>
+      </div>
+    `;
+  });
+
+  track.innerHTML = `
+    <div class="timeline-line-bg"></div>
+    <div class="timeline-line-active" style="width: ${activePct}%;"></div>
+    ${nodesHtml}
+  `;
+}
+
+/* ---------------- Chat Experience & Flow ---------------- */
+function appendMessage(role, text, timeStr) {
+  const area = document.getElementById('chatArea');
+  const time = timeStr || getCurrentTimeString();
+
+  if (role === 'ai') {
+    const row = document.createElement('div');
+    row.className = 'msg-row ai-partner';
+    row.innerHTML = `
+      <div class="msg-avatar-ai">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg>
+      </div>
+      <div class="msg-content-wrap">
+        <div class="msg-header-meta">
+          <span>Feynman AI</span>
+          <span class="time">${time}</span>
+        </div>
+        <div class="msg-bubble-ai">${formatMarkdown(text)}</div>
+        <div class="msg-actions-row">
+          <button class="bubble-action-btn" title="Hữu ích">👍</button>
+          <button class="bubble-action-btn" title="Chưa rõ">👎</button>
+        </div>
+      </div>
+    `;
+    area.appendChild(row);
+  } else if (role === 'user') {
+    const row = document.createElement('div');
+    row.className = 'msg-row user';
+    row.innerHTML = `
+      <div class="msg-content-wrap">
+        <div class="msg-header-meta">
+          <span class="time">${time}</span>
+          <span>Bạn</span>
+        </div>
+        <div class="msg-bubble-user">${escapeHtml(text)}</div>
+      </div>
+      <div class="user-avatar-tag">HV</div>
+    `;
+    area.appendChild(row);
+  } else if (role === 'coach') {
+    const row = document.createElement('div');
+    row.className = 'msg-row ai-partner';
+    row.innerHTML = `
+      <div class="msg-content-wrap" style="max-width: 95%;">
+        <div class="msg-bubble-coach">${text}</div>
+      </div>
+    `;
+    area.appendChild(row);
+  } else if (role === 'coach-hint') {
+    const row = document.createElement('div');
+    row.className = 'msg-row ai-partner';
+    row.innerHTML = `
+      <div class="msg-content-wrap" style="max-width: 95%;">
+        <div class="msg-bubble-coach hint">${text}</div>
+      </div>
+    `;
+    area.appendChild(row);
+  } else if (role === 'status') {
+    const row = document.createElement('div');
+    row.className = 'eval-status-container';
+    row.innerHTML = `
+      <div class="eval-status-pill">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>${text}</span>
+      </div>
+    `;
+    area.appendChild(row);
+  }
+
+  area.scrollTop = area.scrollHeight;
+}
+
+function getCurrentTimeString() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+function formatMarkdown(str) {
+  if (!str) return '';
+  return str
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function handleInputKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    handleSubmit();
+  }
+}
+
+function setInputEnabled(on) {
+  document.getElementById('chatInput').disabled = !on;
+  document.getElementById('sendBtn').disabled = !on;
+  document.getElementById('btnQuickCorrect').disabled = !on;
+  document.getElementById('btnQuickWrong').disabled = !on;
+  if (on) document.getElementById('chatInput').focus();
+}
+
+function quickFill(type) {
+  const cps = getCurrentCheckpoints();
+  const cp = cps[state.cpIdx];
+  if (!cp) return;
+  document.getElementById('chatInput').value = (type === 'correct') ? cp.sampleCorrect : cp.sampleWrong;
+  handleSubmit();
+}
+
+function handleSubmit() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  appendMessage('user', text);
+  input.value = '';
+  setInputEnabled(false);
+
+  appendMessage('status', 'Đang phân tích câu trả lời của bạn... •••');
+  setTimeout(() => processEvaluation(text), 650);
+}
+
+async function processEvaluation(text) {
+  const cps = getCurrentCheckpoints();
+  const cp = cps[state.cpIdx];
+
+  // Try backend /api/chat
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: `vlearn_${state.currentLessonId}`, message: text })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const evalData = data.latest_evaluation;
+      const score = evalData ? evalData.mastery_score : 85;
+      const isPass = evalData ? (evalData.status === 'PASS') : (score >= 80);
+
+      if (data.assistant_text) {
+        appendMessage('ai', data.assistant_text);
+      }
+
+      if (isPass) {
+        appendMessage('coach', `✓ <b>Đạt chuẩn kiến thức (${score}%):</b> Lời giải thích của bạn đã bao phủ các điểm mấu chốt! 🎉`);
+        getCurrentResults()[state.cpIdx] = { status: 'pass', score };
+        renderTimelineProgress();
+        advanceFlow();
+        return;
+      } else {
+        state.attempts++;
+        if (state.attempts < 3) {
+          const missing = evalData && evalData.missing_points ? evalData.missing_points.map(m => m.concept).join(', ') : '';
+          appendMessage('coach-hint', `Gợi ý: Bạn chưa nêu rõ phần [${missing || 'các khái niệm cốt lõi'}]. Hãy bổ sung giải thích cho bạn học nhé!`);
+          setInputEnabled(true);
+          return;
+        } else {
+          appendMessage('coach-hint', `Bạn đã thử 3 lần. Kiến thức chuẩn từ bài giảng: ${cp.correction}`);
+          getCurrentResults()[state.cpIdx] = { status: 'fail', score };
+          renderTimelineProgress();
+          advanceFlow();
+          return;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Dùng fallback client evaluation:", err);
+  }
+
+  // Client Offline Evaluation Fallback
+  const lower = text.toLowerCase();
+  const sampleWords = (cp.sampleCorrect || "").toLowerCase().split(/\s+/).filter(w => w.length > 3);
+  let matchCount = 0;
+  sampleWords.forEach(w => { if (lower.includes(w)) matchCount++; });
+  const isPass = (matchCount >= 2 || lower.includes("query") || lower.includes("tương quan") || lower.includes("xác suất") || lower.includes("pain point") || lower.includes("user"));
+  const score = isPass ? 90 : 35;
+
+  if (isPass) {
+    appendMessage('ai', 'À tớ hiểu rồi! Cậu giải thích rất chuẩn và dễ hiểu, cảm ơn cậu nhiều nha!');
+    appendMessage('coach', `✓ <b>Đạt chuẩn kiến thức (${score}%):</b> Lời giải thích của bạn rất rõ ràng và chuẩn xác! 🎉`);
+    getCurrentResults()[state.cpIdx] = { status: 'pass', score };
+    renderTimelineProgress();
+    advanceFlow();
+  } else {
+    state.attempts++;
+    if (state.attempts < 3) {
+      appendMessage('ai', 'Ủa nhưng mà tớ vẫn chưa rõ lắm, cậu nói cụ thể hơn được không?');
+      appendMessage('coach-hint', cp.hints[Math.min(state.attempts - 1, cp.hints.length - 1)]);
+      setInputEnabled(true);
+    } else {
+      appendMessage('coach-hint', `Bạn đã thử 3 lần. Kiến thức chuẩn từ bài giảng: ${cp.correction}`);
+      getCurrentResults()[state.cpIdx] = { status: 'fail', score };
+      renderTimelineProgress();
+      advanceFlow();
+    }
+  }
+}
+
+function advanceFlow() {
+  const cps = getCurrentCheckpoints();
+  if (state.cpIdx + 1 < cps.length) {
+    state.cpIdx++;
+    state.attempts = 0;
+    setTimeout(() => {
+      const nextCp = cps[state.cpIdx];
+      appendMessage('ai', nextCp.botQuestion);
+      scrollToSlide(nextCp.slide);
+      renderTimelineProgress();
+      setInputEnabled(true);
+    }, 600);
+  } else {
+    setTimeout(showMasteryReport, 600);
+  }
+}
+
+function showMasteryReport() {
+  const lsn = getCurrentLesson();
+  const cps = getCurrentCheckpoints();
+  const results = getCurrentResults();
+  const scores = results.map(r => r ? r.score : 0);
+  const overall = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+
+  const rows = cps.map((cp, i) => {
+    const r = results[i] || { status: 'fail', score: 0 };
+    const label = r.status === 'pass' ? '✓ Đạt' : '⚠️ Cần xem lại';
+    return `
+      <div class="report-compact-row">
+        <span><b>${cp.short}</b> · ${cp.title}</span>
+        <span class="report-status-tag">${r.score}% (${label})</span>
+      </div>
+    `;
+  }).join('');
+
+  const reportArea = document.createElement('div');
+  reportArea.className = 'msg-row ai-partner';
+  reportArea.innerHTML = `
+    <div class="msg-content-wrap" style="max-width: 95%;">
+      <div class="report-compact-card">
+        <div class="report-compact-header">
+          <span class="report-compact-title">📊 Kết Quả Ôn Tập — ${lsn.short_title}</span>
+          <span class="report-compact-score">${overall}%</span>
+        </div>
+        ${rows}
+        <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+          <button class="ai-action-btn" onclick="startReview()">↻ Luyện tập lại</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('chatArea').appendChild(reportArea);
+  document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+  setInputEnabled(false);
+}
+
+function startReview() {
+  const lsn = getCurrentLesson();
+  const cps = getCurrentCheckpoints();
+
+  document.getElementById('chatArea').innerHTML = '';
+  state.cpIdx = 0;
+  state.attempts = 0;
+  state.resultsMap[state.currentLessonId] = [null, null, null];
+
+  renderTimelineProgress();
+  appendMessage('ai', cps[0].botQuestion, '10:42');
+  scrollToSlide(cps[0].slide);
+  setInputEnabled(true);
+}
+
+function showVideoModal() {
+  alert("🎬 Video mô phỏng bài giảng 3 phút đang sẵn sàng!");
+}
+
+/* ---------------- Init Application ---------------- */
+window.addEventListener('DOMContentLoaded', () => {
+  renderCurrentSlide();
+  renderTimelineProgress();
+  startReview();
+  updateLessonNavButtons();
+});
 </script>
 </body>
 </html>

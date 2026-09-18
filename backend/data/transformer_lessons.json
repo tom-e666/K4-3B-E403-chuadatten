@@ -1,0 +1,106 @@
+{
+  "topic": "Transformer Architecture & Attention Mechanism",
+  "course": "AI20k Khóa 4 - Module Deep Learning",
+  "checkpoints": [
+    {
+      "id": "cp1_self_attention",
+      "order": 1,
+      "title": "Cơ chế Self-Attention và bộ ba Query, Key, Value",
+      "student_starter_message": "Chào bạn! Tớ đang học bài Transformer nhưng lú quá. Người ta cứ bảo Q, K, V giống tìm kiếm trên Google hay YouTube. Có phải mình chỉ cần lấy Query nhân với Key là ra luôn từ tiếp theo không, sao lại cần thêm Value làm gì nữa?",
+      "misconceptions": [
+        "Nghĩ rằng Query nhân Key là ra trực tiếp output vector mà không cần Value",
+        "Tưởng rằng Self-Attention chỉ tính sự tương đồng giữa hai câu khác nhau thay vì giữa các từ trong cùng một câu",
+        "Quên bước chia cho căn bậc hai của d_k và chuẩn hóa Softmax để tạo trọng số"
+      ],
+      "rubric_points": [
+        {
+          "id": "q_k_v_roles",
+          "concept": "Vai trò của Query, Key, Value",
+          "criteria": "Giải thích rõ: Query (từ đang xét tìm kiếm gì), Key (nhãn/thuộc tính từ khác), Value (nội dung thông tin thực tế được lấy về).",
+          "weight": 35
+        },
+        {
+          "id": "attention_score",
+          "concept": "Cách tính Attention Score",
+          "criteria": "Nhắc đến tích vô hướng (Dot Product) giữa Q và K^T để đo độ tương đồng/liên quan giữa các từ.",
+          "weight": 35
+        },
+        {
+          "id": "softmax_value",
+          "concept": "Chuẩn hóa Softmax và nhân với Value",
+          "criteria": "Giải thích bước chia cho sqrt(d_k) rồi dùng Softmax để tạo phân phối xác suất trọng số, sau đó nhân tổng có trọng số với Value.",
+          "weight": 30
+        }
+      ],
+      "source_citation": "Slide Transformer bài 06 [Tr.12-18], Paper 'Attention Is All You Need' §3.2.1",
+      "summary_for_passed": "Bạn giải thích rất chuẩn! Query tìm kiếm, Key dùng để khớp độ liên quan tạo ra trọng số attention qua Softmax, rồi nhân với Value để tổng hợp thông tin ngữ cảnh."
+    },
+    {
+      "id": "cp2_multi_head_attention",
+      "order": 2,
+      "title": "Tại sao cần Multi-Head Attention thay vì 1 Head duy nhất",
+      "student_starter_message": "À tớ hiểu Self-Attention rồi! Nhưng sang phần Multi-Head Attention tớ lại thấy vô lý: Nếu một Head tính Attention đã tốt rồi, sao không làm 1 ma trận kích thước thật lớn mà lại phải chia nhỏ thành nhiều Head (ví dụ 8 heads) rồi lại mất công nối lại làm gì?",
+      "misconceptions": [
+        "Nghĩ rằng Multi-Head Attention làm tăng đáng kể số lượng tham số hoặc chi phí tính toán",
+        "Tưởng rằng các Head đều học cùng một mối quan hệ ngữ nghĩa giống hệt nhau",
+        "Nghĩ Multi-Head chỉ đơn thuần là ensemble nhiều model độc lập"
+      ],
+      "rubric_points": [
+        {
+          "id": "subspace_representation",
+          "concept": "Biểu diễn đa không gian (Subspaces)",
+          "criteria": "Giải thích mỗi head chiếu vào các không gian biểu diễn khác nhau, cho phép chú ý đồng thời đến nhiều khía cạnh (ngữ pháp, liên hệ từ vựng, đại từ chỉ định...).",
+          "weight": 40
+        },
+        {
+          "id": "prevent_averaging",
+          "concept": "Tránh bị triệt tiêu/trung bình hóa",
+          "criteria": "Nếu chỉ dùng 1 head thì các mối quan hệ khác nhau sẽ bị tính trung bình (averaging out), làm mất đi các chi tiết ngữ cảnh tinh tế.",
+          "weight": 30
+        },
+        {
+          "id": "concat_linear",
+          "concept": "Ghép các head và chiếu tuyến tính (Concat + W_O)",
+          "criteria": "Các head tính toán song song, sau đó được nối (concatenate) lại và nhân với ma trận W_O để giữ nguyên số chiều ban đầu (d_model).",
+          "weight": 30
+        }
+      ],
+      "source_citation": "Slide Transformer bài 06 [Tr.20-25], Paper 'Attention Is All You Need' §3.2.2",
+      "summary_for_passed": "Chính xác! Multi-Head Attention giúp mô hình nhìn câu từ nhiều lăng kính khác nhau cùng lúc (ngữ pháp, ngữ nghĩa, quan hệ từ xa) mà không bị trung bình hóa."
+    },
+    {
+      "id": "cp3_positional_encoding",
+      "order": 3,
+      "title": "Vai trò của Positional Encoding trong dữ liệu chuỗi",
+      "student_starter_message": "Tớ còn một thắc mắc cuối: Tại sao người ta lại phải cộng thêm vector Positional Encoding vào embedding của từ? Cứ nạp từ vào theo thứ tự đọc từ trái sang phải như RNN/LSTM ngày xưa là máy tự hiểu thứ tự câu rồi mà?",
+      "misconceptions": [
+        "Nghĩ Transformer tự có cơ chế nhận biết thứ tự từ theo thời gian tuần tự như RNN",
+        "Tưởng Positional Encoding được nối (concatenate) vào embedding thay vì cộng trực tiếp (element-wise addition)",
+        "Nghĩ Positional Encoding chỉ đơn thuần là gán nhãn số 1, 2, 3..."
+      ],
+      "rubric_points": [
+        {
+          "id": "permutation_invariance",
+          "concept": "Tính chất bất biến hoán vị của Self-Attention",
+          "criteria": "Self-attention xử lý song song toàn bộ các token cùng lúc, không có tính tuần tự, nên nếu đảo thứ tự từ thì kết quả attention vẫn không đổi (permutation invariant).",
+          "weight": 40
+        },
+        {
+          "id": "inject_order",
+          "concept": "Bổ sung thông tin vị trí",
+          "criteria": "Positional Encoding được cộng trực tiếp vào word embedding để cung cấp tọa độ/vị trí tương đối hoặc tuyệt đối của từng token trong câu.",
+          "weight": 35
+        },
+        {
+          "id": "sin_cos_patterns",
+          "concept": "Cơ chế Sinusoidal hoặc Learned Positional Embedding",
+          "criteria": "Nhắc đến việc sử dụng các hàm sin/cos với các tần số khác nhau giúp mô hình dễ dàng học được khoảng cách tương đối và suy rộng ra chuỗi dài hơn.",
+          "weight": 25
+        }
+      ],
+      "source_citation": "Slide Transformer bài 06 [Tr.28-32], Paper 'Attention Is All You Need' §3.5",
+      "summary_for_passed": "Tuyệt vời! Vì Transformer xử lý song song nên không có khái niệm trước - sau. Phải có Positional Encoding cộng vào để giữ vị trí ngữ pháp của từng từ trong câu."
+    }
+  ]
+}
+

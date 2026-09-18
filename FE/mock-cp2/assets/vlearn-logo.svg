@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 38" fill="none">
+  <!-- Left Chevron Graphic -->
+  <g id="vlearn-emblem">
+    <!-- Top-Left Red Triangle -->
+    <path d="M 6 4 L 18 16 L 6 16 Z" fill="#DC2626" />
+    <!-- Blue Folded Chevron -->
+    <path d="M 6 18 L 22 34 L 46 10 L 36 3 L 22 17 L 16 11 Z" fill="#0E489E" />
+  </g>
+
+  <!-- Vertical Divider -->
+  <line x1="56" y1="6" x2="56" y2="32" stroke="#CBD5E1" stroke-width="1.5" />
+
+  <!-- VLearn Typography -->
+  <!-- Red 'V' -->
+  <text x="68" y="27" font-family="'Inter', -apple-system, sans-serif" font-size="24" font-weight="800" fill="#DC2626" letter-spacing="-0.5">V</text>
+  <!-- Navy 'Learn' -->
+  <text x="85" y="27" font-family="'Inter', -apple-system, sans-serif" font-size="24" font-weight="800" fill="#0A3678" letter-spacing="-0.5">Learn</text>
+</svg>
+

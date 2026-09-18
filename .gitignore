@@ -1,0 +1,104 @@
+# ==============================================================================
+# QUY ĐỊNH BẢO MẬT HACKATHON AI20K & BẢO VỆ MÃ NGUỒN
+# (Căn cứ mục "Bảo mật dữ liệu được cung cấp" trong README.md)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. API Keys, Tokens & Biến môi trường bảo mật (Bắt buộc)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.cert
+*.token
+*.secret
+secrets/
+credentials.json
+
+# ------------------------------------------------------------------------------
+# 2. Dữ liệu thật của khóa học do BTC cung cấp (Quy định Điều 2 & Điều 3)
+# "Không commit data pack vào repo nộp bài — repo công khai nghĩa là dữ liệu thật
+# của khoá học sẽ lên mạng. Vi phạm thẳng quy định bảo mật."
+# ------------------------------------------------------------------------------
+/data/
+data/
+vlearn-pack/
+discord-pack/
+survey-pack/
+feedback-pack/
+*data-pack*
+*datapack*
+*vlearn-pack*
+*discord-pack*
+*survey-pack*
+*feedback-pack*
+*transcript*.md
+*.transcript.*
+**/raw_data/**
+**/transcripts/**
+**/chatlogs/**
+
+# Ngoại lệ hợp lệ: File cấu hình mock trích dẫn ngắn theo quy ước [Txx-NNN]
+!/backend/data/
+!/backend/data/lessons.json
+!mockup_fixture_d1.json
+
+# ------------------------------------------------------------------------------
+# 3. Môi trường ảo Python & Compiled Cache
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+.env.virtual/
+
+# ------------------------------------------------------------------------------
+# 4. Testing, Đánh giá tự động & Logs
+# ------------------------------------------------------------------------------
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+eval/eval_report.json
+scratch*
+*.log
+
+# ------------------------------------------------------------------------------
+# 5. Cấu hình IDE & Rác hệ điều hành
+# ------------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini

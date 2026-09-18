@@ -1,0 +1,591 @@
+{
+  "lessons": [
+    {
+      "id": "lesson_01",
+      "topic": "Day 1 — Foundation: Cách LLM hoạt động & Quản lý Context",
+      "short_title": "Bài 1: Foundation & LLM Context",
+      "course": "AI20k Khóa 4 - Module Foundation",
+      "source_transcript": "transcript-04-clean.md",
+      "duration": "45 phút",
+      "slides_count": 3,
+      "summary": "Mổ xẻ bản chất mô hình ngôn ngữ lớn (LLM): Cơ chế Next-Token Prediction xác suất, hiện tượng ảo giác (hallucination), đơn vị token, và cách quản lý cửa sổ ngữ cảnh (Context Window / Context Rot).",
+      "slides": [
+        {
+          "slide": 1,
+          "kicker": "DAY 1 · FOUNDATION · BỨC TRANH TỔNG QUAN",
+          "title": "Bức tranh AI, Machine Learning, Deep Learning & GenAI",
+          "bullets": [
+            "AI (1956) là tập cha lớn nhất: Hệ thống mô phỏng trí thông minh con người.",
+            "Machine Learning: Dạy máy học quy luật từ dữ liệu thay vì viết luật bằng tay (if-else).",
+            "Deep Learning (2006): Mạng nơ-ron sâu nhiều tầng tự trích xuất đặc trưng phức tạp.",
+            "Generative AI & LLM: Tầng trong cùng — mô hình tạo sinh có khả năng sinh văn bản, code, hình ảnh mới.",
+            "Mốc lịch sử quan trọng: Bài báo 'Attention Is All You Need' (2017) của Google đặt nền móng kiến trúc Transformer cho ChatGPT (OpenAI, 2022)."
+          ],
+          "citation": "Slide Foundation Day 1 [Tr.4-8], Transcript [T04-015], [T04-038]"
+        },
+        {
+          "slide": 2,
+          "kicker": "DAY 1 · MÔ HÌNH NGÔN NGỮ LỚN · XÁC SUẤT TOKEN",
+          "title": "Cơ chế Next-Token Prediction & Nguồn gốc Ảo giác (Hallucination)",
+          "bullets": [
+            "Bản chất LLM là cỗ máy dự đoán token tiếp theo dựa trên phân phối xác suất từ hàng triệu văn bản đã học.",
+            "Vòng lặp sinh tự hồi quy (Autoregressive loop): Nhận chuỗi -> Dự đoán xác suất từ tiếp theo -> Lấy từ có xác suất phù hợp -> Nối vào chuỗi (Append) -> Lặp lại.",
+            "Tại sao có Hallucination? Vì mô hình chỉ cố ghép các từ sao cho ngữ pháp 'thuận tai' và xác suất cao nhất, chứ bản thân nó không có ý thức hay kho tri thức bất biến.",
+            "Token là ngôn ngữ của máy: Tiếng Việt tốn khoảng 1.3 - 1.4 lần token so với tiếng Anh do có dấu và phân tách âm tiết.",
+            "Chế độ Streaming: Mô hình nhả từng token sinh ra thay vì đợi sinh toàn bộ đoạn văn bản."
+          ],
+          "citation": "Slide Foundation Day 1 [Tr.12-16], Transcript [T04-046]-[T04-050]"
+        },
+        {
+          "slide": 3,
+          "kicker": "DAY 1 · QUẢN LÝ NGỮ CẢNH · TỐI ƯU HIỆU NĂNG",
+          "title": "Context Window, Hiện tượng Context Rot & Cơ chế Attention",
+          "bullets": [
+            "Context Window (Cửa sổ ngữ cảnh) là 'bàn làm việc' tối đa mà mô hình có thể tiếp nhận trong một lượt prompt.",
+            "Hiện tượng Context Rot: Càng nhồi nhét nhiều thông tin (1M - 2M tokens), mô hình càng dễ bị phân tán chú ý (attention overload) và quên thông tin ở đầu/giữa.",
+            "Attention song song: Khác với mạng RNN ngày xưa đọc tuần tự từng chữ một (word by word) bị nghẽn cổ chai, Attention cho phép nhìn toàn bộ câu cùng lúc và tính ma trận tương quan giữa các từ.",
+            "Bài học Vibe Code & Build AI: Quản lý context thông minh — chỉ đưa thông tin tinh gọn, chất lượng; chủ động ghi plan/log thay vì để mô hình tự động tóm tắt làm mất mát chi tiết."
+          ],
+          "citation": "Slide Foundation Day 1 [Tr.18-22], Transcript [T04-051]-[T04-057]"
+        }
+      ],
+      "transcript_excerpts": [
+        {
+          "code": "T04-047",
+          "text": "Bản chất của hệ thống Transformer, bản chất của các mô hình ngôn ngữ lớn này, đấy là nó dự đoán. Nó không phải là nó biết cái tri thức đấy, mà là nó đang dự đoán những từ tiếp theo, hoặc là những token. Người dùng nhập một từ vào, nó sẽ tự động đoán được trong hàng triệu câu nó đã học, xác suất từ tiếp theo xuất hiện sẽ là gì. Nó lấy theo xác suất đấy để nó sinh ra, nối vào chuỗi ban đầu, rồi lại chạy lại vòng lặp."
+        },
+        {
+          "code": "T04-048",
+          "text": "Bản chất nó chỉ là một cỗ máy sinh ra và tự động nối từ tiếp theo vào thôi. Thế nên đấy là lý do khiến văn bản AI sinh ra nhìn trông rất có lý, rất thuận mắt, nhưng thực ra thông tin có thể sai hoàn toàn. Đấy chính là hiện tượng ảo giác — hallucination."
+        },
+        {
+          "code": "T04-052",
+          "text": "Context này nó có khái niệm là Context Rot. Nghĩa là khi bạn càng đưa nhiều thông tin, càng đưa nhiều ngữ cảnh thì mô hình càng ngày về sau sẽ càng kém đi, và nó sẽ thường quên những thông tin ở lúc đầu. Cho nên không phải cứ context lớn 1 triệu token là nó sẽ thông minh hơn."
+        },
+        {
+          "code": "T04-053",
+          "text": "Bản chất của Attention là chú ý đúng nơi cần chú ý. Khi đưa 100.000 token chất lượng và quý giá, nó chú ý đúng chỗ quan trọng thì hiệu quả vượt trội hơn hẳn so với việc nhồi nhét 1 triệu token hỗn độn."
+        }
+      ],
+      "checkpoints": [
+        {
+          "id": "cp1_next_token_hallucination",
+          "order": 1,
+          "short": "CP1",
+          "title": "Next-Token Prediction & Ảo giác (Hallucination)",
+          "slide": 2,
+          "student_starter_message": "Chào bạn! Tớ thấy ChatGPT trả lời mượt mà, câu cú trôi chảy dã man cứ như nó có ý thức thật vậy. Nhưng sao thỉnh thoảng nó lại tự tin bịa ra những sự kiện sai bét (ảo giác) thế nhỉ? Có phải do nó suy nghĩ quá sâu không?",
+          "misconceptions": [
+            "Tưởng LLM có ý thức, suy nghĩ logic và có kho tri thức nguyên vẹn như con người.",
+            "Nghĩ rằng hallucination là do lỗi phần mềm tạm thời hoặc model 'cố tình nói dối'.",
+            "Không hiểu bản chất mô hình sinh văn bản dựa trên phân phối xác suất thống kê của token tiếp theo."
+          ],
+          "rubric_points": [
+            {
+              "id": "next_token_prediction",
+              "concept": "Cơ chế Next-Token Prediction xác suất",
+              "criteria": "Giải thích LLM không hiểu theo nghĩa con người mà là cỗ máy dự đoán từ/token tiếp theo dựa trên phân phối xác suất học từ tập dữ liệu khổng lồ.",
+              "weight": 40
+            },
+            {
+              "id": "hallucination_cause",
+              "concept": "Nguồn gốc của Ảo giác (Hallucination)",
+              "criteria": "Nêu rõ ảo giác xảy ra vì mô hình ưu tiên ghép các từ có xác suất thống kê cao và câu cú thuận tai, mạch lạc, chứ không có cơ chế tự kiểm chứng sự thật khách quan.",
+              "weight": 35
+            },
+            {
+              "id": "token_streaming",
+              "concept": "Khái niệm Token và sinh tự hồi quy (Autoregressive/Streaming)",
+              "criteria": "Nhắc đến việc mô hình xử lý theo đơn vị token và sinh tuần tự (streaming) từng token rồi ghép ngược lại vào ngữ cảnh ban đầu.",
+              "weight": 25
+            }
+          ],
+          "source_citation": "Slide Foundation Day 1 [Tr.12-16], Transcript [T04-046]-[T04-050]",
+          "summary_for_passed": "Chuẩn xác! LLM chỉ là cỗ máy dự đoán token tiếp theo theo xác suất thống kê. Vì chỉ tối ưu độ mượt và tính hợp lý về mặt ngôn ngữ nên nó có thể tự tin sinh ra thông tin sai lệch (hallucination).",
+          "hints": [
+            "Gợi ý: Hãy giải thích cách LLM chọn từ tiếp theo dựa vào cái gì (xác suất thống kê hay ý thức suy nghĩ)?",
+            "Gợi ý thêm: Tại sao câu trả lời đọc rất trôi chảy, đúng ngữ pháp nhưng thông tin lại có thể sai sự thật?"
+          ],
+          "correction": "LLM hoạt động dựa trên cơ chế Next-Token Prediction: dự đoán từ/token tiếp theo có xác suất cao nhất. Mô hình ưu tiên sự mạch lạc ngôn ngữ chứ không có kho dữ liệu kiểm chứng sự thật, dẫn đến hiện tượng ảo giác (hallucination).",
+          "sample_correct": "LLM bản chất là cỗ máy dự đoán next-token dựa trên phân phối xác suất thống kê từ dữ liệu đã học. Nó không có ý thức mà chỉ chọn token tiếp theo sao cho câu cú thuận tai và xác suất cao nhất, nên có thể sinh ra thông tin ảo giác dù hành văn rất trôi chảy.",
+          "sample_wrong": "Do ChatGPT có trí tuệ nhân tạo thông minh nhưng đôi khi bộ nhớ cache bị lỗi nên nó cố tình bịa chuyện để trêu người dùng.",
+          "deep_dive": "Mô hình LLM sinh văn bản theo vòng lặp tự hồi quy (Autoregressive): mỗi bước tính softmax trên toàn bộ bộ từ vựng (vocabulary) để chọn token tiếp theo theo temperature và sampling (top-p/top-k), sau đó append vào prompt để dự đoán bước kế tiếp."
+        },
+        {
+          "id": "cp2_context_window_rot",
+          "order": 2,
+          "short": "CP2",
+          "title": "Context Window & Hiện tượng Context Rot",
+          "slide": 3,
+          "student_starter_message": "Tớ thấy các mô hình mới như Gemini quảng cáo Context Window tới 1-2 triệu tokens, nhét vừa cả chục cuốn sách. Thế thì mình cứ copy toàn bộ tài liệu vào một prompt là AI sẽ trả lời thông minh và chính xác nhất đúng không cậu?",
+          "misconceptions": [
+            "Nghĩ rằng cửa sổ ngữ cảnh càng lớn thì câu trả lời của AI luôn luôn càng thông minh và chính xác hơn.",
+            "Không biết đến hiện tượng 'Context Rot' khiến mô hình bị quá tải sự chú ý, quên thông tin ở đầu hoặc giữa tài liệu.",
+            "Không nắm được nguyên tắc quản lý context tinh gọn khi vibe coding hoặc xây dựng ứng dụng AI."
+          ],
+          "rubric_points": [
+            {
+              "id": "context_window_def",
+              "concept": "Định nghĩa Context Window (Bàn làm việc của LLM)",
+              "criteria": "Giải thích Context Window là giới hạn lượng token tối đa mà mô hình có thể tiếp nhận và xử lý trong một lượt prompt/hội thoại.",
+              "weight": 35
+            },
+            {
+              "id": "context_rot",
+              "concept": "Hiện tượng Context Rot & Quá tải Attention",
+              "criteria": "Nêu rõ hiện tượng Context Rot: khi nhồi nhét quá nhiều dữ liệu, cơ chế attention bị phân tán, mô hình dễ chú ý sai chỗ hoặc bỏ quên thông tin quan trọng.",
+              "weight": 35
+            },
+            {
+              "id": "context_management",
+              "concept": "Chiến lược quản lý context tinh gọn (Less is more)",
+              "criteria": "Nhấn mạnh giải pháp: chọn lọc ngữ cảnh chất lượng cao, chia nhỏ task, ghi nhận plan/log từng bước thay vì nhồi nhét tài liệu thô.",
+              "weight": 30
+            }
+          ],
+          "source_citation": "Slide Foundation Day 1 [Tr.18-22], Transcript [T04-051]-[T04-057]",
+          "summary_for_passed": "Rất chính xác! Context Window giống như bàn làm việc. Càng bày bừa nhiều tài liệu thì càng dễ gặp Context Rot, attention bị phân tán chú ý sai chỗ. Quản lý context tinh gọn là kỹ năng cốt lõi khi build AI!",
+          "hints": [
+            "Gợi ý: Khi nhồi 1 triệu token vào prompt, điều gì xảy ra với sự chú ý (attention) của mô hình?",
+            "Gợi ý thêm: Khái niệm 'Context Rot' giải thích việc mô hình xử lý thông tin kém đi như thế nào khi context quá dài?"
+          ],
+          "correction": "Context Window là giới hạn token xử lý một lúc. Khi nhét quá nhiều thông tin, mô hình gặp hiện tượng Context Rot (chú ý phân tán, dễ quên hoặc chú ý sai chỗ). Cần chọn lọc context tinh gọn, chất lượng cao.",
+          "sample_correct": "Context Window là giới hạn token trong một prompt giống như mặt bàn làm việc. Khi nhồi quá nhiều dữ liệu sẽ gây hiện tượng Context Rot khiến attention bị phân tán, chú ý sai chỗ và quên thông tin. Ta cần quản lý context tinh gọn và chắt lọc.",
+          "sample_wrong": "Đúng rồi, cứ nhét càng nhiều triệu token vào thì AI càng học thuộc hết và trả lời chuẩn xác 100% không bao giờ sót ý.",
+          "deep_dive": "Nghiên cứu 'Lost in the Middle' chỉ ra rằng các mô hình LLM chú ý tốt nhất ở phần đầu (primacy) và phần cuối (recency) của context, còn thông tin ở giữa thường bị suy giảm độ truy xuất nghiêm trọng khi context scale lên hàng trăm nghìn token."
+        },
+        {
+          "id": "cp3_attention_vs_rnn",
+          "order": 3,
+          "short": "CP3",
+          "title": "Cơ chế Attention song song so với Bottleneck của RNN",
+          "slide": 3,
+          "student_starter_message": "Trước khi có Transformer thì các mạng RNN/LSTM cũng đã được dùng để dịch máy và xử lý ngôn ngữ rồi. Sao Transformer có cơ chế Attention lại tạo ra cú hích lớn vượt trội hoàn toàn so với RNN vậy cậu?",
+          "misconceptions": [
+            "Tưởng RNN cũng có thể xử lý song song toàn bộ câu như Transformer.",
+            "Nghĩ Attention chỉ đơn thuần là kỹ thuật tìm kiếm từ khóa (keyword search).",
+            "Không nhận ra điểm nghẽn nghiêm trọng của RNN khi dịch câu dài (quên thông tin do xử lý tuần tự từng chữ)."
+          ],
+          "rubric_points": [
+            {
+              "id": "rnn_sequential_bottleneck",
+              "concept": "Hạn chế cổ chai của mạng RNN tuần tự",
+              "criteria": "Giải thích RNN đọc tuần tự từng chữ một (word by word), gặp vấn đề quên thông tin ở xa (vanishing gradient/bottleneck) khi gặp câu dài.",
+              "weight": 40
+            },
+            {
+              "id": "attention_parallel",
+              "concept": "Khả năng xử lý song song và bao quát toàn câu của Attention",
+              "criteria": "Attention cho phép mô hình nhìn toàn bộ văn bản cùng một lúc, tính ma trận liên kết giữa mọi cặp từ bất kể khoảng cách.",
+              "weight": 35
+            },
+            {
+              "id": "gpu_parallel_advantage",
+              "concept": "Tận dụng tối đa phần cứng GPU tính toán song song",
+              "criteria": "Transformer giải phóng việc huấn luyện khỏi tính tuần tự, giúp tận dụng sức mạnh tính toán song song của phần cứng GPU để huấn luyện trên quy mô dữ liệu khổng lồ.",
+              "weight": 25
+            }
+          ],
+          "source_citation": "Slide Foundation Day 1 [Tr.10-12], Transcript [T04-039]-[T04-040], [T04-054]",
+          "summary_for_passed": "Tuyệt vời! RNN bị nghẽn vì đọc tuần tự từng chữ và hay quên thông tin câu dài. Attention trong Transformer nhìn toàn bộ câu cùng lúc, tính ma trận liên kết và chạy song song cực nhanh trên GPU!",
+          "hints": [
+            "Gợi ý: Mạng RNN đọc văn bản theo kiểu gì (tuần tự hay song song) và gặp khó khăn gì với câu dài?",
+            "Gợi ý thêm: Cơ chế Attention giúp mô hình nhìn mối quan hệ giữa các từ trong câu như thế nào?"
+          ],
+          "correction": "RNN đọc tuần tự từng chữ nên bị nghẽn cổ chai và quên ngữ cảnh câu dài. Transformer dùng Attention để nhìn toàn bộ câu đồng thời, tính ma trận trọng số tương quan giữa các từ và tận dụng xử lý song song trên GPU.",
+          "sample_correct": "RNN đọc tuần tự từng chữ nên câu dài sẽ quên thông tin phía trước và không song song hóa được. Transformer dùng cơ chế Attention cho phép nhìn toàn bộ câu cùng lúc, tính ma trận tương quan giữa mọi cặp từ và tận dụng tính toán song song trên GPU.",
+          "sample_wrong": "RNN tốt hơn Transformer nhưng do Google PR bài báo Attention is all you need nên mọi người mới chuyển sang dùng thôi.",
+          "deep_dive": "Trong RNN, trạng thái ẩn h_t phải chờ h_{t-1}, tạo thành phụ thuộc tuần tự O(n) không thể phân tán trên nhiều GPU cores. Transformer biến toàn bộ quá trình thành các phép nhân ma trận song song O(1) về số bước tuần tự."
+        }
+      ]
+    },
+    {
+      "id": "lesson_02",
+      "topic": "Day 1 (Chiều) — Transformer Architecture & Attention Mechanism",
+      "short_title": "Bài 2: Transformer Architecture",
+      "course": "AI20k Khóa 4 - Module Deep Learning",
+      "source_transcript": "transcript-06-clean.md",
+      "duration": "55 phút",
+      "slides_count": 3,
+      "summary": "Đi sâu vào kiến trúc bên trong của Transformer: Bộ ba Query, Key, Value trong Self-Attention, lợi ích của Multi-Head Attention, và vai trò của Positional Encoding.",
+      "slides": [
+        {
+          "slide": 1,
+          "kicker": "TRANSFORMER ARCHITECTURE · SELF-ATTENTION",
+          "title": "Cơ Chế Self-Attention & Bộ Ba Query, Key, Value",
+          "bullets": [
+            "Mục tiêu: Cho phép mỗi từ trong câu 'nhìn' và chú ý đến tất cả các từ khác cùng lúc.",
+            "Bộ ba Q, K, V: Query (từ đang xét đang tìm kiếm điều gì), Key (nhãn/thuộc tính từ khác cung cấp), Value (nội dung thông tin thực tế được lấy về).",
+            "Attention Score: Tích vô hướng (Dot Product) giữa Query và Key đo độ tương đồng/liên quan ngữ nghĩa.",
+            "Chuẩn hoá Softmax: Chia cho căn bậc hai của d_k (để gradient không bị triệt tiêu) rồi qua Softmax tạo ra phân phối trọng số tổng bằng 1.",
+            "Tổng hợp ngữ cảnh: Nhân ma trận trọng số Attention với Value để sinh ra vector biểu diễn giàu ngữ cảnh."
+          ],
+          "citation": "Slide Transformer bài 06 [Tr.12-18], Transcript [T06-085], Paper 'Attention Is All You Need' §3.2.1"
+        },
+        {
+          "slide": 2,
+          "kicker": "TRANSFORMER ARCHITECTURE · MULTI-HEAD ATTENTION",
+          "title": "Tại Sao Cần Multi-Head Attention Thay Vì 1 Head Duy Nhất?",
+          "bullets": [
+            "Vấn đề của 1 Head: Khi chỉ dùng 1 head attention duy nhất, các mối quan hệ khác nhau (ngữ pháp, chủ-vị, đại từ thay thế, ngữ nghĩa từ xa) sẽ bị tính trung bình (averaging out).",
+            "Đa không gian biểu diễn (Subspaces): Multi-Head chia nhỏ vector thành h phần (ví dụ 8 heads) và chiếu vào các không gian biểu diễn khác nhau.",
+            "Học đồng thời nhiều khía cạnh: Head 1 tập trung liên kết ngữ pháp, Head 2 tập trung giải quyết đại từ chỉ định ('nó' trỏ tới ai), Head 3 quan sát ngữ cảnh rộng.",
+            "Tổng hợp Concat + Linear: Các head chạy song song, sau đó được ghép (concatenate) lại và nhân với ma trận trọng số W_O để giữ nguyên số chiều ban đầu."
+          ],
+          "citation": "Slide Transformer bài 06 [Tr.20-25], Transcript [T06-086], Paper 'Attention Is All You Need' §3.2.2"
+        },
+        {
+          "slide": 3,
+          "kicker": "TRANSFORMER ARCHITECTURE · POSITIONAL ENCODING",
+          "title": "Vai Trò Của Positional Encoding Trong Dữ Liệu Chuỗi",
+          "bullets": [
+            "Tính chất bất biến hoán vị (Permutation Invariance): Khác với RNN đọc tuần tự, Self-Attention xử lý tất cả các token cùng lúc, do đó nếu đảo thứ tự từ thì điểm attention vẫn giữ nguyên.",
+            "Thiếu thông tin vị trí: Nếu không có cơ chế bù đắp, mô hình sẽ không phân biệt được câu 'Tôi cắn con chó' và 'Con chó cắn tôi'.",
+            "Vector vị trí cộng trực tiếp: Positional Encoding là một vector cùng số chiều được cộng trực tiếp (element-wise addition) vào word embedding.",
+            "Cơ chế Sin/Cos: Sử dụng các hàm sin và cos ở các bước sóng/tần số khác nhau giúp mô hình học được khoảng cách tương đối giữa các từ trong câu."
+          ],
+          "citation": "Slide Transformer bài 06 [Tr.28-32], Transcript [T06-088], Paper 'Attention Is All You Need' §3.5"
+        }
+      ],
+      "transcript_excerpts": [
+        {
+          "code": "T06-085",
+          "text": "Trong Attention, chúng ta có ba khái niệm Q, K, V: Query là câu hỏi hoặc từ đang xét muốn tìm kiếm thông tin gì; Key là nhãn hoặc tiêu đề của các từ khác trong câu; còn Value là nội dung thực sự bên trong. Tích giữa Q và K xác định trọng số liên quan, rồi dùng trọng số đó nhân với Value để rút trích thông tin."
+        },
+        {
+          "code": "T06-086",
+          "text": "Nếu chỉ có 1 head, bạn giống như một người chỉ có một góc nhìn, mọi mối quan hệ bị trung bình hóa lại với nhau. Multi-Head Attention giống như chia thành nhiều góc nhìn song song: head này nhìn ngữ pháp, head kia nhìn quan hệ đại từ, sau đó ghép lại."
+        },
+        {
+          "code": "T06-088",
+          "text": "Bản thân Self-Attention không hề có khái niệm trước sau vì nó xử lý song song tất cả các token cùng một thời điểm. Do đó, bắt buộc phải có Positional Encoding cộng vào embedding để nạp tọa độ vị trí của từ vào trong câu."
+        }
+      ],
+      "checkpoints": [
+        {
+          "id": "cp1_self_attention",
+          "order": 1,
+          "short": "CP1",
+          "title": "Cơ chế Self-Attention và bộ ba Query, Key, Value",
+          "slide": 1,
+          "student_starter_message": "Chào bạn! Tớ đang học bài Transformer nhưng lú quá. Người ta cứ bảo Q, K, V giống tìm kiếm trên Google hay YouTube. Có phải mình chỉ cần lấy Query nhân với Key là ra luôn từ tiếp theo không, sao lại cần thêm Value làm gì nữa?",
+          "misconceptions": [
+            "Nghĩ rằng Query nhân Key là ra trực tiếp output vector mà không cần Value",
+            "Tưởng rằng Self-Attention chỉ tính sự tương đồng giữa hai câu khác nhau thay vì giữa các từ trong cùng một câu",
+            "Quên bước chia cho căn bậc hai của d_k và chuẩn hóa Softmax để tạo trọng số"
+          ],
+          "rubric_points": [
+            {
+              "id": "q_k_v_roles",
+              "concept": "Vai trò của Query, Key, Value",
+              "criteria": "Giải thích rõ: Query (từ đang xét tìm kiếm gì), Key (nhãn/thuộc tính từ khác), Value (nội dung thông tin thực tế được lấy về).",
+              "weight": 35
+            },
+            {
+              "id": "attention_score",
+              "concept": "Cách tính Attention Score",
+              "criteria": "Nhắc đến tích vô hướng (Dot Product) giữa Q và K^T để đo độ tương đồng/liên quan giữa các từ.",
+              "weight": 35
+            },
+            {
+              "id": "softmax_value",
+              "concept": "Chuẩn hóa Softmax và nhân với Value",
+              "criteria": "Giải thích bước chia cho sqrt(d_k) rồi dùng Softmax để tạo phân phối xác suất trọng số, sau đó nhân tổng có trọng số với Value.",
+              "weight": 30
+            }
+          ],
+          "source_citation": "Slide Transformer bài 06 [Tr.12-18], Transcript [T06-085], Paper 'Attention Is All You Need' §3.2.1",
+          "summary_for_passed": "Bạn giải thích rất chuẩn! Query tìm kiếm, Key dùng để khớp độ liên quan tạo ra trọng số attention qua Softmax, rồi nhân với Value để tổng hợp thông tin ngữ cảnh.",
+          "hints": [
+            "Gợi ý: Query nhân với Key chỉ mới tạo ra 'điểm số tương đồng' (Attention Score). Vậy điểm số này được chuẩn hoá qua hàm gì và nhân với vector nào để lấy nội dung?",
+            "Gợi ý thêm: Bạn cần nhắc đến: (1) Query tìm kiếm, Key khớp độ liên quan, (2) Softmax tạo trọng số, (3) Nhân trọng số đó với Value để rút trích thông tin."
+          ],
+          "correction": "Query nhân Key cho ra Attention Score (độ liên quan), sau đó qua Softmax thành trọng số xác suất, rồi mới nhân với Value để lấy ra tổng hợp thông tin ngữ cảnh.",
+          "sample_correct": "Query là từ cần tìm kiếm, Key là nhãn để so khớp độ liên quan bằng tích vô hướng dot product. Sau đó chia cho căn bậc hai d_k rồi qua Softmax để tạo trọng số attention. Cuối cùng nhân trọng số này với Value để lấy ra nội dung thông tin thực tế.",
+          "sample_wrong": "Chỉ cần lấy Query nhân với Key là ra luôn kết quả cuối cùng, Value không cần thiết và chỉ để làm cảnh.",
+          "deep_dive": "Công thức gốc: Attention(Q, K, V) = softmax(Q * K^T / sqrt(d_k)) * V. Việc chia cho căn bậc hai của d_k là cực kỳ quan trọng: khi số chiều d_k lớn, tích vô hướng có độ lớn rất cao đẩy hàm Softmax vào vùng gradient cực nhỏ (bão hòa), làm triệt tiêu gradient khi backpropagation."
+        },
+        {
+          "id": "cp2_multi_head_attention",
+          "order": 2,
+          "short": "CP2",
+          "title": "Tại sao cần Multi-Head Attention thay vì 1 Head duy nhất",
+          "slide": 2,
+          "student_starter_message": "À tớ hiểu Self-Attention rồi! Nhưng sang phần Multi-Head Attention tớ lại thấy vô lý: Nếu một Head tính Attention đã tốt rồi, sao không làm 1 ma trận kích thước thật lớn mà lại phải chia nhỏ thành nhiều Head (ví dụ 8 heads) rồi lại mất công nối lại làm gì?",
+          "misconceptions": [
+            "Nghĩ rằng Multi-Head Attention làm tăng đáng kể số lượng tham số hoặc chi phí tính toán",
+            "Tưởng rằng các Head đều học cùng một mối quan hệ ngữ nghĩa giống hệt nhau",
+            "Nghĩ Multi-Head chỉ đơn thuần là ensemble nhiều model độc lập"
+          ],
+          "rubric_points": [
+            {
+              "id": "subspace_representation",
+              "concept": "Biểu diễn đa không gian (Subspaces)",
+              "criteria": "Giải thích mỗi head chiếu vào các không gian biểu diễn khác nhau, cho phép chú ý đồng thời đến nhiều khía cạnh (ngữ pháp, liên hệ từ vựng, đại từ chỉ định...).",
+              "weight": 40
+            },
+            {
+              "id": "prevent_averaging",
+              "concept": "Tránh bị triệt tiêu/trung bình hóa",
+              "criteria": "Nếu chỉ dùng 1 head thì các mối quan hệ khác nhau sẽ bị tính trung bình (averaging out), làm mất đi các chi tiết ngữ cảnh tinh tế.",
+              "weight": 30
+            },
+            {
+              "id": "concat_linear",
+              "concept": "Ghép các head và chiếu tuyến tính (Concat + W_O)",
+              "criteria": "Các head tính toán song song, sau đó được nối (concatenate) lại và nhân với ma trận W_O để giữ nguyên số chiều ban đầu (d_model).",
+              "weight": 30
+            }
+          ],
+          "source_citation": "Slide Transformer bài 06 [Tr.20-25], Transcript [T06-086], Paper 'Attention Is All You Need' §3.2.2",
+          "summary_for_passed": "Chính xác! Multi-Head Attention giúp mô hình nhìn câu từ nhiều lăng kính khác nhau cùng lúc (ngữ pháp, ngữ nghĩa, quan hệ từ xa) mà không bị trung bình hóa.",
+          "hints": [
+            "Gợi ý: Nếu một từ vừa có quan hệ ngữ pháp (chủ - vị) vừa có quan hệ tham chiếu (đại từ 'nó' trỏ về đâu), 1 Head có thể biểu diễn tốt cả hai cùng lúc không hay bị trung bình hóa?",
+            "Gợi ý thêm: Nhiều Head cho phép chiếu vector vào các 'không gian con' (subspaces) khác nhau để học đồng thời nhiều khía cạnh ngữ nghĩa."
+          ],
+          "correction": "1 Head sẽ làm các mối quan hệ ngữ nghĩa bị trung bình hóa (averaging out). Multi-Head chia thành nhiều không gian con (subspaces) để học song song nhiều khía cạnh (ngữ pháp, đại từ, ngữ cảnh xa), sau đó nối (concat) lại.",
+          "sample_correct": "Vì nếu dùng 1 head duy nhất thì các mối liên hệ khác nhau sẽ bị tính trung bình và triệt tiêu nhau. Multi-Head cho phép chiếu vào nhiều không gian con subspaces khác nhau để cùng lúc nhìn được nhiều góc độ như ngữ pháp, quan hệ từ xa, sau đó ghép lại bằng concat và chiếu qua ma trận tuyến tính.",
+          "sample_wrong": "Chia nhiều head chỉ để chạy nhanh hơn trên nhiều máy tính thôi chứ về mặt ý nghĩa ngữ nghĩa thì 1 head to hay nhiều head nhỏ hoàn toàn như nhau.",
+          "deep_dive": "Tổng chi phí tính toán của Multi-Head (h heads, mỗi head kích thước d_k = d_model / h) hoàn toàn tương đương với 1 Head duy nhất có kích thước d_model đầy đủ. Nhờ giảm số chiều trên mỗi head, mô hình vừa bắt được nhiều subspace representation vừa giữ nguyên computation budget."
+        },
+        {
+          "id": "cp3_positional_encoding",
+          "order": 3,
+          "short": "CP3",
+          "title": "Vai trò của Positional Encoding trong dữ liệu chuỗi",
+          "slide": 3,
+          "student_starter_message": "Tớ còn một thắc mắc cuối: Tại sao người ta lại phải cộng thêm vector Positional Encoding vào embedding của từ? Cứ nạp từ vào theo thứ tự đọc từ trái sang phải như RNN/LSTM ngày xưa là máy tự hiểu thứ tự câu rồi mà?",
+          "misconceptions": [
+            "Nghĩ Transformer tự có cơ chế nhận biết thứ tự từ theo thời gian tuần tự như RNN",
+            "Tưởng Positional Encoding được nối (concatenate) vào embedding thay vì cộng trực tiếp (element-wise addition)",
+            "Nghĩ Positional Encoding chỉ đơn thuần là gán nhãn số 1, 2, 3..."
+          ],
+          "rubric_points": [
+            {
+              "id": "permutation_invariance",
+              "concept": "Tính chất bất biến hoán vị của Self-Attention",
+              "criteria": "Self-attention xử lý song song toàn bộ các token cùng lúc, không có tính tuần tự, nên nếu đảo thứ tự từ thì kết quả attention vẫn không đổi (permutation invariant).",
+              "weight": 40
+            },
+            {
+              "id": "inject_order",
+              "concept": "Bổ sung thông tin vị trí",
+              "criteria": "Positional Encoding được cộng trực tiếp vào word embedding để cung cấp tọa độ/vị trí tương đối hoặc tuyệt đối của từng token trong câu.",
+              "weight": 35
+            },
+            {
+              "id": "sin_cos_patterns",
+              "concept": "Cơ chế Sinusoidal hoặc Learned Positional Embedding",
+              "criteria": "Nhắc đến việc sử dụng các hàm sin/cos với các tần số khác nhau giúp mô hình dễ dàng học được khoảng cách tương đối và suy rộng ra chuỗi dài hơn.",
+              "weight": 25
+            }
+          ],
+          "source_citation": "Slide Transformer bài 06 [Tr.28-32], Transcript [T06-088], Paper 'Attention Is All You Need' §3.5",
+          "summary_for_passed": "Tuyệt vời! Vì Transformer xử lý song song nên không có khái niệm trước - sau. Phải có Positional Encoding cộng vào để giữ vị trí ngữ pháp của từng từ trong câu.",
+          "hints": [
+            "Gợi ý: Transformer xử lý tất cả các từ CÙNG LÚC (song song), không đọc tuần tự như RNN — vậy làm sao mô hình biết từ nào đứng trước, từ nào đứng sau?",
+            "Gợi ý thêm: Positional Encoding là một vector được cộng thêm vào embedding của mỗi từ, để mã hoá vị trí của từ đó trong câu."
+          ],
+          "correction": "Vì Transformer xử lý các từ song song nên tự nó không biết thứ tự (bất biến hoán vị). Positional Encoding cộng thêm thông tin vị trí vào embedding của từng từ để mô hình phân biệt thứ tự ngữ pháp.",
+          "sample_correct": "Vì Transformer xử lý song song tất cả các từ cùng lúc nên có tính chất bất biến hoán vị, không tự biết thứ tự trước sau như RNN. Do đó cần cộng thêm vector Positional Encoding vào word embedding để mã hóa vị trí và khoảng cách tương đối giữa các từ bằng hàm sin cos.",
+          "sample_wrong": "Transformer đọc từ trái sang phải như mắt người nên nó đã biết vị trí rồi, cộng thêm vector vị trí chỉ để tăng dung lượng lưu trữ.",
+          "deep_dive": "Hàm Sinusoidal Positional Encoding dùng công thức PE(pos, 2i) = sin(pos / 10000^(2i/d_model)) và PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model)). Điều này cho phép PE(pos + k) được biểu diễn tuyến tính qua PE(pos), giúp mô hình dễ dàng tổng quát hóa quan hệ khoảng cách tương đối k."
+        }
+      ]
+    },
+    {
+      "id": "lesson_03",
+      "topic": "Day 2 (Sáng) — Xác định bài toán kinh doanh cho AI (Problem Definition)",
+      "short_title": "Bài 3: Bài toán kinh doanh AI",
+      "course": "AI20k Khóa 4 - Module AI Product & Business",
+      "source_transcript": "transcript-01-clean.md",
+      "duration": "40 phút",
+      "slides_count": 3,
+      "summary": "Tư duy sản phẩm AI thực chiến: Tránh bẫy nhảy thẳng vào giải pháp (Jumping to Solution), phân biệt Product Mindset vs Project Mindset, và chiến lược Dogfooding để giải quyết bài toán thực tế.",
+      "slides": [
+        {
+          "slide": 1,
+          "kicker": "AI PRODUCT · ĐỊNH NGHĨA BÀI TOÁN",
+          "title": "Tránh Bẫy 'Nhảy Thẳng Vào Giải Pháp' (Jumping to Solution)",
+          "bullets": [
+            "Bẫy phổ biến: Lãnh đạo hoặc kỹ sư thường nói 'Chúng ta phải làm một AI Chatbot support' mà chưa rõ phục vụ ai và giải quyết nỗi đau gì.",
+            "Nguyên tắc cốt lõi: 70% thành bại của việc ứng dụng AI trong doanh nghiệp đến từ con người và vận hành, chỉ 30% đến từ công nghệ.",
+            "Kỹ thuật đào sâu Pain Point (5 Whys): Hỏi 'Tại sao' liên tục để tìm ra nguyên nhân gốc rễ (Root Cause) phía sau yêu cầu bề mặt.",
+            "Cân nhắc giải pháp đơn giản trước: Nhiều khi chỉ cần tối ưu quy trình hoặc viết một script tự động hóa đơn giản thay vì xây dựng hệ thống AI cồng kềnh."
+          ],
+          "citation": "Slide AI Product Day 2 [Tr.3-7], Transcript [T01-002]-[T01-005], [T01-030]-[T01-033]"
+        },
+        {
+          "slide": 2,
+          "kicker": "AI PRODUCT · TƯ DUY QUẢN LÝ SẢN PHẨM",
+          "title": "Phân Biệt Product Mindset vs Project Mindset Trong AI",
+          "bullets": [
+            "Project Manager (Tư duy dự án/Outsourcing): Tập trung vào tiến độ (timeline), ngân sách (budget), nhận spec có sẵn và bàn giao là xong việc.",
+            "Product Manager/Owner (Tư duy sản phẩm): Lấy người dùng làm trung tâm (user-centered), tự đi tìm bài toán đáng làm, thấu hiểu thị trường và liên tục cải tiến.",
+            "Đặc thù sản phẩm AI: Khác với phần mềm truyền thống (100 lần chạy ra 100 kết quả như nhau), AI có tính xác suất, sinh lỗi và kỳ vọng của người dùng thay đổi rất nhanh.",
+            "Chi phí chuyển đổi thấp: Người dùng sẵn sàng bỏ sản phẩm AI sang đối thủ khác chỉ sau một vài lần trả lời lỗi nếu sản phẩm không đem lại giá trị thực sự."
+          ],
+          "citation": "Slide AI Product Day 2 [Tr.10-15], Transcript [T01-008]-[T01-011], [T01-018]-[T01-021]"
+        },
+        {
+          "slide": 3,
+          "kicker": "AI PRODUCT · CHIẾN LƯỢC TRIỂN KHAI THỰC CHIẾN",
+          "title": "Chiến Lược Dogfooding Trong Phát Triển Sản Phẩm AI",
+          "bullets": [
+            "Khái niệm Dogfooding: Tự mình là người dùng đầu tiên và sử dụng chính sản phẩm mình làm ra hàng ngày ('ăn thức ăn của chính mình').",
+            "Lợi ích vượt trội: Cảm nhận trực tiếp nỗi đau thực tế (pain point), trở thành tester đầu tiên, rút ngắn vòng phản hồi (feedback loop) mà không cần chờ user bên ngoài.",
+            "Ví dụ điển hình: Atlassian dùng Jira để build Jira, Anthropic dùng Claude Code để phát triển Claude Code, Slack dùng nội bộ trước khi thương mại hóa.",
+            "Bắt đầu từ việc nhỏ xung quanh: Thay vì giải bài toán vĩ mô xa vời, hãy giải quyết nỗi đau của chính bạn hoặc đồng đội trong công việc hàng ngày."
+          ],
+          "citation": "Slide AI Product Day 2 [Tr.20-24], Transcript [T01-040]-[T01-042]"
+        }
+      ],
+      "transcript_excerpts": [
+        {
+          "code": "T01-004",
+          "text": "Công nghệ sinh ra để giải quyết một vấn đề gì đấy. Đầu tiên mình phải biết vấn đề là gì, sau đấy công nghệ mới là công cụ để giải nó. Nhiều khi con người có một cái quán tính là nhảy thẳng vào giải pháp: các lãnh đạo thường bảo 'anh phải làm một cái AI support', nhưng support để làm gì, cho ai thì chưa trả lời được."
+        },
+        {
+          "code": "T01-011",
+          "text": "Project manager đảm bảo hoàn thành đúng tiến độ trong ngân sách. Nhưng product manager thì không có ai đến bảo 'hãy làm cái đấy đi'. Bạn phải tự đi tìm bài toán, giải pháp đáng làm. Phải luôn hỏi: mình build cái này cho ai, và họ có thực sự cần nó hay không?"
+        },
+        {
+          "code": "T01-042",
+          "text": "Dogfooding là một cách thức xây dựng sản phẩm mà bạn là user và bạn dùng chính sản phẩm của bạn — bạn làm ra xong bạn 'ăn' chính nó. Jira xuất phát từ việc dùng Jira để build Jira. Anthropic dùng Claude Code để build Claude Code. Bạn là tester đầu tiên, bạn cảm nhận nỗi đau và tối ưu liên tục."
+        }
+      ],
+      "checkpoints": [
+        {
+          "id": "cp1_jumping_to_solution",
+          "order": 1,
+          "short": "CP1",
+          "title": "Tránh bẫy 'Nhảy thẳng vào giải pháp' (Jumping to Solution)",
+          "slide": 1,
+          "student_starter_message": "Sếp tớ vừa họp xong đã bảo: 'Công ty mình phải build ngay một con AI Chatbot support khách hàng cho bằng bạn bằng bè!'. Tớ định bắt tay vào code chatbot bằng LangChain luôn. Cậu thấy kế hoạch thế đã chuẩn chưa?",
+          "misconceptions": [
+            "Nghĩ rằng cứ công nghệ hot (AI chatbot) là phải triển khai ngay mà không cần tìm hiểu vấn đề thực tế.",
+            "Lẫn lộn giữa Giải pháp (Solution - Chatbot) và Nỗi đau thực tế (Pain point - ví dụ sale quá tải hoặc quy trình thủ công).",
+            "Bỏ qua các giải pháp đơn giản hoặc quy trình phi-AI trước khi quyết định dùng AI."
+          ],
+          "rubric_points": [
+            {
+              "id": "jumping_to_solution",
+              "concept": "Nhận diện bẫy 'Nhảy thẳng vào giải pháp'",
+              "criteria": "Chỉ ra việc vội vàng làm chatbot là bẫy Jumping to Solution — đưa giải pháp công nghệ trước khi xác định rõ bài toán và đối tượng phục vụ.",
+              "weight": 35
+            },
+            {
+              "id": "pain_point_discovery",
+              "concept": "Đào sâu tìm Nỗi đau gốc rễ (5 Whys / Root cause)",
+              "criteria": "Khuyên nên đặt câu hỏi đào sâu (ví dụ kỹ thuật 5 Whys), phỏng vấn các bên liên quan để tìm ra pain point thực sự (tại sao cần support, ai gặp khó khăn gì).",
+              "weight": 35
+            },
+            {
+              "id": "simple_alternatives",
+              "concept": "Xem xét giải pháp đơn giản thay thế",
+              "criteria": "Nhắc đến việc xem xét các giải pháp đơn giản hơn (tối ưu quy trình, template câu trả lời, script nhỏ) trước khi quyết định đầu tư hệ thống AI phức tạp.",
+              "weight": 30
+            }
+          ],
+          "source_citation": "Slide AI Product Day 2 [Tr.3-7], Transcript [T01-002]-[T01-005], [T01-030]-[T01-033]",
+          "summary_for_passed": "Xuất sắc! Đừng vội nhảy vào làm AI Chatbot. Phải dùng 5 Whys đào sâu xem nỗi đau thực sự là gì, và cân nhắc giải pháp đơn giản trước khi dùng AI.",
+          "hints": [
+            "Gợi ý: Việc sếp bảo làm 'AI Chatbot' là giải pháp hay vấn đề? Bạn cần khuyên bạn học lùi lại đặt câu hỏi gì?",
+            "Gợi ý thêm: Hãy nhắc đến việc tìm nỗi đau thực sự (pain point), dùng 5 Whys và xem liệu có giải pháp đơn giản nào trước khi dùng AI không."
+          ],
+          "correction": "Vội vàng làm chatbot là bẫy Jumping to Solution. Cần lùi lại xác định rõ ai dùng, nỗi đau thực sự (pain point) là gì qua kỹ thuật 5 Whys, và đánh giá xem có giải pháp quy trình đơn giản nào không trước khi dùng AI.",
+          "sample_correct": "Bạn đang mắc bẫy Jumping to Solution rồi, chatbot chỉ là giải pháp chứ chưa phải bài toán. Cần dừng lại hỏi 5 Whys để tìm pain point thực sự phía sau (ai đang quá tải, khó khăn ở khâu nào) và xem có giải pháp thủ công hoặc quy trình đơn giản nào giải quyết được không trước khi build AI phức tạp.",
+          "sample_wrong": "Chuẩn rồi đấy, sếp bảo làm chatbot thì cứ dùng LangChain với vector database dựng luôn cho nhanh để kịp tiến độ.",
+          "deep_dive": "Theo thống kê, 70% dự án AI thất bại vì không giải quyết đúng bài toán doanh nghiệp. Quy tắc vàng: Fall in love with the problem, not the solution. Luôn bắt đầu từ việc xác định giá trị đo lường được (Metrics & ROI) trước khi chọn mô hình hay framework."
+        },
+        {
+          "id": "cp2_product_vs_project_mindset",
+          "order": 2,
+          "short": "CP2",
+          "title": "Phân biệt Product Mindset vs Project Mindset trong AI",
+          "slide": 2,
+          "student_starter_message": "Tớ tưởng làm Product Manager với Project Manager trong dự án AI cũng giống nhau cả thôi, cứ nhận spec của khách rồi chia việc cho anh em dev code đúng tiến độ và ngân sách là xong đúng không cậu?",
+          "misconceptions": [
+            "Đồng nhất vai trò của Product Manager (quản lý sản phẩm) với Project Manager (quản trị dự án).",
+            "Tư duy outsourcing bàn giao là hết trách nhiệm thay vì lấy người dùng làm trung tâm (user-centered).",
+            "Không nhận ra tính chất xác suất và sự thay đổi kỳ vọng người dùng trong sản phẩm AI."
+          ],
+          "rubric_points": [
+            {
+              "id": "project_manager_role",
+              "concept": "Đặc trưng của Project Manager (Quản lý dự án)",
+              "criteria": "Giải thích Project Manager tập trung vào tiến độ (timeline), ngân sách (budget), quản lý nguồn lực để hoàn thành spec được giao đúng hạn.",
+              "weight": 35
+            },
+            {
+              "id": "product_manager_role",
+              "concept": "Đặc trưng của Product Manager (Lấy người dùng làm trung tâm)",
+              "criteria": "Giải thích Product Manager phải tự đi tìm bài toán đáng làm, thấu hiểu khách hàng và thị trường, định hình tính năng và giá trị sản phẩm lâu dài.",
+              "weight": 35
+            },
+            {
+              "id": "ai_product_uniqueness",
+              "concept": "Khác biệt đặc thù trong sản phẩm AI",
+              "criteria": "Chỉ ra AI có tính xác suất (không luôn đúng 100%), kỳ vọng người dùng thay đổi nhanh, đòi hỏi tư duy liên tục đo lường và lặp lại (iteration) sau khi release.",
+              "weight": 30
+            }
+          ],
+          "source_citation": "Slide AI Product Day 2 [Tr.10-15], Transcript [T01-008]-[T01-011], [T01-018]-[T01-021]",
+          "summary_for_passed": "Rất chuẩn! Project Manager tập trung vào tiến độ và ngân sách spec có sẵn. Product Manager lấy người dùng làm trung tâm, tìm bài toán đáng làm và liên tục đo lường cải tiến cho sản phẩm AI.",
+          "hints": [
+            "Gợi ý: Project Manager và Product Manager khác nhau ở điểm nào về mục tiêu (tiến độ vs giá trị người dùng)?",
+            "Gợi ý thêm: Sản phẩm AI có tính xác suất nên sau khi code xong bàn giao thì công việc đã hết chưa hay phải liên tục đo lường?"
+          ],
+          "correction": "Project Manager tập trung vào tiến độ, ngân sách và phân bổ nguồn lực theo spec. Product Manager tập trung vào người dùng, thị trường, tìm bài toán đáng làm và liên tục cải tiến sản phẩm AI sau khi phát hành.",
+          "sample_correct": "Project Manager tập trung vào tiến độ và ngân sách để hoàn thành spec định sẵn. Còn Product Manager phải lấy người dùng làm trung tâm, tự tìm bài toán đáng làm và định hình giá trị. Trong sản phẩm AI có tính xác suất thì việc đo lường cải tiến sau bàn giao là bắt buộc.",
+          "sample_wrong": "Hai vị trí này hoàn toàn là một, chỉ khác tên gọi tiếng Anh ở các công ty khác nhau thôi.",
+          "deep_dive": "Khác biệt lớn nhất giữa PM truyền thống và AI PM là 'Độ bất định' (Uncertainty). AI PM phải quản trị độ trôi dữ liệu (Data Drift), độ ảo giác (Hallucination Rate), và thiết kế Fallback UX khi mô hình trả lời sai để giữ vững niềm tin của người dùng."
+        },
+        {
+          "id": "cp3_dogfooding_strategy",
+          "order": 3,
+          "short": "CP3",
+          "title": "Chiến lược Dogfooding trong phát triển sản phẩm AI",
+          "slide": 3,
+          "student_starter_message": "Để làm sản phẩm AI ngon thì cứ thuê người dùng bên ngoài về phỏng vấn là ra hết nhu cầu đúng không cậu? Tự mình dùng sản phẩm của mình (Dogfooding) thì có ích gì đâu vì góc nhìn của mình bị thiên lệch?",
+          "misconceptions": [
+            "Coi nhẹ việc đội ngũ phát triển phải là người dùng đầu tiên của chính sản phẩm.",
+            "Nghĩ rằng phỏng vấn người dùng bên ngoài là đủ mà quên rằng người dùng thường không diễn đạt hết nỗi đau thực tế.",
+            "Không hiểu Dogfooding giúp rút ngắn vòng phản hồi kiểm thử (feedback loop) nhanh đến mức nào."
+          ],
+          "rubric_points": [
+            {
+              "id": "dogfooding_definition",
+              "concept": "Định nghĩa chiến lược Dogfooding",
+              "criteria": "Giải thích Dogfooding là việc chính đội ngũ làm sản phẩm tự dùng sản phẩm của mình hàng ngày ('ăn thức ăn của chính mình') với tư cách người dùng thật.",
+              "weight": 35
+            },
+            {
+              "id": "dogfooding_benefits",
+              "concept": "Lợi ích cốt lõi của Dogfooding",
+              "criteria": "Nêu rõ lợi ích: Cảm nhận trực tiếp nỗi đau thực tế, trở thành tester đầu tiên, phát hiện lỗi nhanh và rút ngắn feedback loop liên tục mà không cần chờ user bên ngoài.",
+              "weight": 35
+            },
+            {
+              "id": "dogfooding_examples",
+              "concept": "Ví dụ thực tế thành công",
+              "criteria": "Nhắc đến các ví dụ thực tế như Atlassian dùng Jira để build Jira, Anthropic dùng Claude Code để build Claude Code, hay Slack dùng nội bộ trước khi thương mại hóa.",
+              "weight": 30
+            }
+          ],
+          "source_citation": "Slide AI Product Day 2 [Tr.20-24], Transcript [T01-040]-[T01-042]",
+          "summary_for_passed": "Chính xác! Dogfooding là tự ăn thức ăn của chính mình. Giúp bạn thành tester đầu tiên, cảm nhận nỗi đau thật và tối ưu sản phẩm liên tục như cách Atlassian build Jira hay Anthropic dùng Claude Code!",
+          "hints": [
+            "Gợi ý: Thuật ngữ 'Dogfooding' nghĩa là gì trong ngành phần mềm?",
+            "Gợi ý thêm: Tại sao việc chính team tự dùng sản phẩm hàng ngày lại giúp phát hiện lỗi và tối ưu nhanh hơn phỏng vấn bên ngoài? Nêu ví dụ Jira hoặc Claude Code."
+          ],
+          "correction": "Dogfooding là đội ngũ tự sử dụng chính sản phẩm mình làm ra hàng ngày. Giúp team trở thành tester đầu tiên, cảm nhận nỗi đau thực tế và rút ngắn vòng phản hồi (ví dụ Jira build Jira, Claude Code).",
+          "sample_correct": "Dogfooding là chiến lược mà chính đội ngũ phát triển tự dùng sản phẩm của mình hàng ngày như người dùng thật. Điều này giúp cảm nhận trực tiếp nỗi đau thực tế, là tester đầu tiên và tối ưu vòng phản hồi feedback loop cực nhanh như cách Atlassian dùng Jira hay Anthropic dùng Claude Code.",
+          "sample_wrong": "Dogfooding là mang sản phẩm cho người khác dùng thử miễn phí để lấy tiếng vang chứ bản thân đội ngũ không nên dùng.",
+          "deep_dive": "Dogfooding không thay thế việc nghiên cứu người dùng bên ngoài, mà là tầng lọc đầu tiên (First Filter). Nếu chính đội ngũ làm ra sản phẩm còn cảm thấy khó chịu hoặc không muốn dùng hàng ngày, chắc chắn sản phẩm chưa sẵn sàng ra mắt thị trường."
+        }
+      ]
+    }
+  ]
+}
+
